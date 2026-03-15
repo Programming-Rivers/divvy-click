@@ -79,13 +79,13 @@ class HotkeyManager {
 
             switch keyCode {
             case 123, 4: // Left Arrow or 'H'
-                self.engine.bifurcate(.left)
+                self.engine.vennfurcate(.left)
             case 124, 37: // Right Arrow or 'L'
-                self.engine.bifurcate(.right)
+                self.engine.vennfurcate(.right)
             case 126, 40: // Up Arrow or 'K'
-                self.engine.bifurcate(.up)
+                self.engine.vennfurcate(.up)
             case 125, 38: // Down Arrow or 'J'
-                self.engine.bifurcate(.down)
+                self.engine.vennfurcate(.down)
             case 36: // Enter/Return
                 self.engine.executeClick()
             case 53: // Escape

@@ -26,21 +26,27 @@ class NavigationEngine: ObservableObject {
         activeScreen = nil
     }
 
-    func bifurcate(_ direction: Direction) {
+    /// Divide the current region into two parts with an overlapping "venn" zone.
+    func vennfurcate(_ direction: Direction) {
         guard isActive, let region = currentRegion else { return }
+
+        let overlap: CGFloat = 0.33 // 1/3 overlap
+        let expansionFactor = (1.0 + overlap) / 2.0 // e.g., 0.6 for 20% overlap
 
         var newRegion = region
         switch direction {
         case .left:
-            newRegion.size.width /= 2
+            newRegion.size.width *= expansionFactor
         case .right:
-            newRegion.size.width /= 2
-            newRegion.origin.x += newRegion.size.width
+            let originalWidth = newRegion.size.width
+            newRegion.size.width *= expansionFactor
+            newRegion.origin.x += (originalWidth - newRegion.size.width)
         case .up: // AppKit coordinate system: origin is bottom-left
-            newRegion.size.height /= 2
-            newRegion.origin.y += newRegion.size.height
+            let originalHeight = newRegion.size.height
+            newRegion.size.height *= expansionFactor
+            newRegion.origin.y += (originalHeight - newRegion.size.height)
         case .down:
-            newRegion.size.height /= 2
+            newRegion.size.height *= expansionFactor
         }
 
         currentRegion = newRegion
