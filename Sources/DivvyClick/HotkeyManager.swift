@@ -92,6 +92,10 @@ class HotkeyManager {
                 self.engine.execute(.move)
             case 15: // 'R'
                 self.engine.execute(.rightClick)
+            case 1:  // 'S' (Start Drag)
+                self.engine.execute(.mouseDown)
+            case 3:  // 'F' (Finish Drag)
+                self.engine.execute(.mouseUp)
             case 53: // Escape
                 self.engine.stop()
             default:

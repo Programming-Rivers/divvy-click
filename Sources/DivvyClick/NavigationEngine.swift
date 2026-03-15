@@ -54,6 +54,8 @@ class NavigationEngine: ObservableObject {
         currentRegion = newRegion
     }
 
+    @Published var isMouseDown: Bool = false
+
     func execute(_ action: Action) {
         guard isActive, let region = currentRegion else { return }
 
@@ -74,8 +76,20 @@ class NavigationEngine: ObservableObject {
                 self.cursorEngine.click(button: .right)
             }
         case .move:
-            // Jump was already performed
-            break
+            // If mouse is currently down, we should send a drag event to the new location
+            if isMouseDown {
+                cursorEngine.mouseDrag(button: .left)
+            }
+        case .mouseDown:
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                self.cursorEngine.mouseDown(button: .left)
+                self.isMouseDown = true
+            }
+        case .mouseUp:
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                self.cursorEngine.mouseUp(button: .left)
+                self.isMouseDown = false
+            }
         }
     }
 
@@ -84,6 +98,6 @@ class NavigationEngine: ObservableObject {
     }
 
     enum Action {
-        case click, rightClick, move
+        case click, rightClick, move, mouseDown, mouseUp
     }
 }

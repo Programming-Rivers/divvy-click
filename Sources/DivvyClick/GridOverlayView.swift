@@ -36,8 +36,8 @@ struct GridOverlayView: View {
 
                     context.stroke(
                         path,
-                        with: .color(.accentColor.opacity(0.8)),
-                        lineWidth: 1.5
+                        with: .color(engine.isMouseDown ? .red.opacity(0.8) : .accentColor.opacity(0.8)),
+                        lineWidth: 2.0
                     )
                 }
                 .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)

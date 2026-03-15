@@ -16,28 +16,63 @@ struct CursorEngine {
         return true
     }
 
-    /// Simulates a mouse click at the current location
+    /// Simulates a mouse click (down then up)
     func click(button: CGMouseButton = .left, count: Int = 1) {
-        let mouseLoc = NSEvent.mouseLocation
+        mouseDown(button: button, count: count)
+        mouseUp(button: button, count: count)
+    }
 
-        // Find the screen containing the mouse to calculate correct CG coordinates
+    /// Presses the mouse button down
+    func mouseDown(button: CGMouseButton = .left, count: Int = 1) {
+        postMouseEvent(type: mouseDownType(for: button), button: button, count: count)
+    }
+
+    /// Releases the mouse button
+    func mouseUp(button: CGMouseButton = .left, count: Int = 1) {
+        postMouseEvent(type: mouseUpType(for: button), button: button, count: count)
+    }
+
+    /// Sends a mouse dragged event (useful for some apps during a drag)
+    func mouseDrag(button: CGMouseButton = .left) {
+        postMouseEvent(type: mouseDragType(for: button), button: button)
+    }
+
+    private func postMouseEvent(type: CGEventType, button: CGMouseButton, count: Int = 1) {
+        let mouseLoc = NSEvent.mouseLocation
         guard let screen = NSScreen.screens.first(where: { NSMouseInRect(mouseLoc, $0.frame, false) }) ?? NSScreen.main else { return }
         let cgLoc = CGPoint(x: mouseLoc.x, y: screen.frame.height - mouseLoc.y)
 
         let source = CGEventSource(stateID: .hidSystemState)
-
-        let downType: CGEventType = (button == .left) ? .leftMouseDown : (button == .right ? .rightMouseDown : .otherMouseDown)
-        let upType: CGEventType = (button == .left) ? .leftMouseUp : (button == .right ? .rightMouseUp : .otherMouseUp)
-
-        let downEvent = CGEvent(mouseEventSource: source, mouseType: downType, mouseCursorPosition: cgLoc, mouseButton: button)
-        let upEvent = CGEvent(mouseEventSource: source, mouseType: upType, mouseCursorPosition: cgLoc, mouseButton: button)
+        let event = CGEvent(mouseEventSource: source, mouseType: type, mouseCursorPosition: cgLoc, mouseButton: button)
 
         if count > 1 {
-            downEvent?.setIntegerValueField(.mouseEventClickState, value: Int64(count))
-            upEvent?.setIntegerValueField(.mouseEventClickState, value: Int64(count))
+            event?.setIntegerValueField(.mouseEventClickState, value: Int64(count))
         }
 
-        downEvent?.post(tap: .cghidEventTap)
-        upEvent?.post(tap: .cghidEventTap)
+        event?.post(tap: .cghidEventTap)
+    }
+
+    private func mouseDownType(for button: CGMouseButton) -> CGEventType {
+        switch button {
+        case .left: return .leftMouseDown
+        case .right: return .rightMouseDown
+        default: return .otherMouseDown
+        }
+    }
+
+    private func mouseUpType(for button: CGMouseButton) -> CGEventType {
+        switch button {
+        case .left: return .leftMouseUp
+        case .right: return .rightMouseUp
+        default: return .otherMouseUp
+        }
+    }
+
+    private func mouseDragType(for button: CGMouseButton) -> CGEventType {
+        switch button {
+        case .left: return .leftMouseDragged
+        case .right: return .rightMouseDragged
+        default: return .otherMouseDragged
+        }
     }
 }
