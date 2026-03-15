@@ -4,6 +4,7 @@ module(
     name = "divvy-click",
     version = "0.1.0",
 )
+
 bazel_dep(
     name = "aspect_rules_lint",
     version = "2.3.0",
@@ -14,6 +15,7 @@ bazel_dep(
     version = "8.5.1",
     dev_dependency = True,
 )
+
 # Not required by the project,
 # but the linter fails without it.
 # It is a bug in the linter for sure.
@@ -27,10 +29,18 @@ bazel_dep(
     version = "0.11.0",
     dev_dependency = True,
 )
+
+bazel_dep(
+    name = "apple_support",
+    version = "1.24.2",
+)
+bazel_dep(
+    name = "rules_apple",
+    version = "4.1.0",
+)
 bazel_dep(
     name = "rules_swift",
     version = "3.5.0",
-    dev_dependency = True,
 )
 
 multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool")

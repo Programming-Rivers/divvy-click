@@ -1,2 +1,11 @@
 """
 """
+load("@rules_apple//apple:macos.bzl", "macos_application")
+
+macos_application(
+    name = "DivvyClick",
+    bundle_id = "com.personal.divvy-click",
+    infoplists = ["//Sources/DivvyClick:Info.plist"],
+    minimum_os_version = "26.0",
+    deps = ["//Sources/DivvyClick:lib"],
+)

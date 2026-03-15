@@ -1,5 +1,9 @@
 # Enforce dependency hermeticity: Fail the build if MODULE.bazel.lock is out of sync.
 # To update the lockfile after a dependency change, run: bazel mod tidy
 common --lockfile_mode=error
-common --tool_java_runtime_version=remotejdk_17
-common --java_runtime_version=remotejdk_17
+common --tool_java_runtime_version=remotejdk_25
+common --java_runtime_version=remotejdk_25
+
+# Swift on Linux requirements
+build --action_env=CC=clang
+build --action_env=PATH
