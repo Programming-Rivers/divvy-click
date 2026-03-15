@@ -4,42 +4,42 @@ import SwiftUI
 
 @MainActor
 class OverlayWindowController {
-    let window: NSWindow
+    private var window: NSPanel
     let engine: NavigationEngine
     private var cancellables = Set<AnyCancellable>()
 
     init(engine: NavigationEngine) {
         self.engine = engine
 
-        window = NSWindow(
+        window = NSPanel(
             contentRect: .zero,
-            styleMask: [.borderless],
+            styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
 
-        window.level = .floating // Stay above normal windows
-        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary] // Show on all desktops
-        window.ignoresMouseEvents = true // Let clicks pass through if somehow it isn't closed
+        window.level = .floating
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]
+        window.ignoresMouseEvents = true
         window.backgroundColor = .clear
         window.isOpaque = false
         window.hasShadow = false
+        window.hidesOnDeactivate = false
+        window.isFloatingPanel = true
 
-        // Attach the SwiftUI View
         let hostingView = NSHostingView(rootView: GridOverlayView(engine: engine))
         window.contentView = hostingView
 
-        // Observe engine region
+        // Observe engine region and active screen frame
         Publishers.CombineLatest(engine.$currentRegion, engine.$activeScreenFrame)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] region, screenFrame in
                 guard let self = self else { return }
                 if region != nil {
-                    // Window covers the entire screen to allow blurring outside the region
                     if self.window.frame != screenFrame {
                         self.window.setFrame(screenFrame, display: true)
                     }
-                    self.window.orderFront(nil)
+                    self.window.orderFrontRegardless()
                 } else {
                     self.window.orderOut(nil)
                 }
