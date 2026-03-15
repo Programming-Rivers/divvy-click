@@ -2,6 +2,7 @@ import AppKit
 import Combine
 import SwiftUI
 
+@MainActor
 class OverlayWindowController {
     let window: NSWindow
     let engine: NavigationEngine
@@ -13,7 +14,7 @@ class OverlayWindowController {
         // Create the borderless, floating window
         window = NSWindow(
             contentRect: .zero,
-            styleMask: [.plain, .borderless],
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )

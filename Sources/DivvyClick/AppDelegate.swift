@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem!
     let navigationEngine = NavigationEngine()

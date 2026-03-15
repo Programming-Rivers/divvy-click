@@ -2,6 +2,7 @@ import AppKit
 import CoreGraphics
 import Foundation
 
+@MainActor
 class HotkeyManager {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -14,7 +15,12 @@ class HotkeyManager {
     }
 
     deinit {
-        stopEventTap()
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+            if let runLoopSource = runLoopSource {
+                CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
+            }
+        }
     }
 
     private func setupEventTap() {
@@ -23,7 +29,9 @@ class HotkeyManager {
 
         let callback: CGEventTapCallBack = { _, _, event, refcon -> Unmanaged<CGEvent>? in
             let hotkeyManager = Unmanaged<HotkeyManager>.fromOpaque(refcon!).takeUnretainedValue()
-            return hotkeyManager.handleEvent(event)
+            return MainActor.assumeIsolated {
+                hotkeyManager.handleEvent(event)
+            }
         }
 
         eventTap = CGEvent.tapCreate(
@@ -45,14 +53,7 @@ class HotkeyManager {
         CGEvent.tapEnable(tap: tap, enable: true)
     }
 
-    private func stopEventTap() {
-        if let tap = eventTap {
-            CGEvent.tapEnable(tap: tap, enable: false)
-            if let runLoopSource = runLoopSource {
-                CFRunLoopRemoveSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
-            }
-        }
-    }
+
 
     private func handleEvent(_ event: CGEvent) -> Unmanaged<CGEvent>? {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
@@ -76,7 +77,7 @@ class HotkeyManager {
 
         // If navigation is active, intercept H,J,K,L, arrows, Enter, Escape
         if engine.isActive {
-            var handled = true
+            let handled = true
 
             DispatchQueue.main.async {
                 switch keyCode {
