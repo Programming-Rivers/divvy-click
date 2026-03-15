@@ -87,7 +87,11 @@ class HotkeyManager {
             case 125, 38: // Down Arrow or 'J'
                 self.engine.vennfurcate(.down)
             case 36: // Enter/Return
-                self.engine.executeClick()
+                self.engine.execute(.click)
+            case 46: // 'M'
+                self.engine.execute(.move)
+            case 15: // 'R'
+                self.engine.execute(.rightClick)
             case 53: // Escape
                 self.engine.stop()
             default:

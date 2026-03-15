@@ -54,7 +54,7 @@ class NavigationEngine: ObservableObject {
         currentRegion = newRegion
     }
 
-    func executeClick() {
+    func execute(_ action: Action) {
         guard isActive, let region = currentRegion else { return }
 
         // 1. Relocate cursor
@@ -63,13 +63,27 @@ class NavigationEngine: ObservableObject {
         // 2. Stop navigation (hides overlay)
         stop()
 
-        // 3. Very slight delay to let macOS register the new cursor position before clicking
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            self.cursorEngine.click()
+        // 3. Perform action with a slight delay if it involves a click
+        switch action {
+        case .click:
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                self.cursorEngine.click(button: .left)
+            }
+        case .rightClick:
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                self.cursorEngine.click(button: .right)
+            }
+        case .move:
+            // Jump was already performed
+            break
         }
     }
 
     enum Direction {
         case left, right, up, down
+    }
+
+    enum Action {
+        case click, rightClick, move
     }
 }
