@@ -28,27 +28,35 @@ class NavigationEngine: ObservableObject {
         activeScreen = nil
     }
 
-    /// Divide the current region into two parts with an overlapping "venn" zone.
+    /// Divide the current region into parts with an overlapping "venn" zone.
     func vennfurcate(_ direction: Direction) {
         guard isActive, let region = currentRegion else { return }
 
         let overlap: CGFloat = 0.33 // 1/3 overlap
-        let expansionFactor = (1.0 + overlap) / 2.0 // e.g., 0.6 for 20% overlap
+        let expansionFactor = (1.0 + overlap) / 2.0 
 
         var newRegion = region
+        let originalWidth = region.size.width
+        let originalHeight = region.size.height
+        
+        // Handle Horizontal component
         switch direction {
-        case .left:
+        case .left, .topLeft, .bottomLeft:
             newRegion.size.width *= expansionFactor
-        case .right:
-            let originalWidth = newRegion.size.width
+        case .right, .topRight, .bottomRight:
             newRegion.size.width *= expansionFactor
             newRegion.origin.x += (originalWidth - newRegion.size.width)
-        case .up: // AppKit coordinate system: origin is bottom-left
-            let originalHeight = newRegion.size.height
+        default: break
+        }
+        
+        // Handle Vertical component
+        switch direction {
+        case .up, .topLeft, .topRight:
             newRegion.size.height *= expansionFactor
             newRegion.origin.y += (originalHeight - newRegion.size.height)
-        case .down:
+        case .down, .bottomLeft, .bottomRight:
             newRegion.size.height *= expansionFactor
+        default: break
         }
 
         currentRegion = newRegion
@@ -95,6 +103,7 @@ class NavigationEngine: ObservableObject {
 
     enum Direction {
         case left, right, up, down
+        case topLeft, topRight, bottomLeft, bottomRight
     }
 
     enum Action {

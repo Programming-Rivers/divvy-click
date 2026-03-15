@@ -86,6 +86,14 @@ class HotkeyManager {
                 self.engine.vennfurcate(.up)
             case 125, 38: // Down Arrow or 'J'
                 self.engine.vennfurcate(.down)
+            case 83, 18: // Numpad 1 or '1' (Bottom-Left)
+                self.engine.vennfurcate(.bottomLeft)
+            case 81, 20: // Numpad 3 or '3' (Bottom-Right)
+                self.engine.vennfurcate(.bottomRight)
+            case 89, 26: // Numpad 7 or '7' (Top-Left)
+                self.engine.vennfurcate(.topLeft)
+            case 92, 25: // Numpad 9 or '9' (Top-Right)
+                self.engine.vennfurcate(.topRight)
             case 36: // Enter/Return
                 self.engine.execute(.click)
             case 46: // 'M'
