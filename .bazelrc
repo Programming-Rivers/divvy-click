@@ -3,7 +3,8 @@
 common --lockfile_mode=error
 common --tool_java_runtime_version=remotejdk_25
 common --java_runtime_version=remotejdk_25
-
 # Swift on Linux requirements
 build --action_env=CC=clang
-build --action_env=PATH
+build --repo_env=CC=clang
+build --action_env=PATH=/home/meisam/swift-6.0.2-RELEASE-ubuntu24.04/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+build --repo_env=PATH=/home/meisam/swift-6.0.2-RELEASE-ubuntu24.04/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
