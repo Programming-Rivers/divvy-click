@@ -14,5 +14,11 @@
 	<string>Divvy-click requires Accessibility access to control the cursor via keyboard shortcuts.</string>
 	<key>NSInputMonitoringUsageDescription</key>
 	<string>Divvy-click requires Input Monitoring to intercept navigational keystrokes without passing them to active applications.</string>
+
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
 </dict>
+
 </plist>
