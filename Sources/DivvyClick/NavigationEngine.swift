@@ -63,10 +63,12 @@ class NavigationEngine: ObservableObject {
         redoStack = []
     }
 
-    func undo() {
-        guard isActive, let current = currentRegion, !history.isEmpty else { return }
+    @discardableResult
+    func undo() -> Bool {
+        guard isActive, let current = currentRegion, !history.isEmpty else { return false }
         redoStack.append(current)
         currentRegion = history.removeLast()
+        return true
     }
 
     func redo() {

@@ -125,7 +125,9 @@ class HotkeyManager {
             case 2:  // 'D' (Select Display)
                 self.engine.showDisplaySelection()
             case 78: // Numpad - (Undo)
-                self.engine.undo()
+                if !self.engine.undo() {
+                    self.engine.showDisplaySelection()
+                }
             case 69: // Numpad + (Redo)
                 self.engine.redo()
             case 53: // Escape
