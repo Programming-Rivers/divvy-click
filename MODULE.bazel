@@ -32,11 +32,11 @@ bazel_dep(
 
 bazel_dep(
     name = "apple_support",
-    version = "1.24.2",
+    version = "2.3.0",
 )
 bazel_dep(
     name = "rules_apple",
-    version = "4.1.0",
+    version = "4.5.0",
 )
 bazel_dep(
     name = "rules_swift",
@@ -46,10 +46,9 @@ bazel_dep(name = "llvm", version = "0.6.7")
 
 llvm = use_extension("@llvm//extensions:llvm.bzl", "llvm")
 use_repo(llvm, "llvm-project")
+
 register_toolchains("@llvm-project//:all")
 
 multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool")
 multitool.hub(lockfile = "//tools/format:multitool.lock.json")
-
-
 use_repo(multitool, "multitool")
