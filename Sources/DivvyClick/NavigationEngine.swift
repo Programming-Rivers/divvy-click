@@ -11,6 +11,9 @@ class NavigationEngine: ObservableObject {
     // Original screen to constrain navigation
     private var activeScreen: NSScreen?
     private let cursorEngine = CursorEngine()
+    
+    private var history: [CGRect] = []
+    private var redoStack: [CGRect] = []
 
     func start() {
         // Find screen under current cursor
@@ -21,6 +24,8 @@ class NavigationEngine: ObservableObject {
         activeScreenFrame = screen.frame
         currentRegion = screen.frame
         isActive = true
+        history = []
+        redoStack = []
     }
 
     func stop() {
@@ -28,6 +33,8 @@ class NavigationEngine: ObservableObject {
         isSelectingDisplay = false
         currentRegion = nil
         activeScreen = nil
+        history = []
+        redoStack = []
     }
 
     func showDisplaySelection() {
@@ -52,11 +59,28 @@ class NavigationEngine: ObservableObject {
         currentRegion = selectedScreen.frame
         isSelectingDisplay = false
         isActive = true
+        history = []
+        redoStack = []
+    }
+
+    func undo() {
+        guard isActive, let current = currentRegion, !history.isEmpty else { return }
+        redoStack.append(current)
+        currentRegion = history.removeLast()
+    }
+
+    func redo() {
+        guard isActive, let current = currentRegion, !redoStack.isEmpty else { return }
+        history.append(current)
+        currentRegion = redoStack.removeLast()
     }
 
     /// Divide the current region into parts with an overlapping "venn" zone.
     func vennfurcate(_ direction: Direction) {
         guard isActive, let region = currentRegion else { return }
+        
+        history.append(region)
+        redoStack.removeAll()
 
         let overlap: CGFloat = 0.33 // 1/3 overlap
         let expansionFactor = (1.0 + overlap) / 2.0 
