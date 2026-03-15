@@ -2,7 +2,6 @@ import AppKit
 import CoreGraphics
 import Foundation
 
-/// Manages synthetic mouse interactions
 struct CursorEngine {
     /// Jumps the cursor to the center of a target region
     @discardableResult

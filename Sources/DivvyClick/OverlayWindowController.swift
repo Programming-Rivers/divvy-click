@@ -11,7 +11,6 @@ class OverlayWindowController {
     init(engine: NavigationEngine) {
         self.engine = engine
 
-        // Create the borderless, floating window
         window = NSWindow(
             contentRect: .zero,
             styleMask: [.borderless],
