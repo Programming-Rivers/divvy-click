@@ -1,0 +1,4 @@
+# Copy this file to .bazelrc.user and adjust the settings
+
+build --action_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+build --repo_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
