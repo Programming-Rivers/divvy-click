@@ -130,6 +130,10 @@ class HotkeyManager {
                 }
             case 69: // Numpad + (Redo)
                 self.engine.redo()
+            case 84: // Numpad 2 (Scroll Down)
+                self.engine.execute(.scroll(.down))
+            case 91: // Numpad 8 (Scroll Up)
+                self.engine.execute(.scroll(.up))
             case 53: // Escape
                 self.engine.stop()
             default:

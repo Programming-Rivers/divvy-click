@@ -151,6 +151,9 @@ class NavigationEngine: ObservableObject {
                 self.cursorEngine.mouseUp(button: .left)
                 self.isMouseDown = false
             }
+        case .scroll(let direction):
+            let delta: Int32 = 100
+            self.cursorEngine.scroll(deltaY: direction == .up ? delta : -delta)
         }
     }
 
@@ -161,5 +164,10 @@ class NavigationEngine: ObservableObject {
 
     enum Action {
         case click, rightClick, move, mouseDown, mouseUp
+        case scroll(ScrollDirection)
+    }
+
+    enum ScrollDirection {
+        case up, down
     }
 }

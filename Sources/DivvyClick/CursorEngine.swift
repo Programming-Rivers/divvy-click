@@ -37,6 +37,14 @@ struct CursorEngine {
         postMouseEvent(type: mouseDragType(for: button), button: button)
     }
 
+    /// Simulates a scroll wheel event.
+    func scroll(deltaY: Int32) {
+        let source = CGEventSource(stateID: .hidSystemState)
+        // wheelCount = 1 for vertical scrolling
+        let event = CGEvent(scrollWheelEvent2Source: source, units: .pixel, wheelCount: 1, wheel1: deltaY, wheel2: 0, wheel3: 0)
+        event?.post(tap: .cghidEventTap)
+    }
+
     private func postMouseEvent(type: CGEventType, button: CGMouseButton, count: Int = 1) {
         let mouseLoc = NSEvent.mouseLocation
         guard let screen = NSScreen.screens.first(where: { NSMouseInRect(mouseLoc, $0.frame, false) }) ?? NSScreen.main else { return }
