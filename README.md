@@ -13,7 +13,7 @@ Instead of dragging a cursor across physical space, Divvy-click treats your scre
 3. **Refine**: The active area shrinks by 50% with each keystroke.
 4. **Execute**: Once the cursor is positioned, hit `Enter` to click, or use modifiers for right-click/double-click.
 
-Mathematically, this allows you to target a specific point on a 4k screen in approximately $11 \tsext{ to } 21$ keystrokes, depending on the required precision.
+Mathematically, this allows you to target a specific point on a 4k screen in approximately 11 to 21 keystrokes, depending on the required precision.
 
 ## ✨ Features
 
