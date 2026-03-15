@@ -30,16 +30,15 @@ class OverlayWindowController {
         window.contentView = hostingView
 
         // Observe engine region
-        engine.$currentRegion
+        Publishers.CombineLatest(engine.$currentRegion, engine.$activeScreenFrame)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] region in
+            .sink { [weak self] region, screenFrame in
                 guard let self = self else { return }
-                if let r = region {
-                    NSAnimationContext.runAnimationGroup({ context in
-                        context.duration = 0.06
-                        context.allowsImplicitAnimation = true
-                        self.window.setFrame(r, display: true)
-                    })
+                if region != nil {
+                    // Window covers the entire screen to allow blurring outside the region
+                    if self.window.frame != screenFrame {
+                        self.window.setFrame(screenFrame, display: true)
+                    }
                     self.window.orderFront(nil)
                 } else {
                     self.window.orderOut(nil)

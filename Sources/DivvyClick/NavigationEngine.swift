@@ -4,6 +4,7 @@ import Foundation
 @MainActor
 class NavigationEngine: ObservableObject {
     @Published var currentRegion: CGRect?
+    @Published var activeScreenFrame: CGRect = .zero
     @Published var isActive: Bool = false
 
     // Original screen to constrain navigation
@@ -16,6 +17,7 @@ class NavigationEngine: ObservableObject {
         activeScreen = NSScreen.screens.first { NSMouseInRect(mouseLoc, $0.frame, false) } ?? NSScreen.main
 
         guard let screen = activeScreen else { return }
+        activeScreenFrame = screen.frame
         currentRegion = screen.frame
         isActive = true
     }
