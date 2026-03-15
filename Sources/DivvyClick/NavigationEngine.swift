@@ -92,6 +92,7 @@ class NavigationEngine: ObservableObject {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.cursorEngine.mouseDown(button: .left)
                 self.isMouseDown = true
+                self.start()
             }
         case .mouseUp:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
