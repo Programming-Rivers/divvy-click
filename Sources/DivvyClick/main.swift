@@ -6,5 +6,4 @@ MainActor.assumeIsolated {
     app.delegate = delegate
 }
 
-// Run the application
 _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)
