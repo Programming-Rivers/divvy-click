@@ -6,6 +6,7 @@ class NavigationEngine: ObservableObject {
     @Published var currentRegion: CGRect?
     @Published var activeScreenFrame: CGRect = .zero
     @Published var isActive: Bool = false
+    @Published var isSelectingDisplay: Bool = false
 
     // Original screen to constrain navigation
     private var activeScreen: NSScreen?
@@ -24,8 +25,33 @@ class NavigationEngine: ObservableObject {
 
     func stop() {
         isActive = false
+        isSelectingDisplay = false
         currentRegion = nil
         activeScreen = nil
+    }
+
+    func showDisplaySelection() {
+        // Find screen under current cursor to show the selection UI
+        let mouseLoc = NSEvent.mouseLocation
+        activeScreen = NSScreen.screens.first { NSMouseInRect(mouseLoc, $0.frame, false) } ?? NSScreen.main
+        
+        guard let screen = activeScreen else { return }
+        activeScreenFrame = screen.frame
+        currentRegion = screen.frame
+        isActive = true
+        isSelectingDisplay = true
+    }
+
+    func selectDisplay(at index: Int) {
+        let screens = NSScreen.screens
+        guard index >= 0 && index < screens.count else { return }
+        
+        let selectedScreen = screens[index]
+        activeScreen = selectedScreen
+        activeScreenFrame = selectedScreen.frame
+        currentRegion = selectedScreen.frame
+        isSelectingDisplay = false
+        isActive = true
     }
 
     /// Divide the current region into parts with an overlapping "venn" zone.

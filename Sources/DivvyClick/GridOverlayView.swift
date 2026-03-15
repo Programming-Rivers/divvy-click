@@ -85,8 +85,67 @@ struct GridOverlayView: View {
                 }
                 .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
             }
+
+            if engine.isSelectingDisplay {
+                displaySelectionOverlay
+            }
         }
         .ignoresSafeArea()
+    }
+
+    private var displaySelectionOverlay: some View {
+        ZStack {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+            
+            VStack(spacing: 20) {
+                Text("Select Display")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .shadow(radius: 10)
+
+                let screens = NSScreen.screens
+                ForEach(0..<screens.count, id: \.self) { index in
+                    displayRow(for: screens[index], index: index)
+                }
+
+                Text("Press 1, 2, 3... to select")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(.top, 10)
+            }
+            .padding(40)
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color.black.opacity(0.6))
+                    .shadow(radius: 20)
+            )
+        }
+    }
+
+    private func displayRow(for screen: NSScreen, index: Int) -> some View {
+        HStack(spacing: 15) {
+            Text("\(index + 1)")
+                .font(.system(size: 24, weight: .black, design: .monospaced))
+                .frame(width: 40, height: 40)
+                .background(Circle().fill(Color.blue))
+                .foregroundColor(.white)
+
+            VStack(alignment: .leading) {
+                Text(screen.localizedName)
+                    .font(.headline)
+                Text("\(Int(screen.frame.width)) x \(Int(screen.frame.height))")
+                    .font(.caption)
+            }
+            .foregroundColor(.white)
+        }
+        .padding()
+        .frame(width: 300, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.1)))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+        )
     }
 
     private func localRect(for region: CGRect, in screen: CGRect) -> CGRect {

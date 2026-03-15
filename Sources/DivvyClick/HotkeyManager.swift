@@ -73,9 +73,27 @@ class HotkeyManager {
             return nil // Consume event
         }
 
-        // If navigation is active, intercept H,J,K,L, arrows, Enter, Escape
+        // If navigation is active, intercept keys
         if engine.isActive {
-            let handled = true
+            if engine.isSelectingDisplay {
+                switch keyCode {
+                case 18...21, 23, 22, 26, 28, 25, 29: // 1-9, 0 (Row)
+                    let indexMap: [Int64: Int] = [18:0, 19:1, 20:2, 21:3, 23:4, 22:5, 26:6, 28:7, 25:8, 29:9]
+                    if let index = indexMap[keyCode] {
+                        self.engine.selectDisplay(at: index)
+                    }
+                case 82...92: // Numpad 0-9
+                    let indexMap: [Int64: Int] = [83:0, 84:1, 85:2, 86:3, 87:4, 88:5, 89:6, 91:7, 92:8, 82:9]
+                    if let index = indexMap[keyCode] {
+                        self.engine.selectDisplay(at: index)
+                    }
+                case 53: // Escape
+                    self.engine.stop()
+                default:
+                    break
+                }
+                return nil // Consume all keys in selection mode
+            }
 
             switch keyCode {
             case 123, 4: // Left Arrow or 'H'
@@ -104,17 +122,15 @@ class HotkeyManager {
                 self.engine.execute(.mouseDown)
             case 3:  // 'F' (Finish Drag)
                 self.engine.execute(.mouseUp)
+            case 2:  // 'D' (Select Display)
+                self.engine.showDisplaySelection()
             case 53: // Escape
                 self.engine.stop()
             default:
-                // If not a navigation key, we still want to block it from hitting other apps
-                // so the user doesn't accidentally type while in nav mode
                 break
             }
 
-            if handled {
-                return nil // Consume event
-            }
+            return nil // Consume event
         }
 
         return Unmanaged.passRetained(event)
