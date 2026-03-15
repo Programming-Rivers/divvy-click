@@ -32,7 +32,7 @@ struct GridOverlayView: View {
                 )
             }
         }
-        .animation(.spring(response: 0.15, dampingFraction: 0.8), value: engine.currentRegion)
+        .animation(.spring(response: 0.06, dampingFraction: 0.9), value: engine.currentRegion)
         .ignoresSafeArea()
     }
 }

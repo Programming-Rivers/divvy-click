@@ -65,12 +65,10 @@ class HotkeyManager {
         let isShift = flags.contains(.maskShift)
 
         if keyCode == 49, isControl, isShift {
-            DispatchQueue.main.async {
-                if self.engine.isActive {
-                    self.engine.stop()
-                } else {
-                    self.engine.start()
-                }
+            if self.engine.isActive {
+                self.engine.stop()
+            } else {
+                self.engine.start()
             }
             return nil // Consume event
         }
@@ -79,25 +77,23 @@ class HotkeyManager {
         if engine.isActive {
             let handled = true
 
-            DispatchQueue.main.async {
-                switch keyCode {
-                case 123, 4: // Left Arrow or 'H'
-                    self.engine.bifurcate(.left)
-                case 124, 37: // Right Arrow or 'L'
-                    self.engine.bifurcate(.right)
-                case 126, 40: // Up Arrow or 'K'
-                    self.engine.bifurcate(.up)
-                case 125, 38: // Down Arrow or 'J'
-                    self.engine.bifurcate(.down)
-                case 36: // Enter/Return
-                    self.engine.executeClick()
-                case 53: // Escape
-                    self.engine.stop()
-                default:
-                    // If not a navigation key, we still want to block it from hitting other apps
-                    // so the user doesn't accidentally type while in nav mode
-                    break
-                }
+            switch keyCode {
+            case 123, 4: // Left Arrow or 'H'
+                self.engine.bifurcate(.left)
+            case 124, 37: // Right Arrow or 'L'
+                self.engine.bifurcate(.right)
+            case 126, 40: // Up Arrow or 'K'
+                self.engine.bifurcate(.up)
+            case 125, 38: // Down Arrow or 'J'
+                self.engine.bifurcate(.down)
+            case 36: // Enter/Return
+                self.engine.executeClick()
+            case 53: // Escape
+                self.engine.stop()
+            default:
+                // If not a navigation key, we still want to block it from hitting other apps
+                // so the user doesn't accidentally type while in nav mode
+                break
             }
 
             if handled {

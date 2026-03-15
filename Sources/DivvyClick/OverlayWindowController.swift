@@ -35,7 +35,11 @@ class OverlayWindowController {
             .sink { [weak self] region in
                 guard let self = self else { return }
                 if let r = region {
-                    self.window.setFrame(r, display: true, animate: true)
+                    NSAnimationContext.runAnimationGroup({ context in
+                        context.duration = 0.06
+                        context.allowsImplicitAnimation = true
+                        self.window.setFrame(r, display: true)
+                    })
                     self.window.orderFront(nil)
                 } else {
                     self.window.orderOut(nil)
