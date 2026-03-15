@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import Combine
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -8,6 +9,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var hotkeyManager: HotkeyManager!
     var overlayController: OverlayWindowController!
+    private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_: Notification) {
         // Create the status bar icon
@@ -26,6 +28,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         hotkeyManager = HotkeyManager(engine: navigationEngine)
         overlayController = OverlayWindowController(engine: navigationEngine)
+
+        // Update status button based on engine state
+        Publishers.CombineLatest(navigationEngine.$isActive, navigationEngine.$isMouseDown)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isActive, isMouseDown in
+                if isMouseDown {
+                    self?.statusItem.button?.title = "• ⌘ ↓"
+                } else {
+                    self?.statusItem.button?.title = isActive ? "• ⌘ •" : "⌘"
+                }
+            }
+            .store(in: &cancellables)
     }
 
     func applicationWillTerminate(_: Notification) {
