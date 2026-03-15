@@ -106,7 +106,7 @@ class HotkeyManager {
                 self.engine.vennfurcate(.down)
             case 83, 18: // Numpad 1 or '1' (Bottom-Left)
                 self.engine.vennfurcate(.bottomLeft)
-            case 81, 20: // Numpad 3 or '3' (Bottom-Right)
+            case 85, 20: // Numpad 3 or '3' (Bottom-Right)
                 self.engine.vennfurcate(.bottomRight)
             case 89, 26: // Numpad 7 or '7' (Top-Left)
                 self.engine.vennfurcate(.topLeft)
