@@ -121,9 +121,9 @@ class HotkeyManager {
                 self.engine.execute(.move, flags: flags)
             case 15: // 'R'
                 self.engine.execute(.rightClick, flags: flags)
-            case 1:  // 'S' (Start Drag)
+            case 1, 75:  // 'S' or Numpad / (Start Drag)
                 self.engine.execute(.mouseDown, flags: flags)
-            case 3:  // 'F' (Finish Drag)
+            case 3, 67:  // 'F' or Numpad * (Finish Drag)
                 self.engine.execute(.mouseUp, flags: flags)
             case 2:  // 'D' (Select Display)
                 self.engine.showDisplaySelection()
