@@ -122,23 +122,24 @@ class NavigationEngine: ObservableObject {
         // 1. Relocate cursor
         cursorEngine.jump(to: region)
 
-        // 2. Stop navigation (hides overlay)
-        stop()
-
-        // 3. Perform action with a slight delay if it involves a click
+        // 2. Perform action with a slight delay if it involves a click
         switch action {
         case .click:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.cursorEngine.click(button: .left)
+                self.resetToFullScreen()
             }
         case .rightClick:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.cursorEngine.click(button: .right)
+                self.resetToFullScreen()
             }
         case .move:
             // If mouse is currently down, we should send a drag event to the new location
             if isMouseDown {
                 cursorEngine.mouseDrag(button: .left)
+            } else {
+                self.resetToFullScreen()
             }
         case .mouseDown:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
@@ -150,6 +151,7 @@ class NavigationEngine: ObservableObject {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.cursorEngine.mouseUp(button: .left)
                 self.isMouseDown = false
+                self.resetToFullScreen()
             }
         case .scroll(let direction):
             let delta: Int32 = 100
@@ -160,6 +162,13 @@ class NavigationEngine: ObservableObject {
             case .right: self.cursorEngine.scroll(deltaX: delta)
             }
         }
+    }
+
+    private func resetToFullScreen() {
+        guard let screen = activeScreen else { return }
+        currentRegion = screen.frame
+        history = []
+        redoStack = []
     }
 
     enum Direction {
