@@ -134,6 +134,11 @@ class NavigationEngine: ObservableObject {
                 self.cursorEngine.click(button: .right)
                 self.resetToFullScreen()
             }
+        case .middleClick:
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                self.cursorEngine.click(button: .center)
+                self.resetToFullScreen()
+            }
         case .move:
             // If mouse is currently down, we should send a drag event to the new location
             if isMouseDown {
@@ -177,7 +182,7 @@ class NavigationEngine: ObservableObject {
     }
 
     enum Action {
-        case click, rightClick, move, mouseDown, mouseUp
+        case click, rightClick, middleClick, move, mouseDown, mouseUp
         case scroll(ScrollDirection)
     }
 
