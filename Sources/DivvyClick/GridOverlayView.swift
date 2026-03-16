@@ -8,7 +8,7 @@ struct GridOverlayView: View {
             if let region = engine.currentRegion {
                 // 1. Blurred background for the "outside" area
                 Rectangle()
-                    .fill(.ultraThinMaterial)
+                    .fill(.ultraThinMaterial.opacity(0.9))
                     .mask(
                         InvertedRectangle(
                             innerRect: region,
@@ -96,7 +96,7 @@ struct GridOverlayView: View {
     private var displaySelectionOverlay: some View {
         ZStack {
             Rectangle()
-                .fill(.ultraThinMaterial)
+                .fill(.ultraThinMaterial.opacity(0.8))
             
             VStack(spacing: 20) {
                 Text("Select Display")
