@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>com.personal.divvy-click</string>
+	<string>house.rivers.programming.divvy-click</string>
 	<key>CFBundleName</key>
 	<string>DivvyClick</string>
 	<key>CFBundlePackageType</key>
