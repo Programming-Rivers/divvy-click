@@ -116,7 +116,7 @@ class NavigationEngine: ObservableObject {
 
     @Published var isMouseDown: Bool = false
 
-    func execute(_ action: Action) {
+    func execute(_ action: Action, flags: CGEventFlags = []) {
         guard isActive, let region = currentRegion else { return }
 
         // 1. Relocate cursor
@@ -126,50 +126,50 @@ class NavigationEngine: ObservableObject {
         switch action {
         case .click:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                self.cursorEngine.click(button: .left)
+                self.cursorEngine.click(button: .left, flags: flags)
                 self.resetToFullScreen()
             }
         case .doubleClick:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                self.cursorEngine.click(button: .left, count: 2)
+                self.cursorEngine.click(button: .left, count: 2, flags: flags)
                 self.resetToFullScreen()
             }
         case .rightClick:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                self.cursorEngine.click(button: .right)
+                self.cursorEngine.click(button: .right, flags: flags)
                 self.resetToFullScreen()
             }
         case .middleClick:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                self.cursorEngine.click(button: .center)
+                self.cursorEngine.click(button: .center, flags: flags)
                 self.resetToFullScreen()
             }
         case .move:
             // If mouse is currently down, we should send a drag event to the new location
             if isMouseDown {
-                cursorEngine.mouseDrag(button: .left)
+                cursorEngine.mouseDrag(button: .left, flags: flags)
             } else {
                 self.resetToFullScreen()
             }
         case .mouseDown:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                self.cursorEngine.mouseDown(button: .left)
+                self.cursorEngine.mouseDown(button: .left, flags: flags)
                 self.isMouseDown = true
                 self.start()
             }
         case .mouseUp:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                self.cursorEngine.mouseUp(button: .left)
+                self.cursorEngine.mouseUp(button: .left, flags: flags)
                 self.isMouseDown = false
                 self.resetToFullScreen()
             }
         case .scroll(let direction):
             let delta: Int32 = 100
             switch direction {
-            case .up:    self.cursorEngine.scroll(deltaY: delta)
-            case .down:  self.cursorEngine.scroll(deltaY: -delta)
-            case .left:  self.cursorEngine.scroll(deltaX: -delta)
-            case .right: self.cursorEngine.scroll(deltaX: delta)
+            case .up:    self.cursorEngine.scroll(deltaY: delta, flags: flags)
+            case .down:  self.cursorEngine.scroll(deltaY: -delta, flags: flags)
+            case .left:  self.cursorEngine.scroll(deltaX: -delta, flags: flags)
+            case .right: self.cursorEngine.scroll(deltaX: delta, flags: flags)
             }
         }
     }

@@ -106,7 +106,7 @@ class HotkeyManager {
             case 83, 18: // Numpad 1 or '1' (Bottom-Left)
                 self.engine.vennfurcate(.bottomLeft)
             case 82, 29: // Numpad 0 or '0' (Double Click)
-                self.engine.execute(.doubleClick)
+                self.engine.execute(.doubleClick, flags: flags)
             case 85, 20: // Numpad 3 or '3' (Bottom-Right)
                 self.engine.vennfurcate(.bottomRight)
             case 89, 26: // Numpad 7 or '7' (Top-Left)
@@ -114,17 +114,17 @@ class HotkeyManager {
             case 92, 25: // Numpad 9 or '9' (Top-Right)
                 self.engine.vennfurcate(.topRight)
             case 87, 23: // Numpad 5 or '5' (Middle Click)
-                self.engine.execute(.middleClick)
+                self.engine.execute(.middleClick, flags: flags)
             case 36, 76: // Enter/Return or Numpad Enter
-                self.engine.execute(.click)
+                self.engine.execute(.click, flags: flags)
             case 46: // 'M'
-                self.engine.execute(.move)
+                self.engine.execute(.move, flags: flags)
             case 15: // 'R'
-                self.engine.execute(.rightClick)
+                self.engine.execute(.rightClick, flags: flags)
             case 1:  // 'S' (Start Drag)
-                self.engine.execute(.mouseDown)
+                self.engine.execute(.mouseDown, flags: flags)
             case 3:  // 'F' (Finish Drag)
-                self.engine.execute(.mouseUp)
+                self.engine.execute(.mouseUp, flags: flags)
             case 2:  // 'D' (Select Display)
                 self.engine.showDisplaySelection()
             case 78: // Numpad - (Undo)
@@ -134,13 +134,13 @@ class HotkeyManager {
             case 69: // Numpad + (Redo)
                 self.engine.redo()
             case 84: // Numpad 2 (Scroll Down)
-                self.engine.execute(.scroll(.down))
+                self.engine.execute(.scroll(.down), flags: flags)
             case 86: // Numpad 4 (Scroll Right). I know it's counterintuitive, but it is correct.
-                self.engine.execute(.scroll(.right))
+                self.engine.execute(.scroll(.right), flags: flags)
             case 88: // Numpad 6 (Scroll Left). I know it's counterintuitive, but it is correct.
-                self.engine.execute(.scroll(.left))
+                self.engine.execute(.scroll(.left), flags: flags)
             case 91: // Numpad 8 (Scroll Up)
-                self.engine.execute(.scroll(.up))
+                self.engine.execute(.scroll(.up), flags: flags)
             case 53: // Escape
                 self.engine.stop()
             default:

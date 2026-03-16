@@ -17,41 +17,44 @@ struct CursorEngine {
     }
 
     /// Simulates a mouse click (down then up)
-    func click(button: CGMouseButton = .left, count: Int = 1) {
-        mouseDown(button: button, count: count)
-        mouseUp(button: button, count: count)
+    func click(button: CGMouseButton = .left, count: Int = 1, flags: CGEventFlags = []) {
+        mouseDown(button: button, count: count, flags: flags)
+        mouseUp(button: button, count: count, flags: flags)
     }
 
     /// Presses the mouse button down
-    func mouseDown(button: CGMouseButton = .left, count: Int = 1) {
-        postMouseEvent(type: mouseDownType(for: button), button: button, count: count)
+    func mouseDown(button: CGMouseButton = .left, count: Int = 1, flags: CGEventFlags = []) {
+        postMouseEvent(type: mouseDownType(for: button), button: button, count: count, flags: flags)
     }
 
     /// Releases the mouse button
-    func mouseUp(button: CGMouseButton = .left, count: Int = 1) {
-        postMouseEvent(type: mouseUpType(for: button), button: button, count: count)
+    func mouseUp(button: CGMouseButton = .left, count: Int = 1, flags: CGEventFlags = []) {
+        postMouseEvent(type: mouseUpType(for: button), button: button, count: count, flags: flags)
     }
 
     /// Sends a mouse dragged event (useful for some apps during a drag)
-    func mouseDrag(button: CGMouseButton = .left) {
-        postMouseEvent(type: mouseDragType(for: button), button: button)
+    func mouseDrag(button: CGMouseButton = .left, flags: CGEventFlags = []) {
+        postMouseEvent(type: mouseDragType(for: button), button: button, flags: flags)
     }
 
     /// Simulates a scroll wheel event.
-    func scroll(deltaX: Int32 = 0, deltaY: Int32 = 0) {
+    func scroll(deltaX: Int32 = 0, deltaY: Int32 = 0, flags: CGEventFlags = []) {
         let source = CGEventSource(stateID: .hidSystemState)
         // wheelCount = 2 when both vertical and horizontal are potentially used
         let event = CGEvent(scrollWheelEvent2Source: source, units: .pixel, wheelCount: 2, wheel1: deltaY, wheel2: deltaX, wheel3: 0)
+        event?.flags = flags
         event?.post(tap: .cghidEventTap)
     }
 
-    private func postMouseEvent(type: CGEventType, button: CGMouseButton, count: Int = 1) {
+    private func postMouseEvent(type: CGEventType, button: CGMouseButton, count: Int = 1, flags: CGEventFlags = []) {
         let mouseLoc = NSEvent.mouseLocation
         guard let screen = NSScreen.screens.first(where: { NSMouseInRect(mouseLoc, $0.frame, false) }) ?? NSScreen.main else { return }
         let cgLoc = CGPoint(x: mouseLoc.x, y: screen.frame.height - mouseLoc.y)
 
         let source = CGEventSource(stateID: .hidSystemState)
         let event = CGEvent(mouseEventSource: source, mouseType: type, mouseCursorPosition: cgLoc, mouseButton: button)
+        
+        event?.flags = flags
 
         if count > 1 {
             event?.setIntegerValueField(.mouseEventClickState, value: Int64(count))
