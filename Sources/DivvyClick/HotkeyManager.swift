@@ -59,12 +59,11 @@ class HotkeyManager {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let flags = event.flags
 
-        // Activation Hotkey: Ctrl + Shift + Space
-        // Space keycode: 49, Flags check: Control (0x40000) and Shift (0x20000)
-        let isControl = flags.contains(.maskControl)
-        let isShift = flags.contains(.maskShift)
+        // Activation Hotkey: Cmd + Num Lock (Keypad Clear)
+        // Num Lock (Keypad Clear) keycode: 71, Flags check: Command
+        let isCommand = flags.contains(.maskCommand)
 
-        if keyCode == 49, isControl, isShift {
+        if keyCode == 71, isCommand {
             if self.engine.isActive {
                 self.engine.stop()
             } else {
