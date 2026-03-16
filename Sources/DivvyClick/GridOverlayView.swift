@@ -5,10 +5,10 @@ struct GridOverlayView: View {
 
     var body: some View {
         ZStack {
-            if let region = engine.currentRegion {
+            if engine.isActive, let region = engine.currentRegion {
                 // 1. Blurred background for the "outside" area
                 Rectangle()
-                    .fill(.ultraThinMaterial.opacity(0.9))
+                    .fill(.ultraThinMaterial.opacity(0.6))
                     .mask(
                         InvertedRectangle(
                             innerRect: region,

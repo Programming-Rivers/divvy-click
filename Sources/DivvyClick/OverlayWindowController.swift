@@ -30,12 +30,13 @@ class OverlayWindowController {
         let hostingView = NSHostingView(rootView: GridOverlayView(engine: engine))
         window.contentView = hostingView
 
-        // Observe engine region and active screen frame
-        Publishers.CombineLatest(engine.$currentRegion, engine.$activeScreenFrame)
+        // Observe engine region, active screen frame, and active state
+        Publishers.CombineLatest3(engine.$currentRegion, engine.$activeScreenFrame, engine.$isActive)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] region, screenFrame in
+            .sink { [weak self] region, screenFrame, isActive in
                 guard let self = self else { return }
-                if region != nil {
+                
+                if isActive, region != nil {
                     if self.window.frame != screenFrame {
                         self.window.setFrame(screenFrame, display: true)
                     }

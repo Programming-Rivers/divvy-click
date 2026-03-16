@@ -196,6 +196,7 @@ class NavigationEngine: ObservableObject {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.isMouseDown = false
                 self.reset()
+                self.start()
             }
         case .scroll(let direction):
             let delta: Int32 = 100
