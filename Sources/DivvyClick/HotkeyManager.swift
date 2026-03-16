@@ -59,17 +59,35 @@ class HotkeyManager {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let flags = event.flags
 
-        // Activation Hotkey: Cmd + Num Lock (Keypad Clear)
-        // Num Lock (Keypad Clear) keycode: 71, Flags check: Command
         let isCommand = flags.contains(.maskCommand)
 
-        if keyCode == 71, isCommand {
-            if self.engine.isActive {
-                self.engine.stop()
+        if keyCode == 71 {
+            if isCommand {
+                // Toggle active state
+                if self.engine.isActive {
+                    self.engine.stop()
+                } else {
+                    self.engine.start()
+                }
             } else {
-                self.engine.start()
+                // Pure Num Lock / Clear = Full Reset
+                self.engine.reset()
             }
             return nil // Consume event
+        }
+
+        // If navigation is inactive, we still check for Undo/Redo/Reset
+        // to allow the user to "bring back" the interface.
+        if !engine.isActive {
+            switch keyCode {
+            case 78: // Numpad - (Undo)
+                if self.engine.undo() { return nil }
+            case 69: // Numpad + (Redo)
+                self.engine.redo()
+                return nil
+            default:
+                break
+            }
         }
 
         // If navigation is active, intercept keys
@@ -119,7 +137,7 @@ class HotkeyManager {
                 self.engine.execute(.click, flags: flags)
             case 46: // 'M'
                 self.engine.execute(.move, flags: flags)
-            case 15: // 'R'
+            case 15, 65: // 'R' or Numpad . (Right Click)
                 self.engine.execute(.rightClick, flags: flags)
             case 1, 75:  // 'S' or Numpad / (Start Drag)
                 self.engine.execute(.mouseDown, flags: flags)

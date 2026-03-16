@@ -16,19 +16,29 @@ class NavigationEngine: ObservableObject {
     private var redoStack: [CGRect] = []
 
     func start() {
-        // Find screen under current cursor
-        let mouseLoc = NSEvent.mouseLocation
-        activeScreen = NSScreen.screens.first { NSMouseInRect(mouseLoc, $0.frame, false) } ?? NSScreen.main
-
-        guard let screen = activeScreen else { return }
-        activeScreenFrame = screen.frame
-        currentRegion = screen.frame
+        if currentRegion == nil {
+            // Only search for screen if we don't already have one in history
+            let mouseLoc = NSEvent.mouseLocation
+            activeScreen = NSScreen.screens.first { NSMouseInRect(mouseLoc, $0.frame, false) } ?? NSScreen.main
+            
+            guard let screen = activeScreen else { return }
+            activeScreenFrame = screen.frame
+            currentRegion = screen.frame
+            history = []
+            redoStack = []
+        }
         isActive = true
-        history = []
-        redoStack = []
     }
 
     func stop() {
+        isActive = false
+        isSelectingDisplay = false
+        // DO NOT reset currentRegion, screen, or history here.
+        // This allows user to resume from last location.
+    }
+
+    /// Completely reset the engine state to full screen
+    func reset() {
         isActive = false
         isSelectingDisplay = false
         currentRegion = nil
@@ -67,17 +77,19 @@ class NavigationEngine: ObservableObject {
 
     @discardableResult
     func undo() -> Bool {
-        guard isActive, let current = currentRegion, !history.isEmpty else { return false }
+        guard let current = currentRegion, !history.isEmpty else { return false }
         redoStack.append(current)
         currentRegion = history.removeLast()
+        isActive = true // Reactivate if it was hidden
         autoMoveIfDragging()
         return true
     }
 
     func redo() {
-        guard isActive, let current = currentRegion, !redoStack.isEmpty else { return }
+        guard let current = currentRegion, !redoStack.isEmpty else { return }
         history.append(current)
         currentRegion = redoStack.removeLast()
+        isActive = true // Reactivate if it was hidden
         autoMoveIfDragging()
     }
 
@@ -122,7 +134,7 @@ class NavigationEngine: ObservableObject {
     @Published var isMouseDown: Bool = false
 
     func execute(_ action: Action, flags: CGEventFlags = []) {
-        guard isActive, let region = currentRegion else { return }
+        guard let region = currentRegion else { return }
 
         let targetPoint = CGPoint(x: region.midX, y: region.midY)
 
@@ -132,25 +144,25 @@ class NavigationEngine: ObservableObject {
             cursorEngine.jump(to: region)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.cursorEngine.click(button: .left, flags: flags, at: targetPoint)
-                self.resetToFullScreen()
+                self.stop()
             }
         case .doubleClick:
             cursorEngine.jump(to: region)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.cursorEngine.click(button: .left, count: 2, flags: flags, at: targetPoint)
-                self.resetToFullScreen()
+                self.stop()
             }
         case .rightClick:
             cursorEngine.jump(to: region)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.cursorEngine.click(button: .right, flags: flags, at: targetPoint)
-                self.resetToFullScreen()
+                self.stop()
             }
         case .middleClick:
             cursorEngine.jump(to: region)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.cursorEngine.click(button: .center, flags: flags, at: targetPoint)
-                self.resetToFullScreen()
+                self.stop()
             }
         case .move:
             // If mouse is currently down, we should send a drag event to the new location
@@ -160,7 +172,7 @@ class NavigationEngine: ObservableObject {
                 cursorEngine.mouseDrag(button: .left, flags: flags, at: targetPoint)
             } else {
                 cursorEngine.jump(to: region)
-                self.resetToFullScreen()
+                self.stop()
             }
         case .mouseDown:
             cursorEngine.jump(to: region)
@@ -183,7 +195,7 @@ class NavigationEngine: ObservableObject {
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.isMouseDown = false
-                self.resetToFullScreen()
+                self.reset()
             }
         case .scroll(let direction):
             let delta: Int32 = 100
