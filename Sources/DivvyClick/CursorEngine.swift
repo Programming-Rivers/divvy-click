@@ -38,10 +38,10 @@ struct CursorEngine {
     }
 
     /// Simulates a scroll wheel event.
-    func scroll(deltaY: Int32) {
+    func scroll(deltaX: Int32 = 0, deltaY: Int32 = 0) {
         let source = CGEventSource(stateID: .hidSystemState)
-        // wheelCount = 1 for vertical scrolling
-        let event = CGEvent(scrollWheelEvent2Source: source, units: .pixel, wheelCount: 1, wheel1: deltaY, wheel2: 0, wheel3: 0)
+        // wheelCount = 2 when both vertical and horizontal are potentially used
+        let event = CGEvent(scrollWheelEvent2Source: source, units: .pixel, wheelCount: 2, wheel1: deltaY, wheel2: deltaX, wheel3: 0)
         event?.post(tap: .cghidEventTap)
     }
 

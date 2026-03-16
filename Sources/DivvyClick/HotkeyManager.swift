@@ -132,6 +132,10 @@ class HotkeyManager {
                 self.engine.redo()
             case 84: // Numpad 2 (Scroll Down)
                 self.engine.execute(.scroll(.down))
+            case 86: // Numpad 4 (Scroll Right). I know it's counterintuitive, but it is correct.
+                self.engine.execute(.scroll(.right))
+            case 88: // Numpad 6 (Scroll Left). I know it's counterintuitive, but it is correct.
+                self.engine.execute(.scroll(.left))
             case 91: // Numpad 8 (Scroll Up)
                 self.engine.execute(.scroll(.up))
             case 53: // Escape

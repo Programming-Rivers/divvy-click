@@ -153,7 +153,12 @@ class NavigationEngine: ObservableObject {
             }
         case .scroll(let direction):
             let delta: Int32 = 100
-            self.cursorEngine.scroll(deltaY: direction == .up ? delta : -delta)
+            switch direction {
+            case .up:    self.cursorEngine.scroll(deltaY: delta)
+            case .down:  self.cursorEngine.scroll(deltaY: -delta)
+            case .left:  self.cursorEngine.scroll(deltaX: -delta)
+            case .right: self.cursorEngine.scroll(deltaX: delta)
+            }
         }
     }
 
@@ -168,6 +173,6 @@ class NavigationEngine: ObservableObject {
     }
 
     enum ScrollDirection {
-        case up, down
+        case up, down, left, right
     }
 }
