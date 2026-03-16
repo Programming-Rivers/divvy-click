@@ -9,3 +9,6 @@ build --repo_env=CC=clang
 
 # Import user-specific settings
 try-import %workspace%/.bazelrc.user
+
+# Universal binary configuration
+build:universal --macos_cpus=x86_64,arm64
