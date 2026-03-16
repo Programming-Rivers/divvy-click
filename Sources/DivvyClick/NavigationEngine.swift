@@ -129,6 +129,11 @@ class NavigationEngine: ObservableObject {
                 self.cursorEngine.click(button: .left)
                 self.resetToFullScreen()
             }
+        case .doubleClick:
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                self.cursorEngine.click(button: .left, count: 2)
+                self.resetToFullScreen()
+            }
         case .rightClick:
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 self.cursorEngine.click(button: .right)
@@ -182,7 +187,7 @@ class NavigationEngine: ObservableObject {
     }
 
     enum Action {
-        case click, rightClick, middleClick, move, mouseDown, mouseUp
+        case click, doubleClick, rightClick, middleClick, move, mouseDown, mouseUp
         case scroll(ScrollDirection)
     }
 
