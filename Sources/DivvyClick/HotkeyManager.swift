@@ -112,7 +112,7 @@ class HotkeyManager {
                 self.engine.vennfurcate(.topLeft)
             case 92, 25: // Numpad 9 or '9' (Top-Right)
                 self.engine.vennfurcate(.topRight)
-            case 36: // Enter/Return
+            case 36, 76: // Enter/Return or Numpad Enter
                 self.engine.execute(.click)
             case 46: // 'M'
                 self.engine.execute(.move)
