@@ -6,7 +6,8 @@ load("@rules_apple//apple:macos.bzl", "macos_application")
 macos_application(
     name = "DivvyClick",
     bundle_id = "house.rivers.programming.divvy-click",
+    entitlements = "//Sources/DivvyClick:DivvyClick.entitlements",
     infoplists = ["//Sources/DivvyClick:Info.plist"],
-    minimum_os_version = "26.0",
+    minimum_os_version = "13.0",
     deps = ["//Sources/DivvyClick:lib"],
 )

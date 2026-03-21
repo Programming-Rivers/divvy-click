@@ -6,4 +6,4 @@ swift_library(
     visibility = ["//visibility:public"],
 )
 
-exports_files(["Info.plist"])
+exports_files(["Info.plist", "DivvyClick.entitlements"])
