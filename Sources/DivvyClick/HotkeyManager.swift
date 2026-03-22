@@ -101,26 +101,28 @@ class HotkeyManager {
         // Track Layers (A=0, S=1, D=2, F=3)
         if type == .keyUp {
             switch keyCode {
-            case 0: isAHeld = false; return nil
-            case 1: isSHeld = false; return nil
-            case 2: isDHeld = false; return nil
-            case 3: isFHeld = false; return nil
+            case 0: isAHeld = false
+            case 1: isSHeld = false
+            case 2: isDHeld = false
+            case 3: isFHeld = false
             case 53: return nil // Esc keyUp
             case 16, 32, 34, 4, 38, 40, 45, 46, 43, 37, 49: return nil // Grid/Action keyUp
             default: break
             }
+            updateActiveLayer()
             return Unmanaged.passRetained(event) // Pass other keyUps naturally
         }
 
         if type == .keyDown {
             // Layer key downs
             switch keyCode {
-            case 0: isAHeld = true; return nil
-            case 1: isSHeld = true; return nil
-            case 2: isDHeld = true; return nil
-            case 3: isFHeld = true; return nil
+            case 0: isAHeld = true
+            case 1: isSHeld = true
+            case 2: isDHeld = true
+            case 3: isFHeld = true
             default: break
             }
+            updateActiveLayer()
 
             // Display Selection Overlay mode
             if engine.isSelectingDisplay {
@@ -205,5 +207,13 @@ class HotkeyManager {
         }
 
         return Unmanaged.passRetained(event)
+    }
+
+    private func updateActiveLayer() {
+        if isFHeld { engine.activeLayer = .action }
+        else if isDHeld { engine.activeLayer = .scroll }
+        else if isSHeld { engine.activeLayer = .fastMove }
+        else if isAHeld { engine.activeLayer = .management }
+        else { engine.activeLayer = nil }
     }
 }

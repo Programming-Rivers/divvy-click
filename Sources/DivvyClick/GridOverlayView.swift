@@ -101,6 +101,10 @@ struct GridOverlayView: View {
             if engine.isSelectingDisplay {
                 displaySelectionOverlay
             }
+
+            if let activeLayer = engine.activeLayer {
+                layerHUD(for: activeLayer)
+            }
         }
         .ignoresSafeArea()
     }
@@ -158,6 +162,143 @@ struct GridOverlayView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.white.opacity(0.2), lineWidth: 1)
         )
+    }
+
+    @ViewBuilder
+    private func layerHUD(for layer: NavigationEngine.ActiveLayer) -> some View {
+        ZStack {
+            // Semi-transparent dimming background
+            Color.black.opacity(0.15)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 30) {
+                Text(layerTitle(layer))
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(.cyan)
+                    .tracking(2)
+                    .shadow(color: .cyan.opacity(0.5), radius: 8)
+
+                // Keyboard Layout (3x3 grid + L on the right)
+                HStack(alignment: .center, spacing: 40) {
+                    VStack(spacing: 15) {
+                        // Row 1: Y U I
+                        HStack(spacing: 15) {
+                            keyView(key: "Y", action: keyAction(layer, "Y"))
+                            keyView(key: "U", action: keyAction(layer, "U"))
+                            keyView(key: "I", action: keyAction(layer, "I"))
+                        }
+                        // Row 2: H J K
+                        HStack(spacing: 15) {
+                            keyView(key: "H", action: keyAction(layer, "H"))
+                            keyView(key: "J", action: keyAction(layer, "J"))
+                            keyView(key: "K", action: keyAction(layer, "K"))
+                        }
+                        // Row 3: N M ,
+                        HStack(spacing: 15) {
+                            keyView(key: "N", action: keyAction(layer, "N"))
+                            keyView(key: "M", action: keyAction(layer, "M"))
+                            keyView(key: ",", action: keyAction(layer, ","))
+                        }
+                    }
+
+                    // Separate column for 'L' and 'Space'
+                    VStack(spacing: 15) {
+                        keyView(key: "L", action: keyAction(layer, "L"))
+                        // Optional: Space bar representation
+                        keyView(key: "␣", action: keyAction(layer, "Space"), width: 60)
+                    }
+                }
+                .padding(40)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                        .stroke(.white.opacity(0.2), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.3), radius: 30, x: 0, y: 15)
+            }
+        }
+        .transition(.scale(scale: 0.9).combined(with: .opacity))
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: layer)
+    }
+
+    @ViewBuilder
+    private func keyView(key: String, action: String?, width: CGFloat = 55) -> some View {
+        VStack(spacing: 6) {
+            Text(key)
+                .font(.system(size: 20, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .frame(width: width, height: 55)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(.white.opacity(0.15))
+                        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(.white.opacity(0.3), lineWidth: 1)
+                )
+
+            if let action = action, !action.isEmpty {
+                Text(action)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.8))
+                    .frame(width: width + 10)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text("-")
+                    .font(.system(size: 11))
+                    .foregroundColor(.white.opacity(0.2))
+            }
+        }
+    }
+
+    private func keyAction(_ layer: NavigationEngine.ActiveLayer, _ key: String) -> String? {
+        switch layer {
+        case .action:
+            switch key {
+            case "H": return "Left Click"
+            case "J": return "Double"
+            case "K": return "Right Click"
+            case "L": return "Middle"
+            case "Space": return "Click"
+            default: return nil
+            }
+        case .scroll:
+            switch key {
+            case "U": return "Scroll Up"
+            case "M": return "Scroll Down"
+            case "H": return "Scroll Left"
+            case "K": return "Scroll Right"
+            default: return nil
+            }
+        case .fastMove:
+            switch key {
+            case "H": return "Jump Left"
+            case "J": return "Jump Down"
+            case "K": return "Jump Right"
+            case "L": return "Jump Up"
+            default: return nil
+            }
+        case .management:
+            switch key {
+            case "H": return "Undo"
+            case "J": return "Redo"
+            case "K": return "Reset"
+            case "L": return "Display"
+            default: return nil
+            }
+        }
+    }
+
+    private func layerTitle(_ layer: NavigationEngine.ActiveLayer) -> String {
+        switch layer {
+        case .action: return "ACTION LAYER (F)"
+        case .scroll: return "SCROLL LAYER (D)"
+        case .fastMove: return "FAST MOVE LAYER (S)"
+        case .management: return "MANAGEMENT LAYER (A)"
+        }
     }
 
     private func localRect(for region: CGRect, in screen: CGRect) -> CGRect {

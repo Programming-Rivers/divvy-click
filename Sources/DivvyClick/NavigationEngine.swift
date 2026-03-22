@@ -7,6 +7,7 @@ class NavigationEngine: ObservableObject {
     @Published var activeScreenFrame: CGRect = .zero
     @Published var isActive: Bool = false
     @Published var isSelectingDisplay: Bool = false
+    @Published var activeLayer: ActiveLayer? = nil
 
     // Original screen to constrain navigation
     private var activeScreen: NSScreen?
@@ -242,5 +243,9 @@ class NavigationEngine: ObservableObject {
 
     enum ScrollDirection {
         case up, down, left, right
+    }
+
+    enum ActiveLayer {
+        case action, scroll, fastMove, management
     }
 }
