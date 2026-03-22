@@ -194,7 +194,8 @@ class HotkeyManager {
             case 45: engine.vennfurcate(.bottomLeft)    // N
             case 46: engine.vennfurcate(.down)          // M
             case 43: engine.vennfurcate(.bottomRight)   // ,
-            case 37: engine.execute(.click, flags: flags) // L = Default Click
+            case 37: engine.undo()                      // L = Undo
+            case 41: engine.showDisplaySelection()      // : (Shift + ;) = Show Displays
             case 49: engine.execute(.click, flags: flags) // Space = Default Click
             case 53: engine.stop()                      // Esc
             case 78: if engine.undo() { return nil }    // Numpad - (Undo)
