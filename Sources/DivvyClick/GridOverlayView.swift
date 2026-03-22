@@ -396,10 +396,16 @@ struct GridOverlayView: View {
             }
         case .fastMove:
             switch key {
-            case "H": return "Jump Left"
-            case "J": return "Jump Down"
-            case "K": return "Jump Right"
-            case "L": return "Jump Up"
+            case "Y": return "Fast ↖"
+            case "U": return "Fast ↑"
+            case "I": return "Fast ↗"
+            case "H": return "Fast ←"
+            case "J": return "Fast ○"
+            case "K": return "Fast →"
+            case "N": return "Fast ↙"
+            case "M": return "Fast ↓"
+            case ",": return "Fast ↘"
+            case "L": return "Undo"
             default: return nil
             }
         case .management:

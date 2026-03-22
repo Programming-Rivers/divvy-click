@@ -202,14 +202,19 @@ class HotkeyManager {
                 return nil
             }
             
-            // Fast Movement Layer: S (1) + HJKL
+            // Fast Movement Layer: S (1) + Home Row Zoom (Double Move)
             if isSHeld {
-                // S layer: Jump to screen edges using H, J, K, L
                 switch keyCode {
-                case 4:  engine.vennfurcate(.left)    // S + H = Left Jump
-                case 38: engine.vennfurcate(.down)    // S + J = Down Jump
-                case 40: engine.vennfurcate(.right)   // S + K = Right Jump
-                case 37: engine.vennfurcate(.up)      // S + L = Up Jump
+                case 16: engine.vennfurcate(.topLeft);     engine.vennfurcate(.topLeft)     // Y
+                case 32: engine.vennfurcate(.up);          engine.vennfurcate(.up)          // U
+                case 34: engine.vennfurcate(.topRight);    engine.vennfurcate(.topRight)    // I
+                case 4:  engine.vennfurcate(.left);        engine.vennfurcate(.left)        // H
+                case 38: engine.vennfurcate(.center);      engine.vennfurcate(.center)      // J
+                case 40: engine.vennfurcate(.right);       engine.vennfurcate(.right)       // K
+                case 45: engine.vennfurcate(.bottomLeft);  engine.vennfurcate(.bottomLeft)  // N
+                case 46: engine.vennfurcate(.down);        engine.vennfurcate(.down)        // M
+                case 43: engine.vennfurcate(.bottomRight); engine.vennfurcate(.bottomRight) // ,
+                case 37: engine.undo()                                                      // L
                 default: break
                 }
                 return nil
