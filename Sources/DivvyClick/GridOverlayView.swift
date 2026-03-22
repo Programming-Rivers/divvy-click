@@ -418,7 +418,15 @@ struct GridOverlayView: View {
             }
         case .defaultNav:
             switch key {
-            case "Y", "U", "I", "H", "J", "K", "N", "M", ",": return "Zoom"
+            case "Y": return "↖"
+            case "U": return "↑"
+            case "I": return "↗"
+            case "H": return "←"
+            case "J": return "○"
+            case "K": return "→"
+            case "N": return "↙"
+            case "M": return "↓"
+            case ",": return "↘"
             case "L": return "Undo"
             case ";": return "Displays"
             default: return nil
