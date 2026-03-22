@@ -290,18 +290,20 @@ struct GridOverlayView: View {
                     .tracking(2)
                     .shadow(color: .cyan.opacity(0.5), radius: 8)
 
-                // Keyboard Layout (YUI top, HJKL; home, NM, bottom, Space below)
+                // Keyboard Layout (5 columns: YUI / HJKL; / NM,)
                 VStack(spacing: 25) {
-                    VStack(spacing: 15) {
-                        // Row 1: Y U I (Centered)
-                        HStack(spacing: 15) {
+                    Grid(horizontalSpacing: 15, verticalSpacing: 15) {
+                        // Row 1: Y U I _ _
+                        GridRow {
                             keyView(key: "Y", action: keyAction(layer, "Y"))
                             keyView(key: "U", action: keyAction(layer, "U"))
                             keyView(key: "I", action: keyAction(layer, "I"))
+                            Color.clear.frame(width: 55, height: 55)
+                            Color.clear.frame(width: 55, height: 55)
                         }
 
-                        // Row 2: H J K L ; (Home Row)
-                        HStack(spacing: 15) {
+                        // Row 2: H J K L ;
+                        GridRow {
                             keyView(key: "H", action: keyAction(layer, "H"))
                             keyView(key: "J", action: keyAction(layer, "J"))
                             keyView(key: "K", action: keyAction(layer, "K"))
@@ -309,11 +311,13 @@ struct GridOverlayView: View {
                             keyView(key: ";", action: keyAction(layer, ";"))
                         }
 
-                        // Row 3: N M , (Centered)
-                        HStack(spacing: 15) {
+                        // Row 3: N M , _ _
+                        GridRow {
                             keyView(key: "N", action: keyAction(layer, "N"))
                             keyView(key: "M", action: keyAction(layer, "M"))
                             keyView(key: ",", action: keyAction(layer, ","))
+                            Color.clear.frame(width: 55, height: 55)
+                            Color.clear.frame(width: 55, height: 55)
                         }
                     }
 
