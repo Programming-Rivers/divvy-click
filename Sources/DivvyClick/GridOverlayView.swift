@@ -69,17 +69,29 @@ struct GridOverlayView: View {
                     
                     context.stroke(crosshairPath, with: .color(neonColor), lineWidth: 2.0)
 
-                    // 3. Keep global crosshairs (clamped to region) but make them subtle
+                    // 3. Draw 3x3 grid lines (tic-tac-toe)
                     var globalPath = Path()
-                    globalPath.move(to: CGPoint(x: midX, y: localRegion.minY))
-                    globalPath.addLine(to: CGPoint(x: midX, y: midY - radius - 2))
-                    globalPath.move(to: CGPoint(x: midX, y: midY + radius + 2))
-                    globalPath.addLine(to: CGPoint(x: midX, y: localRegion.maxY))
+                    let thirdW = localRegion.width / 3.0
+                    let thirdH = localRegion.height / 3.0
                     
-                    globalPath.move(to: CGPoint(x: localRegion.minX, y: midY))
-                    globalPath.addLine(to: CGPoint(x: midX - radius - 2, y: midY))
-                    globalPath.move(to: CGPoint(x: midX + radius + 2, y: midY))
-                    globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: midY))
+                    let leftLineX = localRegion.minX + thirdW
+                    let rightLineX = localRegion.minX + 2.0 * thirdW
+                    let bottomLineY = localRegion.minY + thirdH
+                    let topLineY2 = localRegion.minY + 2.0 * thirdH
+                    
+                    // Vertical lines
+                    globalPath.move(to: CGPoint(x: leftLineX, y: localRegion.minY))
+                    globalPath.addLine(to: CGPoint(x: leftLineX, y: localRegion.maxY))
+                    
+                    globalPath.move(to: CGPoint(x: rightLineX, y: localRegion.minY))
+                    globalPath.addLine(to: CGPoint(x: rightLineX, y: localRegion.maxY))
+                    
+                    // Horizontal lines
+                    globalPath.move(to: CGPoint(x: localRegion.minX, y: bottomLineY))
+                    globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: bottomLineY))
+                    
+                    globalPath.move(to: CGPoint(x: localRegion.minX, y: topLineY2))
+                    globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: topLineY2))
                     
                     context.stroke(globalPath, with: .color(neonColor.opacity(0.3)), lineWidth: 1.0)
                 }
