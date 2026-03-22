@@ -11,6 +11,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var overlayController: OverlayWindowController!
     private var cancellables = Set<AnyCancellable>()
 
+    private var mainMenu: NSMenu!
+
     func applicationDidFinishLaunching(_: Notification) {
         // Create the status bar icon
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -19,12 +21,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Using a system symbol or a simple text
             button.image = NSImage(systemSymbolName: "cursorarrow.and.square.on.square.dashed", accessibilityDescription: "DivvyClick")
             button.title = "⌘"
+            button.target = self
+            button.action = #selector(statusItemClicked(_:))
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
 
         // Define menu
-        let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Quit Divvy-click", action: #selector(quitApp), keyEquivalent: "q"))
-        statusItem.menu = menu
+        mainMenu = NSMenu()
+        mainMenu.addItem(NSMenuItem(title: "Start Navigation", action: #selector(startNav), keyEquivalent: "s"))
+        mainMenu.addItem(NSMenuItem(title: "Stop Navigation", action: #selector(stopNav), keyEquivalent: "x"))
+        mainMenu.addItem(NSMenuItem.separator())
+        mainMenu.addItem(NSMenuItem(title: "Quit Divvy-click", action: #selector(quitApp), keyEquivalent: "q"))
 
         hotkeyManager = HotkeyManager(engine: navigationEngine)
         overlayController = OverlayWindowController(engine: navigationEngine)
@@ -40,6 +47,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
             .store(in: &cancellables)
+    }
+
+    @objc func statusItemClicked(_ sender: NSStatusBarButton) {
+        guard let event = NSApp.currentEvent else { return }
+        
+        if event.type == .rightMouseUp {
+            statusItem.menu = mainMenu
+            statusItem.button?.performClick(nil)
+            statusItem.menu = nil
+        } else {
+            if navigationEngine.isActive {
+                navigationEngine.stop()
+            } else {
+                navigationEngine.start()
+            }
+        }
+    }
+
+    @objc func startNav() {
+        navigationEngine.start()
+    }
+
+    @objc func stopNav() {
+        navigationEngine.stop()
     }
 
     func applicationWillTerminate(_: Notification) {
