@@ -161,56 +161,89 @@ struct GridOverlayView: View {
     private var displaySelectionOverlay: some View {
         ZStack {
             Rectangle()
-                .fill(.ultraThinMaterial.opacity(0.8))
+                .fill(.ultraThinMaterial.opacity(0.85))
+                .ignoresSafeArea()
             
-            VStack(spacing: 20) {
-                Text("Select Display")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .shadow(radius: 10)
+            VStack(spacing: 40) {
+                Text("Select Target Display")
+                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                    .foregroundColor(.cyan)
+                    .shadow(color: .cyan.opacity(0.3), radius: 10)
 
                 let screens = NSScreen.screens
-                ForEach(0..<screens.count, id: \.self) { index in
-                    displayRow(for: screens[index], index: index)
+                let keys: [[String]] = [["Y", "U", "I"], ["H", "J", "K"], ["N", "M", ","]]
+                
+                Grid(horizontalSpacing: 20, verticalSpacing: 20) {
+                    ForEach(0..<3) { row in
+                        GridRow {
+                            ForEach(0..<3) { col in
+                                let index = row * 3 + col
+                                if index < 8 && index < screens.count {
+                                    displayTile(for: screens[index], key: keys[row][col])
+                                } else {
+                                    reservedTile(key: keys[row][col], isReserved: index == 8)
+                                }
+                            }
+                        }
+                    }
                 }
-
-                Text("Press 1, 2, 3... to select")
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
-                    .padding(.top, 10)
+                .padding(40)
+                .background(Color.black.opacity(0.3))
+                .clipShape(RoundedRectangle(cornerRadius: 32))
+                .overlay(RoundedRectangle(cornerRadius: 32).stroke(.white.opacity(0.1), lineWidth: 1))
             }
-            .padding(40)
-            .background(
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.black.opacity(0.6))
-                    .shadow(radius: 20)
-            )
         }
     }
 
-    private func displayRow(for screen: NSScreen, index: Int) -> some View {
-        HStack(spacing: 15) {
-            Text("\(index + 1)")
+    private func displayTile(for screen: NSScreen, key: String) -> some View {
+        VStack(spacing: 12) {
+            Text(key)
                 .font(.system(size: 24, weight: .black, design: .monospaced))
-                .frame(width: 40, height: 40)
-                .background(Circle().fill(Color.blue))
-                .foregroundColor(.white)
+                .frame(width: 50, height: 50)
+                .background(Circle().fill(Color.cyan))
+                .foregroundColor(.black)
+                .shadow(color: .cyan.opacity(0.5), radius: 8)
 
-            VStack(alignment: .leading) {
+            VStack(spacing: 4) {
                 Text(screen.localizedName)
-                    .font(.headline)
-                Text("\(Int(screen.frame.width)) x \(Int(screen.frame.height))")
-                    .font(.caption)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .multilineTextAlignment(.center)
+                Text("\(Int(screen.frame.width))x\(Int(screen.frame.height))")
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundColor(.white.opacity(0.6))
             }
             .foregroundColor(.white)
+            .padding(.horizontal, 10)
         }
-        .padding()
-        .frame(width: 300, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.1)))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+        .frame(width: 140, height: 140)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.white.opacity(0.05))
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(.white.opacity(0.2), lineWidth: 1)
+        )
+    }
+
+    private func reservedTile(key: String, isReserved: Bool) -> some View {
+        VStack(spacing: 12) {
+            Text(key)
+                .font(.system(size: 20, weight: .bold, design: .monospaced))
+                .foregroundColor(.white.opacity(0.3))
+            
+            Text(isReserved ? "RESERVED" : "EMPTY")
+                .font(.system(size: 10, weight: .black, design: .rounded))
+                .foregroundColor(.white.opacity(0.2))
+                .tracking(2)
+        }
+        .frame(width: 140, height: 140)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(.white.opacity(0.1), lineWidth: 1)
+                .background(Color.black.opacity(0.2))
+        )
+        .cornerRadius(20)
     }
 
     @ViewBuilder

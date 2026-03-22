@@ -126,7 +126,11 @@ class HotkeyManager {
 
             // Display Selection Overlay mode
             if engine.isSelectingDisplay {
-                let indexMap: [Int64: Int] = [18:0, 19:1, 20:2, 21:3, 23:4, 22:5, 26:6, 28:7, 25:8, 29:9] // 1-9,0
+                let indexMap: [Int64: Int] = [
+                    16:0, 32:1, 34:2, // Y, U, I
+                    4:3,  38:4, 40:5, // H, J, K
+                    45:6, 46:7        // N, M
+                ]
                 if let index = indexMap[keyCode] {
                     engine.selectDisplay(at: index)
                 }
