@@ -15,6 +15,10 @@ class HotkeyManager {
     private var isDHeld = false
     private var isFHeld = false
 
+    // Double-tap tracking
+    private var lastCommandTapTime: Date = .distantPast
+    private var wasCommandPressed = false
+
     init(engine: NavigationEngine) {
         self.engine = engine
         setupEventTap()
@@ -64,13 +68,25 @@ class HotkeyManager {
         let flags = event.flags
         let isCommand = flags.contains(.maskCommand)
 
-        // Activation / Reset (Clear = 71)
-        if type == .keyDown && keyCode == 71 {
-            if isCommand {
-                if engine.isActive { engine.stop() } else { engine.start() }
-            } else {
-                engine.reset()
+        // Activation via Double-Tap Command
+        if type == .flagsChanged {
+            if isCommand && !wasCommandPressed {
+                // Command was just pressed
+                let now = Date()
+                if now.timeIntervalSince(lastCommandTapTime) < 0.3 {
+                    // Double tap detected!
+                    if engine.isActive { engine.stop() } else { engine.start() }
+                    lastCommandTapTime = .distantPast // Prevent triple-tap triggering twice
+                } else {
+                    lastCommandTapTime = now
+                }
             }
+            wasCommandPressed = isCommand
+        }
+
+        // Activation / Reset (Clear = 71) -> REMOVED Cmd+Clear, keeping Reset on Clear
+        if type == .keyDown && keyCode == 71 {
+            engine.reset()
             return nil
         }
 
