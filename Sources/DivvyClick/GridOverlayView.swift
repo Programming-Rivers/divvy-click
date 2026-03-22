@@ -3,160 +3,181 @@ import SwiftUI
 struct GridOverlayView: View {
     @ObservedObject var engine: NavigationEngine
     @State private var showCues = false
+    @State private var showDefaultHUD = false
 
     var body: some View {
         ZStack {
-            if engine.isActive, let region = engine.currentRegion {
-                // 1. Blurred background for the "outside" area
-                Rectangle()
-                    .fill(.ultraThinMaterial.opacity(0.6))
-                    .mask(
-                        InvertedRectangle(
-                            innerRect: region,
-                            outerRect: engine.activeScreenFrame
-                        )
-                        .fill(style: FillStyle(eoFill: true))
-                    )
-                    .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
-
-                // 2. Polished Sniper Eyepiece centered on the active region
-                Canvas { context, size in
-                    // Convert region to local coordinates
-                    let localRegion = localRect(for: region, in: engine.activeScreenFrame)
-                    let midX = localRegion.midX
-                    let midY = localRegion.midY
-
-                    let neonColor = engine.isMouseDown ? Color.red : Color(red: 0.0, green: 1.0, blue: 1.0) // Cyan
-                    
-                    context.addFilter(.shadow(color: neonColor.opacity(0.6), radius: 4, x: 0, y: 0))
-                    context.addFilter(.shadow(color: neonColor.opacity(0.4), radius: 8, x: 0, y: 0))
-
-                    // Arcs (Segmented Circle)
-                    let radius: CGFloat = 20.0
-                    let gapAngle: Angle = .degrees(10)
-                    let arcWidth: CGFloat = 1.5
-                    
-                    for i in 0..<4 {
-                        let startAngle = Angle.degrees(Double(i) * 90 + gapAngle.degrees)
-                        let endAngle = Angle.degrees(Double(i + 1) * 90 - gapAngle.degrees)
-                        
-                        var arcPath = Path()
-                        arcPath.addArc(center: CGPoint(x: midX, y: midY),
-                                       radius: radius,
-                                       startAngle: startAngle,
-                                       endAngle: endAngle,
-                                       clockwise: false)
-                        
-                        context.stroke(arcPath, with: .color(neonColor), lineWidth: arcWidth)
-                    }
-
-                    // Gapped Crosshairs
-                    let innerGap: CGFloat = 4.0
-                    let outerGap: CGFloat = 6.0
-                    
-                    var crosshairPath = Path()
-                    // Top
-                    crosshairPath.move(to: CGPoint(x: midX, y: midY - innerGap))
-                    crosshairPath.addLine(to: CGPoint(x: midX, y: midY - radius + outerGap))
-                    // Bottom
-                    crosshairPath.move(to: CGPoint(x: midX, y: midY + innerGap))
-                    crosshairPath.addLine(to: CGPoint(x: midX, y: midY + radius - outerGap))
-                    // Left
-                    crosshairPath.move(to: CGPoint(x: midX - innerGap, y: midY))
-                    crosshairPath.addLine(to: CGPoint(x: midX - radius + outerGap, y: midY))
-                    // Right
-                    crosshairPath.move(to: CGPoint(x: midX + innerGap, y: midY))
-                    crosshairPath.addLine(to: CGPoint(x: midX + radius - outerGap, y: midY))
-                    
-                    context.stroke(crosshairPath, with: .color(neonColor), lineWidth: 2.0)
-
-                    // 3. Draw 3x3 grid lines (tic-tac-toe)
-                    var globalPath = Path()
-                    let thirdW = localRegion.width / 3.0
-                    let thirdH = localRegion.height / 3.0
-                    
-                    let leftLineX = localRegion.minX + thirdW
-                    let rightLineX = localRegion.minX + 2.0 * thirdW
-                    let bottomLineY = localRegion.minY + thirdH
-                    let topLineY2 = localRegion.minY + 2.0 * thirdH
-                    
-                    // Vertical lines
-                    globalPath.move(to: CGPoint(x: leftLineX, y: localRegion.minY))
-                    globalPath.addLine(to: CGPoint(x: leftLineX, y: localRegion.maxY))
-                    
-                    globalPath.move(to: CGPoint(x: rightLineX, y: localRegion.minY))
-                    globalPath.addLine(to: CGPoint(x: rightLineX, y: localRegion.maxY))
-                    
-                    // Horizontal lines
-                    globalPath.move(to: CGPoint(x: localRegion.minX, y: bottomLineY))
-                    globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: bottomLineY))
-                    
-                    globalPath.move(to: CGPoint(x: localRegion.minX, y: topLineY2))
-                    globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: topLineY2))
-                    
-                    context.stroke(globalPath, with: .color(neonColor.opacity(0.3)), lineWidth: 1.0)
-                }
-                .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
-
-                // 3. Grid Key Cues (Shortcut hints in each tile)
-                if showCues {
-                    gridKeyCues(for: region)
-                        .transition(.opacity)
-                }
+            // 1. Grid Lines and Sniper Eyepiece
+            gridLines
+            
+            // 2. Grid Key Cues (1s idle delay)
+            if showCues {
+                gridKeyCues
+                    .transition(.opacity)
             }
 
+            // 3. Display Selection Overlay
             if engine.isSelectingDisplay {
                 displaySelectionOverlay
             }
 
-            if let activeLayer = engine.activeLayer {
-                layerHUD(for: activeLayer)
+            // 4. Layer HUD (Active Layer or 10s idle Default Layer)
+            if let layer = engine.activeLayer {
+                layerHUD(for: layer)
+            } else if engine.isActive && showDefaultHUD {
+                layerHUD(for: .defaultNav)
             }
         }
         .ignoresSafeArea()
-        .task(id: engine.currentRegion) {
+        .task(id: "\(String(describing: engine.currentRegion))-\(engine.activeLayer == nil)-\(engine.isActive)-\(engine.isSelectingDisplay)") {
             showCues = false
+            showDefaultHUD = false
+            guard engine.isActive && engine.activeLayer == nil && !engine.isSelectingDisplay else { return }
+            
+            // Wait 1 second for cues
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             withAnimation { showCues = true }
+            
+            // Wait 9 more seconds for default HUD (total 10s)
+            try? await Task.sleep(nanoseconds: 9_000_000_000)
+            withAnimation { showDefaultHUD = true }
         }
     }
 
     @ViewBuilder
-    private func gridKeyCues(for region: CGRect) -> some View {
-        let localRegion = localRect(for: region, in: engine.activeScreenFrame)
-        let thirdW = localRegion.width / 3.0
-        let thirdH = localRegion.height / 3.0
-        
-        // Only show cues if they fit comfortably (32x32 cue + 20px padding)
-        if thirdW > 72 && thirdH > 72 {
-            let keys: [[String]] = [["Y", "U", "I"], ["H", "J", "K"], ["N", "M", ","]]
-            
-            ZStack(alignment: .topLeading) {
-                ForEach(0..<3) { row in
-                    ForEach(0..<3) { col in
-                        let x = localRegion.minX + CGFloat(col) * thirdW + 8
-                        let y = localRegion.minY + CGFloat(row) * thirdH + 8
+    private var gridLines: some View {
+        if engine.isActive, let region = engine.currentRegion {
+            // 1. Blurred background for the "outside" area
+            Rectangle()
+                .fill(.ultraThinMaterial.opacity(0.6))
+                .mask(
+                    InvertedRectangle(
+                        innerRect: region,
+                        outerRect: engine.activeScreenFrame
+                    )
+                    .fill(style: FillStyle(eoFill: true))
+                )
+                .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
+
+            // 2. Polished Sniper Eyepiece centered on the active region
+            Canvas { context, size in
+                // Convert region to local coordinates
+                let localRegion = localRect(for: region, in: engine.activeScreenFrame)
+                let midX = localRegion.midX
+                let midY = localRegion.midY
+
+                let neonColor = engine.isMouseDown ? Color.red : Color(red: 0.0, green: 1.0, blue: 1.0) // Cyan
+                
+                context.addFilter(.shadow(color: neonColor.opacity(0.6), radius: 4, x: 0, y: 0))
+                context.addFilter(.shadow(color: neonColor.opacity(0.4), radius: 8, x: 0, y: 0))
+
+                // Arcs (Segmented Circle)
+                let radius: CGFloat = 20.0
+                let gapAngle: Angle = .degrees(10)
+                let arcWidth: CGFloat = 1.5
+                
+                for i in 0..<4 {
+                    let startAngle = Angle.degrees(Double(i) * 90 + gapAngle.degrees)
+                    let endAngle = Angle.degrees(Double(i + 1) * 90 - gapAngle.degrees)
                     
-                    Text(keys[row][col])
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white)
-                        .frame(width: 32, height: 32)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(.ultraThinMaterial)
-                                .shadow(color: .black.opacity(0.4), radius: 3, x: 0, y: 2)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(.white.opacity(0.3), lineWidth: 1)
-                        )
-                        .position(x: x + 16, y: y + 16) // center of the 32x32 box
+                    var arcPath = Path()
+                    arcPath.addArc(center: CGPoint(x: midX, y: midY),
+                                   radius: radius,
+                                   startAngle: startAngle,
+                                   endAngle: endAngle,
+                                   clockwise: false)
+                    
+                    context.stroke(arcPath, with: .color(neonColor), lineWidth: arcWidth)
                 }
+
+                // Gapped Crosshairs
+                let innerGap: CGFloat = 4.0
+                let outerGap: CGFloat = 6.0
+                
+                var crosshairPath = Path()
+                // Top
+                crosshairPath.move(to: CGPoint(x: midX, y: midY - innerGap))
+                crosshairPath.addLine(to: CGPoint(x: midX, y: midY - radius + outerGap))
+                // Bottom
+                crosshairPath.move(to: CGPoint(x: midX, y: midY + innerGap))
+                crosshairPath.addLine(to: CGPoint(x: midX, y: midY + radius - outerGap))
+                // Left
+                crosshairPath.move(to: CGPoint(x: midX - innerGap, y: midY))
+                crosshairPath.addLine(to: CGPoint(x: midX - radius + outerGap, y: midY))
+                // Right
+                crosshairPath.move(to: CGPoint(x: midX + innerGap, y: midY))
+                crosshairPath.addLine(to: CGPoint(x: midX + radius - outerGap, y: midY))
+                
+                context.stroke(crosshairPath, with: .color(neonColor), lineWidth: 2.0)
+
+                // 3. Draw 3x3 grid lines (tic-tac-toe)
+                var globalPath = Path()
+                let thirdW = localRegion.width / 3.0
+                let thirdH = localRegion.height / 3.0
+                
+                let leftLineX = localRegion.minX + thirdW
+                let rightLineX = localRegion.minX + 2.0 * thirdW
+                let bottomLineY = localRegion.minY + thirdH
+                let topLineY2 = localRegion.minY + 2.0 * thirdH
+                
+                // Vertical lines
+                globalPath.move(to: CGPoint(x: leftLineX, y: localRegion.minY))
+                globalPath.addLine(to: CGPoint(x: leftLineX, y: localRegion.maxY))
+                
+                globalPath.move(to: CGPoint(x: rightLineX, y: localRegion.minY))
+                globalPath.addLine(to: CGPoint(x: rightLineX, y: localRegion.maxY))
+                
+                // Horizontal lines
+                globalPath.move(to: CGPoint(x: localRegion.minX, y: bottomLineY))
+                globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: bottomLineY))
+                
+                globalPath.move(to: CGPoint(x: localRegion.minX, y: topLineY2))
+                globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: topLineY2))
+                
+                context.stroke(globalPath, with: .color(neonColor.opacity(0.3)), lineWidth: 1.0)
+            }
+            .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
+        }
+    }
+
+    @ViewBuilder
+    private var gridKeyCues: some View {
+        if engine.isActive, let region = engine.currentRegion {
+            let localRegion = localRect(for: region, in: engine.activeScreenFrame)
+            let thirdW = localRegion.width / 3.0
+            let thirdH = localRegion.height / 3.0
+            
+            // Only show cues if they fit comfortably (32x32 cue + 20px padding)
+            if thirdW > 72 && thirdH > 72 {
+                let keys: [[String]] = [["Y", "U", "I"], ["H", "J", "K"], ["N", "M", ","]]
+                
+                ZStack(alignment: .topLeading) {
+                    ForEach(0..<3) { row in
+                        ForEach(0..<3) { col in
+                            let x = localRegion.minX + CGFloat(col) * thirdW + 8
+                            let y = localRegion.minY + CGFloat(row) * thirdH + 8
+                        
+                        Text(keys[row][col])
+                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white)
+                            .frame(width: 32, height: 32)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(.ultraThinMaterial)
+                                    .shadow(color: .black.opacity(0.4), radius: 3, x: 0, y: 2)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(.white.opacity(0.3), lineWidth: 1)
+                            )
+                            .position(x: x + 16, y: y + 16) // center of the 32x32 box
+                        }
+                    }
+                }
+                .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
             }
         }
-        .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
     }
-}
 
     private var displaySelectionOverlay: some View {
         ZStack {
@@ -383,6 +404,13 @@ struct GridOverlayView: View {
             case "L": return "Display"
             default: return nil
             }
+        case .defaultNav:
+            switch key {
+            case "Y", "U", "I", "H", "J", "K", "N", "M", ",": return "Zoom"
+            case "L": return "Undo"
+            case ";": return "Displays"
+            default: return nil
+            }
         }
     }
 
@@ -392,6 +420,7 @@ struct GridOverlayView: View {
         case .scroll: return "SCROLL LAYER (D)"
         case .fastMove: return "FAST MOVE LAYER (S)"
         case .management: return "MANAGEMENT LAYER (A)"
+        case .defaultNav: return "NAVIGATION"
         }
     }
 

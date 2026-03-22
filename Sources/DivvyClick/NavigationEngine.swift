@@ -246,6 +246,6 @@ class NavigationEngine: ObservableObject {
     }
 
     enum ActiveLayer {
-        case action, scroll, fastMove, management
+        case action, scroll, fastMove, management, defaultNav
     }
 }
