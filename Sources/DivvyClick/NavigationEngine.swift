@@ -100,31 +100,36 @@ class NavigationEngine: ObservableObject {
         history.append(region)
         redoStack.removeAll()
 
-        let overlap: CGFloat = 0.33 // 1/3 overlap
-        let expansionFactor = (1.0 + overlap) / 2.0 
+        // 3x3 grid with slight overlap
+        let overlapFactor: CGFloat = 1.1 
+        let thirdWidth = (region.size.width / 3.0) * overlapFactor
+        let thirdHeight = (region.size.height / 3.0) * overlapFactor
+
+        let xStep = (region.size.width - thirdWidth) / 2.0
+        let yStep = (region.size.height - thirdHeight) / 2.0
 
         var newRegion = region
-        let originalWidth = region.size.width
-        let originalHeight = region.size.height
+        newRegion.size.width = thirdWidth
+        newRegion.size.height = thirdHeight
         
         // Handle Horizontal component
         switch direction {
         case .left, .topLeft, .bottomLeft:
-            newRegion.size.width *= expansionFactor
+            newRegion.origin.x = region.origin.x
         case .right, .topRight, .bottomRight:
-            newRegion.size.width *= expansionFactor
-            newRegion.origin.x += (originalWidth - newRegion.size.width)
-        default: break
+            newRegion.origin.x = region.origin.x + region.size.width - thirdWidth
+        case .center, .up, .down:
+            newRegion.origin.x = region.origin.x + xStep
         }
         
-        // Handle Vertical component
+        // Handle Vertical component (macOS origin is bottom-left)
         switch direction {
         case .up, .topLeft, .topRight:
-            newRegion.size.height *= expansionFactor
-            newRegion.origin.y += (originalHeight - newRegion.size.height)
+            newRegion.origin.y = region.origin.y + region.size.height - thirdHeight
         case .down, .bottomLeft, .bottomRight:
-            newRegion.size.height *= expansionFactor
-        default: break
+            newRegion.origin.y = region.origin.y
+        case .center, .left, .right:
+            newRegion.origin.y = region.origin.y + yStep
         }
 
         currentRegion = newRegion
@@ -227,6 +232,7 @@ class NavigationEngine: ObservableObject {
     enum Direction {
         case left, right, up, down
         case topLeft, topRight, bottomLeft, bottomRight
+        case center
     }
 
     enum Action {

@@ -9,6 +9,12 @@ class HotkeyManager {
 
     let engine: NavigationEngine
 
+    // Layer keys state tracking
+    private var isAHeld = false
+    private var isSHeld = false
+    private var isDHeld = false
+    private var isFHeld = false
+
     init(engine: NavigationEngine) {
         self.engine = engine
         setupEventTap()
@@ -24,13 +30,13 @@ class HotkeyManager {
     }
 
     private func setupEventTap() {
-        // We need to listen to keyDown to catch the activation hotkey and navigation keys
-        let eventMask = (1 << CGEventType.keyDown.rawValue)
+        // We need to listen to both keyDown and keyUp for layer toggles, plus flagsChanged for meta keys
+        let eventMask = (1 << CGEventType.keyDown.rawValue) | (1 << CGEventType.keyUp.rawValue) | (1 << CGEventType.flagsChanged.rawValue)
 
-        let callback: CGEventTapCallBack = { _, _, event, refcon -> Unmanaged<CGEvent>? in
+        let callback: CGEventTapCallBack = { _, type, event, refcon -> Unmanaged<CGEvent>? in
             let hotkeyManager = Unmanaged<HotkeyManager>.fromOpaque(refcon!).takeUnretainedValue()
             return MainActor.assumeIsolated {
-                hotkeyManager.handleEvent(event)
+                hotkeyManager.handleEvent(event, type: type)
             }
         }
 
@@ -53,119 +59,149 @@ class HotkeyManager {
         CGEvent.tapEnable(tap: tap, enable: true)
     }
 
-
-
-    private func handleEvent(_ event: CGEvent) -> Unmanaged<CGEvent>? {
+    private func handleEvent(_ event: CGEvent, type: CGEventType) -> Unmanaged<CGEvent>? {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let flags = event.flags
-
         let isCommand = flags.contains(.maskCommand)
 
-        if keyCode == 71 {
+        // Activation / Reset (Clear = 71)
+        if type == .keyDown && keyCode == 71 {
             if isCommand {
-                // Toggle active state
-                if self.engine.isActive {
-                    self.engine.stop()
-                } else {
-                    self.engine.start()
-                }
+                if engine.isActive { engine.stop() } else { engine.start() }
             } else {
-                // Pure Num Lock / Clear = Full Reset
-                self.engine.reset()
+                engine.reset()
             }
-            return nil // Consume event
+            return nil
         }
 
-        // If navigation is inactive, we still check for Undo/Redo/Reset
-        // to allow the user to "bring back" the interface.
+        // Behavior when Navigation is INACTIVE
         if !engine.isActive {
-            switch keyCode {
-            case 78: // Numpad - (Undo)
-                if self.engine.undo() { return nil }
-            case 69: // Numpad + (Redo)
-                self.engine.redo()
-                return nil
-            default:
-                break
+            // Reset layers just in case they were held while deactivating
+            isAHeld = false
+            isSHeld = false
+            isDHeld = false
+            isFHeld = false
+            
+            // Allow Undo/Redo to bring back interface
+            if type == .keyDown {
+                switch keyCode {
+                case 78: // Numpad - (Undo)
+                    if engine.undo() { return nil }
+                case 69: // Numpad + (Redo)
+                    engine.redo()
+                    return nil
+                default: break
+                }
             }
+            return Unmanaged.passRetained(event)
         }
 
-        // If navigation is active, intercept keys
-        if engine.isActive {
-            if engine.isSelectingDisplay {
-                switch keyCode {
-                case 18...21, 23, 22, 26, 28, 25, 29: // 1-9, 0 (Row)
-                    let indexMap: [Int64: Int] = [18:0, 19:1, 20:2, 21:3, 23:4, 22:5, 26:6, 28:7, 25:8, 29:9]
-                    if let index = indexMap[keyCode] {
-                        self.engine.selectDisplay(at: index)
-                    }
-                case 82...92: // Numpad 0-9
-                    let indexMap: [Int64: Int] = [83:0, 84:1, 85:2, 86:3, 87:4, 88:5, 89:6, 91:7, 92:8, 82:9]
-                    if let index = indexMap[keyCode] {
-                        self.engine.selectDisplay(at: index)
-                    }
-                case 53: // Escape
-                    self.engine.stop()
-                default:
-                    break
-                }
-                return nil // Consume all keys in selection mode
-            }
-
+        // --- Navigation ACTIVE ---
+        
+        // Track Layers (A=0, S=1, D=2, F=3)
+        if type == .keyUp {
             switch keyCode {
-            case 123, 4: // Left Arrow or 'H'
-                self.engine.vennfurcate(.left)
-            case 124, 37: // Right Arrow or 'L'
-                self.engine.vennfurcate(.right)
-            case 126, 40: // Up Arrow or 'K'
-                self.engine.vennfurcate(.up)
-            case 125, 38: // Down Arrow or 'J'
-                self.engine.vennfurcate(.down)
-            case 83, 18: // Numpad 1 or '1' (Bottom-Left)
-                self.engine.vennfurcate(.bottomLeft)
-            case 82, 29: // Numpad 0 or '0' (Double Click)
-                self.engine.execute(.doubleClick, flags: flags)
-            case 85, 20: // Numpad 3 or '3' (Bottom-Right)
-                self.engine.vennfurcate(.bottomRight)
-            case 89, 26: // Numpad 7 or '7' (Top-Left)
-                self.engine.vennfurcate(.topLeft)
-            case 92, 25: // Numpad 9 or '9' (Top-Right)
-                self.engine.vennfurcate(.topRight)
-            case 87, 23: // Numpad 5 or '5' (Middle Click)
-                self.engine.execute(.middleClick, flags: flags)
-            case 36, 76: // Enter/Return or Numpad Enter
-                self.engine.execute(.click, flags: flags)
-            case 46: // 'M'
-                self.engine.execute(.move, flags: flags)
-            case 15, 65: // 'R' or Numpad . (Right Click)
-                self.engine.execute(.rightClick, flags: flags)
-            case 1, 75:  // 'S' or Numpad / (Start Drag)
-                self.engine.execute(.mouseDown, flags: flags)
-            case 3, 67:  // 'F' or Numpad * (Finish Drag)
-                self.engine.execute(.mouseUp, flags: flags)
-            case 2:  // 'D' (Select Display)
-                self.engine.showDisplaySelection()
-            case 78: // Numpad - (Undo)
-                if !self.engine.undo() {
-                    self.engine.showDisplaySelection()
-                }
-            case 69: // Numpad + (Redo)
-                self.engine.redo()
-            case 84: // Numpad 2 (Scroll Down)
-                self.engine.execute(.scroll(.down), flags: flags)
-            case 86: // Numpad 4 (Scroll Right). I know it's counterintuitive, but it is correct.
-                self.engine.execute(.scroll(.right), flags: flags)
-            case 88: // Numpad 6 (Scroll Left). I know it's counterintuitive, but it is correct.
-                self.engine.execute(.scroll(.left), flags: flags)
-            case 91: // Numpad 8 (Scroll Up)
-                self.engine.execute(.scroll(.up), flags: flags)
-            case 53: // Escape
-                self.engine.stop()
-            default:
-                break
+            case 0: isAHeld = false; return nil
+            case 1: isSHeld = false; return nil
+            case 2: isDHeld = false; return nil
+            case 3: isFHeld = false; return nil
+            case 53: return nil // Esc keyUp
+            case 16, 32, 34, 4, 38, 40, 45, 46, 43, 37, 49: return nil // Grid/Action keyUp
+            default: break
+            }
+            return Unmanaged.passRetained(event) // Pass other keyUps naturally
+        }
+
+        if type == .keyDown {
+            // Layer key downs
+            switch keyCode {
+            case 0: isAHeld = true; return nil
+            case 1: isSHeld = true; return nil
+            case 2: isDHeld = true; return nil
+            case 3: isFHeld = true; return nil
+            default: break
             }
 
-            return nil // Consume event
+            // Display Selection Overlay mode
+            if engine.isSelectingDisplay {
+                let indexMap: [Int64: Int] = [18:0, 19:1, 20:2, 21:3, 23:4, 22:5, 26:6, 28:7, 25:8, 29:9] // 1-9,0
+                if let index = indexMap[keyCode] {
+                    engine.selectDisplay(at: index)
+                }
+                if keyCode == 53 { engine.stop() } // Esc
+                return nil
+            }
+
+            // Action Layer: F (3) + HJKL
+            if isFHeld {
+                switch keyCode {
+                case 4:  engine.execute(.click, flags: flags)         // F + H = Left Click
+                case 38: engine.execute(.doubleClick, flags: flags)   // F + J = Double Click
+                case 40: engine.execute(.rightClick, flags: flags)    // F + K = Right Click
+                case 37: engine.execute(.middleClick, flags: flags)   // F + L = Middle Click
+                default: break
+                }
+                return nil
+            }
+            
+            // Scroll Layer: D (2) + U(32), M(46), H(4), K(40)
+            if isDHeld {
+                switch keyCode {
+                case 32: engine.execute(.scroll(.up), flags: flags)    // U = Scroll Up
+                case 46: engine.execute(.scroll(.down), flags: flags)  // M = Scroll Down
+                case 4:  engine.execute(.scroll(.left), flags: flags)  // H = Scroll Left
+                case 40: engine.execute(.scroll(.right), flags: flags) // K = Scroll Right
+                default: break
+                }
+                return nil
+            }
+            
+            // Management Layer: A (0) + HJKL
+            if isAHeld {
+                switch keyCode {
+                case 4:  if !engine.undo() { engine.showDisplaySelection() } // A + H = Undo
+                case 38: engine.redo()                 // A + J = Redo
+                case 40: engine.reset()                // A + K = Reset
+                case 37: engine.showDisplaySelection() // A + L = Select Display
+                default: break
+                }
+                return nil
+            }
+            
+            // Fast Movement Layer: S (1) + HJKL
+            if isSHeld {
+                // S layer: Jump to screen edges using H, J, K, L
+                switch keyCode {
+                case 4:  engine.vennfurcate(.left)    // S + H = Left Jump
+                case 38: engine.vennfurcate(.down)    // S + J = Down Jump
+                case 40: engine.vennfurcate(.right)   // S + K = Right Jump
+                case 37: engine.vennfurcate(.up)      // S + L = Up Jump
+                default: break
+                }
+                return nil
+            }
+
+            // Default Layer (Movement / Default Actions)
+            switch keyCode {
+            case 16: engine.vennfurcate(.topLeft)       // Y
+            case 32: engine.vennfurcate(.up)            // U
+            case 34: engine.vennfurcate(.topRight)      // I
+            case 4:  engine.vennfurcate(.left)          // H
+            case 38: engine.vennfurcate(.center)        // J
+            case 40: engine.vennfurcate(.right)         // K
+            case 45: engine.vennfurcate(.bottomLeft)    // N
+            case 46: engine.vennfurcate(.down)          // M
+            case 43: engine.vennfurcate(.bottomRight)   // ,
+            case 37: engine.execute(.click, flags: flags) // L = Default Click
+            case 49: engine.execute(.click, flags: flags) // Space = Default Click
+            case 53: engine.stop()                      // Esc
+            case 78: if engine.undo() { return nil }    // Numpad - (Undo)
+            case 69: engine.redo()                      // Numpad + (Redo)
+            default: break
+            }
+
+            // Consume all keys during navigation sequence to prevent accidental typing
+            return nil
         }
 
         return Unmanaged.passRetained(event)
