@@ -340,10 +340,10 @@ struct GridOverlayView: View {
         switch layer {
         case .action:
             switch key {
-            case "H": return "Left Click"
-            case "J": return "Double"
-            case "K": return "Right Click"
-            case "L": return "Middle"
+            case "H": return "Double"
+            case "J": return "Left Click"
+            case "K": return "Middle"
+            case "L": return "Right Click"
             case "Space": return "Click"
             default: return nil
             }

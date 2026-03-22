@@ -141,10 +141,10 @@ class HotkeyManager {
             // Action Layer: F (3) + HJKL
             if isFHeld {
                 switch keyCode {
-                case 4:  engine.execute(.click, flags: flags)         // F + H = Left Click
-                case 38: engine.execute(.doubleClick, flags: flags)   // F + J = Double Click
-                case 40: engine.execute(.rightClick, flags: flags)    // F + K = Right Click
-                case 37: engine.execute(.middleClick, flags: flags)   // F + L = Middle Click
+                case 4:  engine.execute(.doubleClick, flags: flags) // F + H = Double Click
+                case 38: engine.execute(.click, flags: flags)       // F + J = Left Click
+                case 40: engine.execute(.middleClick, flags: flags) // F + K = Middle Click
+                case 37: engine.execute(.rightClick, flags: flags)  // F + L = Right Click
                 default: break
                 }
                 return nil
