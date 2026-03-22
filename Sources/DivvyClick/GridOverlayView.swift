@@ -248,7 +248,16 @@ struct GridOverlayView: View {
 
     @ViewBuilder
     private func layerHUD(for layer: NavigationEngine.ActiveLayer) -> some View {
-        ZStack {
+        let localRegion = localRect(for: engine.currentRegion ?? .zero, in: engine.activeScreenFrame)
+        let screen = engine.activeScreenFrame.size
+        
+        // Determine safest quadrant (opposite of current region)
+        let isRight = localRegion.midX > screen.width / 2
+        let isBottom = localRegion.midY > screen.height / 2
+        
+        let alignment: Alignment = isBottom ? (isRight ? .topLeading : .topTrailing) : (isRight ? .bottomLeading : .bottomTrailing)
+        
+        ZStack(alignment: alignment) {
             // Semi-transparent dimming background
             Color.black.opacity(0.15)
                 .ignoresSafeArea()
@@ -299,9 +308,10 @@ struct GridOverlayView: View {
                 )
                 .shadow(color: .black.opacity(0.3), radius: 30, x: 0, y: 15)
             }
+            .padding(40) // Give it room in its corner
         }
         .transition(.scale(scale: 0.9).combined(with: .opacity))
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: layer)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: "\(layer)-\(String(describing: engine.currentRegion))")
     }
 
     @ViewBuilder
