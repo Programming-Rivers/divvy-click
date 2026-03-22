@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GridOverlayView: View {
     @ObservedObject var engine: NavigationEngine
+    @State private var showCues = false
 
     var body: some View {
         ZStack {
@@ -96,6 +97,12 @@ struct GridOverlayView: View {
                     context.stroke(globalPath, with: .color(neonColor.opacity(0.3)), lineWidth: 1.0)
                 }
                 .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
+
+                // 3. Grid Key Cues (Shortcut hints in each tile)
+                if showCues {
+                    gridKeyCues(for: region)
+                        .transition(.opacity)
+                }
             }
 
             if engine.isSelectingDisplay {
@@ -107,7 +114,49 @@ struct GridOverlayView: View {
             }
         }
         .ignoresSafeArea()
+        .task(id: engine.currentRegion) {
+            showCues = false
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            withAnimation { showCues = true }
+        }
     }
+
+    @ViewBuilder
+    private func gridKeyCues(for region: CGRect) -> some View {
+        let localRegion = localRect(for: region, in: engine.activeScreenFrame)
+        let thirdW = localRegion.width / 3.0
+        let thirdH = localRegion.height / 3.0
+        
+        // Only show cues if they fit comfortably (32x32 cue + 20px padding)
+        if thirdW > 72 && thirdH > 72 {
+            let keys: [[String]] = [["Y", "U", "I"], ["H", "J", "K"], ["N", "M", ","]]
+            
+            ZStack(alignment: .topLeading) {
+                ForEach(0..<3) { row in
+                    ForEach(0..<3) { col in
+                        let x = localRegion.minX + CGFloat(col) * thirdW + 8
+                        let y = localRegion.minY + CGFloat(row) * thirdH + 8
+                    
+                    Text(keys[row][col])
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundColor(.white)
+                        .frame(width: 32, height: 32)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(.ultraThinMaterial)
+                                .shadow(color: .black.opacity(0.4), radius: 3, x: 0, y: 2)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(.white.opacity(0.3), lineWidth: 1)
+                        )
+                        .position(x: x + 16, y: y + 16) // center of the 32x32 box
+                }
+            }
+        }
+        .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
+    }
+}
 
     private var displaySelectionOverlay: some View {
         ZStack {
