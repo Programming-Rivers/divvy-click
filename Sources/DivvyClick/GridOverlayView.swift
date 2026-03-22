@@ -260,22 +260,26 @@ struct GridOverlayView: View {
                     .tracking(2)
                     .shadow(color: .cyan.opacity(0.5), radius: 8)
 
-                // Keyboard Layout (3x3 grid + L on the right)
-                HStack(alignment: .center, spacing: 40) {
+                // Keyboard Layout (YUI top, HJKL; home, NM, bottom, Space below)
+                VStack(spacing: 25) {
                     VStack(spacing: 15) {
-                        // Row 1: Y U I
+                        // Row 1: Y U I (Centered)
                         HStack(spacing: 15) {
                             keyView(key: "Y", action: keyAction(layer, "Y"))
                             keyView(key: "U", action: keyAction(layer, "U"))
                             keyView(key: "I", action: keyAction(layer, "I"))
                         }
-                        // Row 2: H J K
+
+                        // Row 2: H J K L ; (Home Row)
                         HStack(spacing: 15) {
                             keyView(key: "H", action: keyAction(layer, "H"))
                             keyView(key: "J", action: keyAction(layer, "J"))
                             keyView(key: "K", action: keyAction(layer, "K"))
+                            keyView(key: "L", action: keyAction(layer, "L"))
+                            keyView(key: ";", action: keyAction(layer, ";"))
                         }
-                        // Row 3: N M ,
+
+                        // Row 3: N M , (Centered)
                         HStack(spacing: 15) {
                             keyView(key: "N", action: keyAction(layer, "N"))
                             keyView(key: "M", action: keyAction(layer, "M"))
@@ -283,12 +287,8 @@ struct GridOverlayView: View {
                         }
                     }
 
-                    // Separate column for 'L' and 'Space'
-                    VStack(spacing: 15) {
-                        keyView(key: "L", action: keyAction(layer, "L"))
-                        // Optional: Space bar representation
-                        keyView(key: "␣", action: keyAction(layer, "Space"), width: 60)
-                    }
+                    // Wide Space bar row below all keys
+                    keyView(key: "␣", action: keyAction(layer, "Space"), width: 335)
                 }
                 .padding(40)
                 .background(.ultraThinMaterial)
@@ -337,6 +337,9 @@ struct GridOverlayView: View {
     }
 
     private func keyAction(_ layer: NavigationEngine.ActiveLayer, _ key: String) -> String? {
+        if key == "Space" { return "Click" }
+        if key == ";" { return "Displays" }
+        
         switch layer {
         case .action:
             switch key {
@@ -344,7 +347,6 @@ struct GridOverlayView: View {
             case "J": return "Left Click"
             case "K": return "Middle"
             case "L": return "Right Click"
-            case "Space": return "Click"
             default: return nil
             }
         case .scroll:

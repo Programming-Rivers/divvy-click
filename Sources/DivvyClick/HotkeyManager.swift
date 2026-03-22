@@ -138,6 +138,16 @@ class HotkeyManager {
                 return nil
             }
 
+            // Universal Space -> Click and ; -> Displays for all layers
+            if keyCode == 49 {
+                engine.execute(.click, flags: flags)
+                return nil
+            }
+            if keyCode == 41 {
+                engine.showDisplaySelection()
+                return nil
+            }
+
             // Action Layer: F (3) + HJKL
             if isFHeld {
                 switch keyCode {
@@ -199,8 +209,6 @@ class HotkeyManager {
             case 46: engine.vennfurcate(.down)          // M
             case 43: engine.vennfurcate(.bottomRight)   // ,
             case 37: engine.undo()                      // L = Undo
-            case 41: engine.showDisplaySelection()      // : (Shift + ;) = Show Displays
-            case 49: engine.execute(.click, flags: flags) // Space = Default Click
             case 53: engine.stop()                      // Esc
             case 78: if engine.undo() { return nil }    // Numpad - (Undo)
             case 69: engine.redo()                      // Numpad + (Redo)
