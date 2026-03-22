@@ -155,6 +155,8 @@ class HotkeyManager {
                 case 38: engine.execute(.click, flags: flags)       // F + J = Left Click
                 case 40: engine.execute(.middleClick, flags: flags) // F + K = Middle Click
                 case 37: engine.execute(.rightClick, flags: flags)  // F + L = Right Click
+                case 45: engine.execute(.mouseDown, flags: flags)   // F + N = Start Drag
+                case 46: engine.execute(.mouseUp, flags: flags)     // F + M = Drop
                 default: break
                 }
                 return nil

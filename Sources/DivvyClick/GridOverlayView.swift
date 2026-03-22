@@ -382,6 +382,8 @@ struct GridOverlayView: View {
             case "J": return "Left Click"
             case "K": return "Middle"
             case "L": return "Right Click"
+            case "N": return "Start Drag"
+            case "M": return "Drop"
             default: return nil
             }
         case .scroll:
