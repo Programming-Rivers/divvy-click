@@ -375,63 +375,8 @@ struct GridOverlayView: View {
         if key == "Space" { return "Click" }
         if key == ";" { return "Displays" }
         
-        switch layer {
-        case .action:
-            switch key {
-            case "H": return "Double"
-            case "J": return "Left Click"
-            case "K": return "Middle"
-            case "L": return "Right Click"
-            case "N": return "Start Drag"
-            case "M": return "Drop"
-            default: return nil
-            }
-        case .scroll:
-            switch key {
-            case "U": return "Scroll Up"
-            case "M": return "Scroll Down"
-            case "H": return "Scroll Left"
-            case "K": return "Scroll Right"
-            default: return nil
-            }
-        case .fastMove:
-            switch key {
-            case "Y": return "Fast ↖"
-            case "U": return "Fast ↑"
-            case "I": return "Fast ↗"
-            case "H": return "Fast ←"
-            case "J": return "Fast ○"
-            case "K": return "Fast →"
-            case "N": return "Fast ↙"
-            case "M": return "Fast ↓"
-            case ",": return "Fast ↘"
-            case "L": return "Undo"
-            default: return nil
-            }
-        case .management:
-            switch key {
-            case "H": return "Undo"
-            case "J": return "Redo"
-            case "K": return "Reset"
-            case "L": return "Display"
-            default: return nil
-            }
-        case .defaultNav:
-            switch key {
-            case "Y": return "↖"
-            case "U": return "↑"
-            case "I": return "↗"
-            case "H": return "←"
-            case "J": return "○"
-            case "K": return "→"
-            case "N": return "↙"
-            case "M": return "↓"
-            case ",": return "↘"
-            case "L": return "Undo"
-            case ";": return "Displays"
-            default: return nil
-            }
-        }
+        guard let code = KeyCode.from(string: key) else { return nil }
+        return KeyMap.shared.label(for: layer, key: code)
     }
 
     private func layerTitle(_ layer: NavigationEngine.ActiveLayer) -> String {

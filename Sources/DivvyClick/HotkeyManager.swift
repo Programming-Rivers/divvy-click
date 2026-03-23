@@ -64,14 +64,6 @@ class HotkeyManager {
         CGEvent.tapEnable(tap: tap, enable: true)
     }
 
-    private enum KeyCode: Int64 {
-        case y = 16, u = 32, i = 34
-        case h = 4,  j = 38, k = 40, l = 37
-        case n = 45, m = 46, comma = 43
-        case semicolon = 41, escape = 53
-        case a = 0, s = 1, d = 2, f = 3
-        case space = 49
-    }
 
     private func handleEvent(_ event: CGEvent, type: CGEventType) -> Unmanaged<CGEvent>? {
         let keyCodeRaw = event.getIntegerValueField(.keyboardEventKeycode)
@@ -158,76 +150,14 @@ class HotkeyManager {
                 return nil
             }
 
-            // Action Layer: F (3) + HJKL
-            if isFHeld {
-                switch keyCode {
-                case .h: coordinator.execute(.doubleClick, flags: flags) // F + H = Double Click
-                case .j: coordinator.execute(.click, flags: flags)       // F + J = Left Click
-                case .k: coordinator.execute(.middleClick, flags: flags) // F + K = Middle Click
-                case .l: coordinator.execute(.rightClick, flags: flags)  // F + L = Right Click
-                case .n: coordinator.execute(.mouseDown, flags: flags)   // F + N = Start Drag
-                case .m: coordinator.execute(.mouseUp, flags: flags)     // F + M = Drop
-                default: break
+            // Action, Scroll, Management, Fast Movement, and Default Layers
+            if let code = keyCode {
+                if KeyMap.shared.execute(for: engine.activeLayer ?? .defaultNav, key: code, coordinator: coordinator, flags: flags) {
+                    return nil
                 }
-                return nil
-            }
-            
-            // Scroll Layer: D (2) + U(32), M(46), H(4), K(40)
-            if isDHeld {
-                switch keyCode {
-                case .u: coordinator.execute(.scroll(.up), flags: flags)    // U = Scroll Up
-                case .m: coordinator.execute(.scroll(.down), flags: flags)  // M = Scroll Down
-                case .h: coordinator.execute(.scroll(.left), flags: flags)  // H = Scroll Left
-                case .k: coordinator.execute(.scroll(.right), flags: flags) // K = Scroll Right
-                default: break
-                }
-                return nil
-            }
-            
-            // Management Layer: A (0) + HJKL
-            if isAHeld {
-                switch keyCode {
-                case .h: if !engine.undo() { engine.showDisplaySelection() } // A + H = Undo
-                case .j: engine.redo()                 // A + J = Redo
-                case .k: engine.reset()                // A + K = Reset
-                case .l: engine.showDisplaySelection() // A + L = Select Display
-                default: break
-                }
-                return nil
-            }
-            
-            // Fast Movement Layer: S (1) + Home Row Zoom (Double Move)
-            if isSHeld {
-                switch keyCode {
-                case .y: engine.vennfurcate(.topLeft);     engine.vennfurcate(.topLeft)     // Y
-                case .u: engine.vennfurcate(.up);          engine.vennfurcate(.up)          // U
-                case .i: engine.vennfurcate(.topRight);    engine.vennfurcate(.topRight)    // I
-                case .h: engine.vennfurcate(.left);        engine.vennfurcate(.left)        // H
-                case .j: engine.vennfurcate(.center);      engine.vennfurcate(.center)      // J
-                case .k: engine.vennfurcate(.right);       engine.vennfurcate(.right)       // K
-                case .n: engine.vennfurcate(.bottomLeft);  engine.vennfurcate(.bottomLeft)  // N
-                case .m: engine.vennfurcate(.down);        engine.vennfurcate(.down)        // M
-                case .comma: engine.vennfurcate(.bottomRight); engine.vennfurcate(.bottomRight) // ,
-                case .l: engine.undo()                                                      // L
-                default: break
-                }
-                return nil
-            }
-
-            // Default Layer (Movement / Default Actions)
-            switch keyCode {
-            case .y: engine.vennfurcate(.topLeft)       // Y
-            case .u: engine.vennfurcate(.up)            // U
-            case .i: engine.vennfurcate(.topRight)      // I
-            case .h: engine.vennfurcate(.left)          // H
-            case .j: engine.vennfurcate(.center)        // J
-            case .k: engine.vennfurcate(.right)         // K
-            case .n: engine.vennfurcate(.bottomLeft)    // N
-            case .m: engine.vennfurcate(.down)          // M
-            case .comma: engine.vennfurcate(.bottomRight)   // ,
-            case .l: engine.undo()                      // L = Undo
-            case .escape: engine.stop()                      // Esc
-            default: break
+                
+                // Special cases like Esc or keys that don't have actions in KeyMap but should stop/undo
+                if code == .escape { engine.stop(); return nil }
             }
 
             // Consume all keys during navigation sequence to prevent accidental typing
