@@ -143,13 +143,6 @@ class NavigationEngine: ObservableObject {
 
     @Published var isMouseDown: Bool = false
 
-    private func resetToFullScreen() {
-        guard let screen = activeScreen else { return }
-        currentRegion = screen.frame
-        history = []
-        redoStack = []
-    }
-
     enum Direction {
         case left, right, up, down
         case topLeft, topRight, bottomLeft, bottomRight
