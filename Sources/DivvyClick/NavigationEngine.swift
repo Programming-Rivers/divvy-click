@@ -15,6 +15,7 @@ class NavigationEngine: ObservableObject {
     
     private var history: [CGRect] = []
     private var redoStack: [CGRect] = []
+    private let maxStackSize = 100
 
     func start() {
         if currentRegion == nil {
@@ -80,6 +81,9 @@ class NavigationEngine: ObservableObject {
     func undo() -> Bool {
         guard let current = currentRegion, !history.isEmpty else { return false }
         redoStack.append(current)
+        if redoStack.count > maxStackSize {
+            redoStack.removeFirst()
+        }
         currentRegion = history.removeLast()
         isActive = true // Reactivate if it was hidden
         autoMoveIfDragging()
@@ -89,6 +93,9 @@ class NavigationEngine: ObservableObject {
     func redo() {
         guard let current = currentRegion, !redoStack.isEmpty else { return }
         history.append(current)
+        if history.count > maxStackSize {
+            history.removeFirst()
+        }
         currentRegion = redoStack.removeLast()
         isActive = true // Reactivate if it was hidden
         autoMoveIfDragging()
@@ -99,6 +106,9 @@ class NavigationEngine: ObservableObject {
         guard isActive, let region = currentRegion else { return }
         
         history.append(region)
+        if history.count > maxStackSize {
+            history.removeFirst()
+        }
         redoStack.removeAll()
 
         // 3x3 grid with slight overlap
