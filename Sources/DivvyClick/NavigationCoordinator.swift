@@ -29,25 +29,29 @@ class NavigationCoordinator {
         switch action {
         case .click:
             cursorEngine.jump(to: region)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            Task {
+                try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
                 self.cursorEngine.click(button: .left, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .doubleClick:
             cursorEngine.jump(to: region)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            Task {
+                try? await Task.sleep(nanoseconds: 50_000_000)
                 self.cursorEngine.click(button: .left, count: 2, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .rightClick:
             cursorEngine.jump(to: region)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            Task {
+                try? await Task.sleep(nanoseconds: 50_000_000)
                 self.cursorEngine.click(button: .right, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .middleClick:
             cursorEngine.jump(to: region)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            Task {
+                try? await Task.sleep(nanoseconds: 50_000_000)
                 self.cursorEngine.click(button: .center, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
@@ -60,7 +64,8 @@ class NavigationCoordinator {
             }
         case .mouseDown:
             cursorEngine.jump(to: region)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            Task {
+                try? await Task.sleep(nanoseconds: 50_000_000)
                 self.cursorEngine.mouseDown(button: .left, flags: flags, at: targetPoint)
                 self.engine.isMouseDown = true
                 self.cursorEngine.mouseDrag(button: .left, flags: flags, at: targetPoint)
@@ -74,7 +79,8 @@ class NavigationCoordinator {
                 cursorEngine.mouseUp(button: .left, flags: flags, at: targetPoint)
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            Task {
+                try? await Task.sleep(nanoseconds: 50_000_000)
                 self.engine.isMouseDown = false
                 self.engine.reset()
                 self.engine.start()
