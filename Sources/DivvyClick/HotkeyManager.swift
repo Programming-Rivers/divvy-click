@@ -109,7 +109,7 @@ class HotkeyManager {
                 default: break
                 }
             }
-            return Unmanaged.passRetained(event)
+            return Unmanaged.passUnretained(event)
         }
 
         // --- Navigation ACTIVE ---
@@ -126,7 +126,7 @@ class HotkeyManager {
             default: break
             }
             updateActiveLayer()
-            return Unmanaged.passRetained(event) // Pass other keyUps naturally
+            return Unmanaged.passUnretained(event) // Pass other keyUps naturally
         }
 
         if type == .keyDown {
@@ -242,7 +242,7 @@ class HotkeyManager {
             return nil
         }
 
-        return Unmanaged.passRetained(event)
+        return Unmanaged.passUnretained(event)
     }
 
     private func updateActiveLayer() {
