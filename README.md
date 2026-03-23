@@ -1,37 +1,81 @@
 # Divvy-click
 
-**Divvy-click** is a lightweight, keyboard-driven mouse emulation utility designed for power users who want to navigate their screen without ever lifting their hands from the home row.
+**Divvy-click** is a premium, keyboard-driven mouse emulation utility designed for power users who want to navigate their screen without ever lifting their hands from the home row.
 
-By leveraging a **recursive binary search algorithm**, Divvy-click allows you to "zero in" on any pixel on your display through a series of rapid, logarithmic screen bifurcations.
+By leveraging a **recursive 3x3 grid (Vennfurcation) algorithm**, Divvy-click allows you to "zero in" on any pixel on your display through a series of rapid, logarithmic screen subdivisions.
 
-## 🚀 How It Works
+## 🚀 Activation
 
-Instead of dragging a cursor across physical space, Divvy-click treats your screen as a coordinate plane.
+The overlay is designed to be completely transparent until needed.
 
-1. **Activate**: Trigger the overlay with a hotkey.
-2. **Bifurcate**: Use directional keys (e.g., `H`, `J`, `K`, `L` or Arrow Keys) to select which half of the current area you want to focus on.
-3. **Refine**: The active area shrinks by 50% with each keystroke.
-4. **Execute**: Once the cursor is positioned, hit `Enter` to click, or use modifiers for right-click/double-click.
+- **Double-tap `⌘ Command`**: Instantly activate or deactivate the overlay.
+- **Menu Bar Icon**: Toggle the utility status directly from the macOS menu bar.
 
-Mathematically, this allows you to target a specific point on a 4k screen in approximately 11 to 21 keystrokes, depending on the required precision.
+## 🕹️ How It Works
 
-## ✨ Features
+Instead of dragging a cursor across physical space, Divvy-click treats your screen as a 3x3 grid, where tiles have some overlap with each other.
 
-* **Logarithmic Navigation**: Move faster than a physical mouse by dividing screen real estate.
-* **Multi-Monitor Support**: Seamlessly jump between displays.
-* **Customizable Shorthand**: Define your own "starting grids" to skip the first few divisions.
-* **Low Overhead**: Built to be a background utility with minimal CPU/RAM footprint.
+DivvyClick allows the user to repeatedly divide the screen into 9 tiles,
+making the tiles smaller on each step.
+This allows the user to zero in a very small area of the screen, down to a pixel,
+very quickly only with a few keystrokes.
+Adjacent tiles have some overlap to allow room for error.
+
+1. **Bifurcate/Vennfurcate**: Use the keys in and around the home row to select one of the 9 tiles to dive into.
+   - `Y` `U` `I` - Top Left / Top / Top Right
+   - `H` `J` `K` - Left / Center / Right
+   - `N` `M` `,` - Bottom Left / Bottom / Bottom Right
+2. **Refine**: The active area shrinks by 2/3 with each keystroke.
+3. **Execute**: Once positioned, use the **Action Layer** or **Universal Keys** to interact.
+
+Each keystroke exponentially increases precision. A 4K screen can be navigated with pixel-perfect accuracy in just a few taps.
+
+## ✨ Features & Layers
+
+Divvy-click uses a sophisticated layering system to maximize productivity. **Hold a layer key** to change the function of the navigation keys.
+
+### 🏠 Default Layer (Navigation)
+- **`L`**: Undo last move
+- **`Space`**: Left Click
+- **`?` (Shift + `/`)**: Toggle the Heads-Up Display (HUD)
+- **`;`**: Show Display Selection tiles
+
+### ⚡ Action Layers (Hold key + Shortcut)
+| Layer Key | Layer Name | `H` | `J` | `K` | `L` | `N` | `M` | `U` |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **`F`** | **Action** | Double | Click | Middle | Right | Drag Start | Drop | - |
+| **`D`** | **Scroll** | ← Left | - | → Right | - | - | ↓ Down | ↑ Up |
+| **`S`** | **Fast Move** | ← (2x) | ○ (2x) | → (2x) | Undo | ↙ (2x) | ↓ (2x) | ↑ (2x) |
+| **`A`** | **Management**| Undo | Redo | Reset | Display | - | - | - |
+
+- **HUD Integration**: A visual cue overlay (Heads-Up Display) appears automatically if you are idle or holding a layer key, guiding you through the available shortcuts.
+- **Multi-Monitor Support**: Select active displays through a visual tile grid. If history is empty, `Undo` will jump to display selection.
+- **Universal Binary**: Fully optimized for Intel and Apple Silicon Macs.
 
 ## 🛠 Installation
 
-TODO 
+Divvy-click is built using **Bazel**. 
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-repo/divvy-click.git
+   ```
+2. **Build the application**:
+   ```bash
+   bazel build //Sources/DivvyClick:DivvyClick
+   ```
+3. **Run the app**:
+   ```bash
+   bazel run //Sources/DivvyClick:DivvyClick
+   ```
+> [!IMPORTANT]
+> Divvy-click requires **Accessibility** and **Input Monitoring** permissions in System Settings to capture hotkeys and move the cursor.
 
 ## ⌨️ Configuration
 
-TODO
+Currently, configurations are hardcoded for consistent usage patterns.
+Upcoming versions will introduce custom key mappings.
 
 ## 🤝 Contributing
 
-Divvy-click is open for use, but currently close for contribution.
-Before opening it for contribution, it needs to establish its governance and contribution guidelines.
-Stay tuned or participate in the discussions on how to set up the governance and contribution guidelines.
+Divvy-click is currently open for use, but closed for outside contributions while we establish governance and contribution guidelines. Stay tuned for updates!
