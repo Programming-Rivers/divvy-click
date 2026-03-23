@@ -63,8 +63,19 @@ class HotkeyManager {
         CGEvent.tapEnable(tap: tap, enable: true)
     }
 
+    private enum KeyCode: Int64 {
+        case y = 16, u = 32, i = 34
+        case h = 4,  j = 38, k = 40, l = 37
+        case n = 45, m = 46, comma = 43
+        case semicolon = 41, escape = 53, clear = 71
+        case a = 0, s = 1, d = 2, f = 3
+        case space = 49
+        case numpadMinus = 78, numpadPlus = 69
+    }
+
     private func handleEvent(_ event: CGEvent, type: CGEventType) -> Unmanaged<CGEvent>? {
-        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+        let keyCodeRaw = event.getIntegerValueField(.keyboardEventKeycode)
+        let keyCode = KeyCode(rawValue: keyCodeRaw)
         let flags = event.flags
         let isCommand = flags.contains(.maskCommand)
 
@@ -85,7 +96,7 @@ class HotkeyManager {
         }
 
         // Activation / Reset (Clear = 71) -> REMOVED Cmd+Clear, keeping Reset on Clear
-        if type == .keyDown && keyCode == 71 {
+        if type == .keyDown && keyCode == .clear {
             engine.reset()
             return nil
         }
@@ -101,9 +112,9 @@ class HotkeyManager {
             // Allow Undo/Redo to bring back interface
             if type == .keyDown {
                 switch keyCode {
-                case 78: // Numpad - (Undo)
+                case .numpadMinus: // Numpad - (Undo)
                     if engine.undo() { return nil }
-                case 69: // Numpad + (Redo)
+                case .numpadPlus: // Numpad + (Redo)
                     engine.redo()
                     return nil
                 default: break
@@ -117,12 +128,12 @@ class HotkeyManager {
         // Track Layers (A=0, S=1, D=2, F=3)
         if type == .keyUp {
             switch keyCode {
-            case 0: isAHeld = false
-            case 1: isSHeld = false
-            case 2: isDHeld = false
-            case 3: isFHeld = false
-            case 53: return nil // Esc keyUp
-            case 16, 32, 34, 4, 38, 40, 45, 46, 43, 37, 49: return nil // Grid/Action keyUp
+            case .a: isAHeld = false
+            case .s: isSHeld = false
+            case .d: isDHeld = false
+            case .f: isFHeld = false
+            case .escape: return nil // Esc keyUp
+            case .y, .u, .i, .h, .j, .k, .n, .m, .comma, .l, .space: return nil // Grid/Action keyUp
             default: break
             }
             updateActiveLayer()
@@ -132,34 +143,34 @@ class HotkeyManager {
         if type == .keyDown {
             // Layer key downs
             switch keyCode {
-            case 0: isAHeld = true
-            case 1: isSHeld = true
-            case 2: isDHeld = true
-            case 3: isFHeld = true
+            case .a: isAHeld = true
+            case .s: isSHeld = true
+            case .d: isDHeld = true
+            case .f: isFHeld = true
             default: break
             }
             updateActiveLayer()
 
             // Display Selection Overlay mode
             if engine.isSelectingDisplay {
-                let indexMap: [Int64: Int] = [
-                    16:0, 32:1, 34:2, // Y, U, I
-                    4:3,  38:4, 40:5, // H, J, K
-                    45:6, 46:7        // N, M
+                let indexMap: [KeyCode: Int] = [
+                    .y:0, .u:1, .i:2, // Y, U, I
+                    .h:3, .j:4, .k:5, // H, J, K
+                    .n:6, .m:7        // N, M
                 ]
-                if let index = indexMap[keyCode] {
+                if let code = keyCode, let index = indexMap[code] {
                     engine.selectDisplay(at: index)
                 }
-                if keyCode == 53 { engine.stop() } // Esc
+                if keyCode == .escape { engine.stop() } // Esc
                 return nil
             }
 
             // Universal Space -> Click and ; -> Displays for all layers
-            if keyCode == 49 {
+            if keyCode == .space {
                 engine.execute(.click, flags: flags)
                 return nil
             }
-            if keyCode == 41 {
+            if keyCode == .semicolon {
                 engine.showDisplaySelection()
                 return nil
             }
@@ -167,12 +178,12 @@ class HotkeyManager {
             // Action Layer: F (3) + HJKL
             if isFHeld {
                 switch keyCode {
-                case 4:  engine.execute(.doubleClick, flags: flags) // F + H = Double Click
-                case 38: engine.execute(.click, flags: flags)       // F + J = Left Click
-                case 40: engine.execute(.middleClick, flags: flags) // F + K = Middle Click
-                case 37: engine.execute(.rightClick, flags: flags)  // F + L = Right Click
-                case 45: engine.execute(.mouseDown, flags: flags)   // F + N = Start Drag
-                case 46: engine.execute(.mouseUp, flags: flags)     // F + M = Drop
+                case .h: engine.execute(.doubleClick, flags: flags) // F + H = Double Click
+                case .j: engine.execute(.click, flags: flags)       // F + J = Left Click
+                case .k: engine.execute(.middleClick, flags: flags) // F + K = Middle Click
+                case .l: engine.execute(.rightClick, flags: flags)  // F + L = Right Click
+                case .n: engine.execute(.mouseDown, flags: flags)   // F + N = Start Drag
+                case .m: engine.execute(.mouseUp, flags: flags)     // F + M = Drop
                 default: break
                 }
                 return nil
@@ -181,10 +192,10 @@ class HotkeyManager {
             // Scroll Layer: D (2) + U(32), M(46), H(4), K(40)
             if isDHeld {
                 switch keyCode {
-                case 32: engine.execute(.scroll(.up), flags: flags)    // U = Scroll Up
-                case 46: engine.execute(.scroll(.down), flags: flags)  // M = Scroll Down
-                case 4:  engine.execute(.scroll(.left), flags: flags)  // H = Scroll Left
-                case 40: engine.execute(.scroll(.right), flags: flags) // K = Scroll Right
+                case .u: engine.execute(.scroll(.up), flags: flags)    // U = Scroll Up
+                case .m: engine.execute(.scroll(.down), flags: flags)  // M = Scroll Down
+                case .h: engine.execute(.scroll(.left), flags: flags)  // H = Scroll Left
+                case .k: engine.execute(.scroll(.right), flags: flags) // K = Scroll Right
                 default: break
                 }
                 return nil
@@ -193,10 +204,10 @@ class HotkeyManager {
             // Management Layer: A (0) + HJKL
             if isAHeld {
                 switch keyCode {
-                case 4:  if !engine.undo() { engine.showDisplaySelection() } // A + H = Undo
-                case 38: engine.redo()                 // A + J = Redo
-                case 40: engine.reset()                // A + K = Reset
-                case 37: engine.showDisplaySelection() // A + L = Select Display
+                case .h: if !engine.undo() { engine.showDisplaySelection() } // A + H = Undo
+                case .j: engine.redo()                 // A + J = Redo
+                case .k: engine.reset()                // A + K = Reset
+                case .l: engine.showDisplaySelection() // A + L = Select Display
                 default: break
                 }
                 return nil
@@ -205,16 +216,16 @@ class HotkeyManager {
             // Fast Movement Layer: S (1) + Home Row Zoom (Double Move)
             if isSHeld {
                 switch keyCode {
-                case 16: engine.vennfurcate(.topLeft);     engine.vennfurcate(.topLeft)     // Y
-                case 32: engine.vennfurcate(.up);          engine.vennfurcate(.up)          // U
-                case 34: engine.vennfurcate(.topRight);    engine.vennfurcate(.topRight)    // I
-                case 4:  engine.vennfurcate(.left);        engine.vennfurcate(.left)        // H
-                case 38: engine.vennfurcate(.center);      engine.vennfurcate(.center)      // J
-                case 40: engine.vennfurcate(.right);       engine.vennfurcate(.right)       // K
-                case 45: engine.vennfurcate(.bottomLeft);  engine.vennfurcate(.bottomLeft)  // N
-                case 46: engine.vennfurcate(.down);        engine.vennfurcate(.down)        // M
-                case 43: engine.vennfurcate(.bottomRight); engine.vennfurcate(.bottomRight) // ,
-                case 37: engine.undo()                                                      // L
+                case .y: engine.vennfurcate(.topLeft);     engine.vennfurcate(.topLeft)     // Y
+                case .u: engine.vennfurcate(.up);          engine.vennfurcate(.up)          // U
+                case .i: engine.vennfurcate(.topRight);    engine.vennfurcate(.topRight)    // I
+                case .h: engine.vennfurcate(.left);        engine.vennfurcate(.left)        // H
+                case .j: engine.vennfurcate(.center);      engine.vennfurcate(.center)      // J
+                case .k: engine.vennfurcate(.right);       engine.vennfurcate(.right)       // K
+                case .n: engine.vennfurcate(.bottomLeft);  engine.vennfurcate(.bottomLeft)  // N
+                case .m: engine.vennfurcate(.down);        engine.vennfurcate(.down)        // M
+                case .comma: engine.vennfurcate(.bottomRight); engine.vennfurcate(.bottomRight) // ,
+                case .l: engine.undo()                                                      // L
                 default: break
                 }
                 return nil
@@ -222,19 +233,19 @@ class HotkeyManager {
 
             // Default Layer (Movement / Default Actions)
             switch keyCode {
-            case 16: engine.vennfurcate(.topLeft)       // Y
-            case 32: engine.vennfurcate(.up)            // U
-            case 34: engine.vennfurcate(.topRight)      // I
-            case 4:  engine.vennfurcate(.left)          // H
-            case 38: engine.vennfurcate(.center)        // J
-            case 40: engine.vennfurcate(.right)         // K
-            case 45: engine.vennfurcate(.bottomLeft)    // N
-            case 46: engine.vennfurcate(.down)          // M
-            case 43: engine.vennfurcate(.bottomRight)   // ,
-            case 37: engine.undo()                      // L = Undo
-            case 53: engine.stop()                      // Esc
-            case 78: if engine.undo() { return nil }    // Numpad - (Undo)
-            case 69: engine.redo()                      // Numpad + (Redo)
+            case .y: engine.vennfurcate(.topLeft)       // Y
+            case .u: engine.vennfurcate(.up)            // U
+            case .i: engine.vennfurcate(.topRight)      // I
+            case .h: engine.vennfurcate(.left)          // H
+            case .j: engine.vennfurcate(.center)        // J
+            case .k: engine.vennfurcate(.right)         // K
+            case .n: engine.vennfurcate(.bottomLeft)    // N
+            case .m: engine.vennfurcate(.down)          // M
+            case .comma: engine.vennfurcate(.bottomRight)   // ,
+            case .l: engine.undo()                      // L = Undo
+            case .escape: engine.stop()                      // Esc
+            case .numpadMinus: if engine.undo() { return nil }    // Numpad - (Undo)
+            case .numpadPlus: engine.redo()                      // Numpad + (Redo)
             default: break
             }
 
