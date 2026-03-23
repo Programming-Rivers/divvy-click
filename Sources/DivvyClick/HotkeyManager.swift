@@ -175,6 +175,10 @@ class HotkeyManager {
             engine.showDisplaySelection()
             return true
         }
+        if keyCode == .slash && flags.contains(.maskShift) {
+            engine.showHUD.toggle()
+            return true
+        }
         return false
     }
 

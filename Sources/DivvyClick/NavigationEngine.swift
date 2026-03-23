@@ -8,6 +8,8 @@ class NavigationEngine: ObservableObject {
     @Published var isActive: Bool = false
     @Published var isSelectingDisplay: Bool = false
     @Published var activeLayer: ActiveLayer? = nil
+    @Published var showHUD: Bool = false
+
 
     // Original screen to constrain navigation
     private var activeScreen: NSScreen?
@@ -32,16 +34,20 @@ class NavigationEngine: ObservableObject {
     func stop() {
         isActive = false
         isSelectingDisplay = false
+        showHUD = false
     }
+
 
     func reset() {
         isActive = false
         isSelectingDisplay = false
+        showHUD = false
         currentRegion = nil
         activeScreen = nil
         history = []
         redoStack = []
     }
+
 
     func showDisplaySelection() {
         let mouseLoc = NSEvent.mouseLocation

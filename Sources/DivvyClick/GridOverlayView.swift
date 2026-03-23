@@ -3,7 +3,7 @@ import SwiftUI
 struct GridOverlayView: View {
     @ObservedObject var engine: NavigationEngine
     @State private var showCues = false
-    @State private var showDefaultHUD = false
+
 
     var body: some View {
         ZStack {
@@ -24,24 +24,21 @@ struct GridOverlayView: View {
             // 4. Layer HUD (Active Layer or 10s idle Default Layer)
             if let layer = engine.activeLayer {
                 layerHUD(for: layer)
-            } else if engine.isActive && showDefaultHUD {
+            } else if engine.isActive && engine.showHUD {
                 layerHUD(for: .defaultNav)
             }
+
         }
         .ignoresSafeArea()
         .task(id: "\(String(describing: engine.currentRegion))-\(engine.activeLayer == nil)-\(engine.isActive)-\(engine.isSelectingDisplay)") {
             showCues = false
-            showDefaultHUD = false
             guard engine.isActive && engine.activeLayer == nil && !engine.isSelectingDisplay else { return }
             
             // Wait 1 second for cues
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             withAnimation { showCues = true }
-            
-            // Wait 9 more seconds for default HUD (total 10s)
-            try? await Task.sleep(nanoseconds: 9_000_000_000)
-            withAnimation { showDefaultHUD = true }
         }
+
     }
 
     @ViewBuilder
@@ -175,9 +172,20 @@ struct GridOverlayView: View {
                     }
                 }
                 .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
+
+                // Help cue (?) in bottom right
+                Text("?")
+                    .font(.system(size: 16, weight: .black, design: .rounded))
+                    .foregroundColor(.black)
+                    .frame(width: 32, height: 32)
+                    .background(Circle().fill(Color.cyan))
+                    .shadow(color: .cyan.opacity(0.3), radius: 4)
+                    .padding(20)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             }
         }
     }
+
 
     private var displaySelectionOverlay: some View {
         ZStack {

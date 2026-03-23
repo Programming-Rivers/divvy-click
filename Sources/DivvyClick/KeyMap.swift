@@ -8,6 +8,8 @@ enum KeyCode: Int64, CaseIterable {
     case semicolon = 41, escape = 53
     case a = 0, s = 1, d = 2, f = 3
     case space = 49
+    case slash = 44
+
 
     var string: String {
         switch self {
@@ -28,6 +30,8 @@ enum KeyCode: Int64, CaseIterable {
         case .d: return "D"
         case .f: return "F"
         case .space: return "Space"
+        case .slash: return "/"
+
         }
     }
     
