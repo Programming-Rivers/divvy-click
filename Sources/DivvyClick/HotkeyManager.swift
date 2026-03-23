@@ -67,10 +67,9 @@ class HotkeyManager {
         case y = 16, u = 32, i = 34
         case h = 4,  j = 38, k = 40, l = 37
         case n = 45, m = 46, comma = 43
-        case semicolon = 41, escape = 53, clear = 71
+        case semicolon = 41, escape = 53
         case a = 0, s = 1, d = 2, f = 3
         case space = 49
-        case numpadMinus = 78, numpadPlus = 69
     }
 
     private func handleEvent(_ event: CGEvent, type: CGEventType) -> Unmanaged<CGEvent>? {
@@ -95,12 +94,6 @@ class HotkeyManager {
             wasCommandPressed = isCommand
         }
 
-        // Activation / Reset (Clear = 71) -> REMOVED Cmd+Clear, keeping Reset on Clear
-        if type == .keyDown && keyCode == .clear {
-            engine.reset()
-            return nil
-        }
-
         // Behavior when Navigation is INACTIVE
         if !engine.isActive {
             // Reset layers just in case they were held while deactivating
@@ -109,17 +102,6 @@ class HotkeyManager {
             isDHeld = false
             isFHeld = false
             
-            // Allow Undo/Redo to bring back interface
-            if type == .keyDown {
-                switch keyCode {
-                case .numpadMinus: // Numpad - (Undo)
-                    if engine.undo() { return nil }
-                case .numpadPlus: // Numpad + (Redo)
-                    engine.redo()
-                    return nil
-                default: break
-                }
-            }
             return Unmanaged.passUnretained(event)
         }
 
@@ -244,8 +226,6 @@ class HotkeyManager {
             case .comma: engine.vennfurcate(.bottomRight)   // ,
             case .l: engine.undo()                      // L = Undo
             case .escape: engine.stop()                      // Esc
-            case .numpadMinus: if engine.undo() { return nil }    // Numpad - (Undo)
-            case .numpadPlus: engine.redo()                      // Numpad + (Redo)
             default: break
             }
 
