@@ -7,8 +7,6 @@ class HotkeyManager {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
-    let engine: NavigationEngine
-
     // Layer keys state tracking
     private var isAHeld = false
     private var isSHeld = false
@@ -19,8 +17,11 @@ class HotkeyManager {
     private var lastCommandTapTime: Date = .distantPast
     private var wasCommandPressed = false
 
-    init(engine: NavigationEngine) {
-        self.engine = engine
+    let coordinator: NavigationCoordinator
+    var engine: NavigationEngine { coordinator.engine }
+
+    init(coordinator: NavigationCoordinator) {
+        self.coordinator = coordinator
         setupEventTap()
     }
 
@@ -149,7 +150,7 @@ class HotkeyManager {
 
             // Universal Space -> Click and ; -> Displays for all layers
             if keyCode == .space {
-                engine.execute(.click, flags: flags)
+                coordinator.execute(.click, flags: flags)
                 return nil
             }
             if keyCode == .semicolon {
@@ -160,12 +161,12 @@ class HotkeyManager {
             // Action Layer: F (3) + HJKL
             if isFHeld {
                 switch keyCode {
-                case .h: engine.execute(.doubleClick, flags: flags) // F + H = Double Click
-                case .j: engine.execute(.click, flags: flags)       // F + J = Left Click
-                case .k: engine.execute(.middleClick, flags: flags) // F + K = Middle Click
-                case .l: engine.execute(.rightClick, flags: flags)  // F + L = Right Click
-                case .n: engine.execute(.mouseDown, flags: flags)   // F + N = Start Drag
-                case .m: engine.execute(.mouseUp, flags: flags)     // F + M = Drop
+                case .h: coordinator.execute(.doubleClick, flags: flags) // F + H = Double Click
+                case .j: coordinator.execute(.click, flags: flags)       // F + J = Left Click
+                case .k: coordinator.execute(.middleClick, flags: flags) // F + K = Middle Click
+                case .l: coordinator.execute(.rightClick, flags: flags)  // F + L = Right Click
+                case .n: coordinator.execute(.mouseDown, flags: flags)   // F + N = Start Drag
+                case .m: coordinator.execute(.mouseUp, flags: flags)     // F + M = Drop
                 default: break
                 }
                 return nil
@@ -174,10 +175,10 @@ class HotkeyManager {
             // Scroll Layer: D (2) + U(32), M(46), H(4), K(40)
             if isDHeld {
                 switch keyCode {
-                case .u: engine.execute(.scroll(.up), flags: flags)    // U = Scroll Up
-                case .m: engine.execute(.scroll(.down), flags: flags)  // M = Scroll Down
-                case .h: engine.execute(.scroll(.left), flags: flags)  // H = Scroll Left
-                case .k: engine.execute(.scroll(.right), flags: flags) // K = Scroll Right
+                case .u: coordinator.execute(.scroll(.up), flags: flags)    // U = Scroll Up
+                case .m: coordinator.execute(.scroll(.down), flags: flags)  // M = Scroll Down
+                case .h: coordinator.execute(.scroll(.left), flags: flags)  // H = Scroll Left
+                case .k: coordinator.execute(.scroll(.right), flags: flags) // K = Scroll Right
                 default: break
                 }
                 return nil

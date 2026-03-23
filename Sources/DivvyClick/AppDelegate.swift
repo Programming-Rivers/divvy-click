@@ -6,6 +6,7 @@ import Combine
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem!
     let navigationEngine = NavigationEngine()
+    var navigationCoordinator: NavigationCoordinator!
 
     var hotkeyManager: HotkeyManager!
     var overlayController: OverlayWindowController!
@@ -14,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var mainMenu: NSMenu!
 
     func applicationDidFinishLaunching(_: Notification) {
+        navigationCoordinator = NavigationCoordinator(engine: navigationEngine)
         // Create the status bar icon
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
@@ -33,7 +35,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         mainMenu.addItem(NSMenuItem.separator())
         mainMenu.addItem(NSMenuItem(title: "Quit Divvy-click", action: #selector(quitApp), keyEquivalent: "q"))
 
-        hotkeyManager = HotkeyManager(engine: navigationEngine)
+        hotkeyManager = HotkeyManager(coordinator: navigationCoordinator)
         overlayController = OverlayWindowController(engine: navigationEngine)
 
         // Update status button based on engine state
