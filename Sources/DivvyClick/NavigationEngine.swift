@@ -1,5 +1,4 @@
 import AppKit
-import Foundation
 
 @MainActor
 class NavigationEngine: ObservableObject {
@@ -11,20 +10,24 @@ class NavigationEngine: ObservableObject {
     @Published var showHUD: Bool = false
 
 
-    // Original screen to constrain navigation
-    private var activeScreen: NSScreen?
+    // Original screen bounding box to constrain navigation
+    // (We formerly held NSScreen directly, but holding CGRect makes testing purely deterministic)
     private var history: [CGRect] = []
     private var redoStack: [CGRect] = []
     private let maxStackSize = 100
+    private let screenProvider: ScreenProviding
+
+    init(screenProvider: ScreenProviding = SystemScreenProvider()) {
+        self.screenProvider = screenProvider
+    }
 
     func start() {
         if currentRegion == nil {
-            let mouseLoc = NSEvent.mouseLocation
-            activeScreen = NSScreen.screens.first { NSMouseInRect(mouseLoc, $0.frame, false) } ?? NSScreen.main
+            let mouseLoc = screenProvider.mouseLocation
+            let frame = screenProvider.screenFrame(at: mouseLoc) ?? NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
             
-            guard let screen = activeScreen else { return }
-            activeScreenFrame = screen.frame
-            currentRegion = screen.frame
+            activeScreenFrame = frame
+            currentRegion = frame
             history = []
             redoStack = []
         }
@@ -43,31 +46,28 @@ class NavigationEngine: ObservableObject {
         isSelectingDisplay = false
         showHUD = false
         currentRegion = nil
-        activeScreen = nil
         history = []
         redoStack = []
     }
 
 
     func showDisplaySelection() {
-        let mouseLoc = NSEvent.mouseLocation
-        activeScreen = NSScreen.screens.first { NSMouseInRect(mouseLoc, $0.frame, false) } ?? NSScreen.main
+        let mouseLoc = screenProvider.mouseLocation
+        let frame = screenProvider.screenFrame(at: mouseLoc) ?? NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
         
-        guard let screen = activeScreen else { return }
-        activeScreenFrame = screen.frame
-        currentRegion = screen.frame
+        activeScreenFrame = frame
+        currentRegion = frame
         isActive = true
         isSelectingDisplay = true
     }
 
     func selectDisplay(at index: Int) {
-        let screens = NSScreen.screens
+        let screens = screenProvider.screens
         guard index >= 0 && index < screens.count else { return }
         
-        let selectedScreen = screens[index]
-        activeScreen = selectedScreen
-        activeScreenFrame = selectedScreen.frame
-        currentRegion = selectedScreen.frame
+        let frame = screens[index]
+        activeScreenFrame = frame
+        currentRegion = frame
         isSelectingDisplay = false
         isActive = true
         history = []

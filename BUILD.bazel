@@ -9,5 +9,5 @@ macos_application(
     entitlements = "//Sources/DivvyClick:DivvyClick.entitlements",
     infoplists = ["//Sources/DivvyClick:Info.plist"],
     minimum_os_version = "13.0",
-    deps = ["//Sources/DivvyClick:lib"],
+    deps = ["//Sources/DivvyClick:main"],
 )
