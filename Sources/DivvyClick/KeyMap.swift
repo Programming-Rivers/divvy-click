@@ -60,16 +60,18 @@ class KeyMap {
     private func setupMappings() {
         // Action Layer (F)
         mappings[.action] = [
+            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
             .j: KeyBinding(label: "Double") { coordinator, flags in coordinator.execute(.doubleClick, flags: flags) },
             .k: KeyBinding(label: "Left Click") { coordinator, flags in coordinator.execute(.click, flags: flags) },
-            .l: KeyBinding(label: "Middle") { coordinator, flags in coordinator.execute(.middleClick, flags: flags) },
-            .h: KeyBinding(label: "Right Click") { coordinator, flags in coordinator.execute(.rightClick, flags: flags) },
+            .l: KeyBinding(label: "Right Click") { coordinator, flags in coordinator.execute(.rightClick, flags: flags) },
             .m: KeyBinding(label: "Start Drag") { coordinator, flags in coordinator.execute(.mouseDown, flags: flags) },
-            .comma: KeyBinding(label: "Drop") { coordinator, flags in coordinator.execute(.mouseUp, flags: flags) }
+            .comma: KeyBinding(label: "Drop") { coordinator, flags in coordinator.execute(.mouseUp, flags: flags) },
+            .period: KeyBinding(label: "Middle") { coordinator, flags in coordinator.execute(.middleClick, flags: flags) }
         ]
         
         // Scroll Layer (D)
         mappings[.scroll] = [
+            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
             .i: KeyBinding(label: "Scroll Up") { coordinator, flags in coordinator.execute(.scroll(.up), flags: flags) },
             .comma: KeyBinding(label: "Scroll Down") { coordinator, flags in coordinator.execute(.scroll(.down), flags: flags) },
             .j: KeyBinding(label: "Scroll Left") { coordinator, flags in coordinator.execute(.scroll(.left), flags: flags) },
@@ -78,14 +80,15 @@ class KeyMap {
         
         // Management Layer (A)
         mappings[.management] = [
-            .j: KeyBinding(label: "Undo") { coordinator, _ in if !coordinator.engine.undo() { coordinator.engine.showDisplaySelection() } },
-            .k: KeyBinding(label: "Redo") { coordinator, _ in coordinator.engine.redo() },
-            .l: KeyBinding(label: "Reset") { coordinator, _ in coordinator.engine.reset() },
-            .h: KeyBinding(label: "Display") { coordinator, _ in coordinator.engine.showDisplaySelection() }
+            .h: KeyBinding(label: "Undo") { coordinator, _ in if !coordinator.engine.undo() { coordinator.engine.showDisplaySelection() } },
+            .j: KeyBinding(label: "Redo") { coordinator, _ in coordinator.engine.redo() },
+            .k: KeyBinding(label: "Reset") { coordinator, _ in coordinator.engine.reset() },
+            .l: KeyBinding(label: "Display") { coordinator, _ in coordinator.engine.showDisplaySelection() }
         ]
         
         // Fast Move Layer (S)
         mappings[.fastMove] = [
+            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
             .u: KeyBinding(label: "Fast ↖") { coordinator, _ in coordinator.engine.vennfurcate(.topLeft); coordinator.engine.vennfurcate(.topLeft) },
             .i: KeyBinding(label: "Fast ↑") { coordinator, _ in coordinator.engine.vennfurcate(.up); coordinator.engine.vennfurcate(.up) },
             .o: KeyBinding(label: "Fast ↗") { coordinator, _ in coordinator.engine.vennfurcate(.topRight); coordinator.engine.vennfurcate(.topRight) },
@@ -94,12 +97,12 @@ class KeyMap {
             .l: KeyBinding(label: "Fast →") { coordinator, _ in coordinator.engine.vennfurcate(.right); coordinator.engine.vennfurcate(.right) },
             .m: KeyBinding(label: "Fast ↙") { coordinator, _ in coordinator.engine.vennfurcate(.bottomLeft); coordinator.engine.vennfurcate(.bottomLeft) },
             .comma: KeyBinding(label: "Fast ↓") { coordinator, _ in coordinator.engine.vennfurcate(.down); coordinator.engine.vennfurcate(.down) },
-            .period: KeyBinding(label: "Fast ↘") { coordinator, _ in coordinator.engine.vennfurcate(.bottomRight); coordinator.engine.vennfurcate(.bottomRight) },
-            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() }
+            .period: KeyBinding(label: "Fast ↘") { coordinator, _ in coordinator.engine.vennfurcate(.bottomRight); coordinator.engine.vennfurcate(.bottomRight) }
         ]
         
         // Default Navigation
         mappings[.defaultNav] = [
+            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
             .u: KeyBinding(label: "↖") { coordinator, _ in coordinator.engine.vennfurcate(.topLeft) },
             .i: KeyBinding(label: "↑") { coordinator, _ in coordinator.engine.vennfurcate(.up) },
             .o: KeyBinding(label: "↗") { coordinator, _ in coordinator.engine.vennfurcate(.topRight) },
@@ -108,8 +111,7 @@ class KeyMap {
             .l: KeyBinding(label: "→") { coordinator, _ in coordinator.engine.vennfurcate(.right) },
             .m: KeyBinding(label: "↙") { coordinator, _ in coordinator.engine.vennfurcate(.bottomLeft) },
             .comma: KeyBinding(label: "↓") { coordinator, _ in coordinator.engine.vennfurcate(.down) },
-            .period: KeyBinding(label: "↘") { coordinator, _ in coordinator.engine.vennfurcate(.bottomRight) },
-            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() }
+            .period: KeyBinding(label: "↘") { coordinator, _ in coordinator.engine.vennfurcate(.bottomRight) }
         ]
     }
     

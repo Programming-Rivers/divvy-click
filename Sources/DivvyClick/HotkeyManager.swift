@@ -122,7 +122,7 @@ class HotkeyManager {
         case .d: isDHeld = false
         case .f: isFHeld = false
         case .escape: return nil
-        case .y, .u, .i, .h, .j, .k, .n, .m, .comma, .l, .space: return nil
+        case .u, .i, .o, .h, .j, .k, .l, .m, .comma, .period, .space: return nil
         default: break
         }
 
@@ -154,9 +154,10 @@ class HotkeyManager {
         guard engine.isSelectingDisplay else { return false }
 
         let indexMap: [KeyCode: Int] = [
-            .y:0, .u:1, .i:2, // Y, U, I
-            .h:3, .j:4, .k:5, // H, J, K
-            .n:6, .m:7        // N, M
+            .u:0, .i:1, .o:2, // U, I, O
+            .j:3, .k:4, .l:5, // J, K, L
+            .m:6, .comma:7,   // M, ,
+            .period:8         // .
         ]
 
         if let index = indexMap[keyCode] {

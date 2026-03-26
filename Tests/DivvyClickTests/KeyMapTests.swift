@@ -8,10 +8,10 @@ final class KeyMapTests: XCTestCase {
 
     func testDefaultNavLabelsForGridKeys() {
         let expected: [(KeyCode, String)] = [
-            (.y, "↖"), (.u, "↑"), (.i, "↗"),
-            (.h, "←"), (.j, "○"), (.k, "→"),
-            (.n, "↙"), (.m, "↓"), (.comma, "↘"),
-            (.l, "Undo")
+            (.h, "Undo"),
+            (.u, "↖"), (.i, "↑"), (.o, "↗"),
+            (.j, "←"), (.k, "○"), (.l, "→"),
+            (.m, "↙"), (.comma, "↓"), (.period, "↘")
         ]
 
         for (key, expectedLabel) in expected {
@@ -27,8 +27,9 @@ final class KeyMapTests: XCTestCase {
 
     func testActionLayerLabels() {
         let expected: [(KeyCode, String)] = [
-            (.h, "Double"), (.j, "Left Click"), (.k, "Middle"),
-            (.l, "Right Click"), (.n, "Start Drag"), (.m, "Drop")
+            (.h, "Undo"),
+            (.j, "Double"), (.k, "Left Click"), (.l, "Right Click"),
+            (.m, "Start Drag"), (.comma, "Drop"), (.period, "Middle")
         ]
 
         for (key, expectedLabel) in expected {
@@ -41,8 +42,8 @@ final class KeyMapTests: XCTestCase {
     }
 
     func testActionLayerUnboundKeysReturnNil() {
-        // Grid navigation keys should not have bindings in action layer
-        let unboundKeys: [KeyCode] = [.y, .u, .i]
+        // Top row navigation keys should not have bindings in action layer
+        let unboundKeys: [KeyCode] = [.u, .i, .o]
         for key in unboundKeys {
             XCTAssertNil(
                 KeyMap.shared.label(for: .action, key: key),
@@ -55,8 +56,9 @@ final class KeyMapTests: XCTestCase {
 
     func testScrollLayerLabels() {
         let expected: [(KeyCode, String)] = [
-            (.u, "Scroll Up"), (.m, "Scroll Down"),
-            (.h, "Scroll Left"), (.k, "Scroll Right")
+            (.h, "Undo"),
+            (.i, "Scroll Up"), (.comma, "Scroll Down"),
+            (.j, "Scroll Left"), (.l, "Scroll Right")
         ]
 
         for (key, expectedLabel) in expected {
@@ -72,10 +74,10 @@ final class KeyMapTests: XCTestCase {
 
     func testFastMoveLayerLabels() {
         let expected: [(KeyCode, String)] = [
-            (.y, "Fast ↖"), (.u, "Fast ↑"), (.i, "Fast ↗"),
-            (.h, "Fast ←"), (.j, "Fast ○"), (.k, "Fast →"),
-            (.n, "Fast ↙"), (.m, "Fast ↓"), (.comma, "Fast ↘"),
-            (.l, "Undo")
+            (.h, "Undo"),
+            (.u, "Fast ↖"), (.i, "Fast ↑"), (.o, "Fast ↗"),
+            (.j, "Fast ←"), (.k, "Fast ○"), (.l, "Fast →"),
+            (.m, "Fast ↙"), (.comma, "Fast ↓"), (.period, "Fast ↘")
         ]
 
         for (key, expectedLabel) in expected {
