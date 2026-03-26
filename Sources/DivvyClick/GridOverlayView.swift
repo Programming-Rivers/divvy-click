@@ -299,6 +299,22 @@ struct GridOverlayView: View {
                     .tracking(2)
                     .shadow(color: .cyan.opacity(0.5), radius: 8)
 
+                // Auto-Scroll Status
+                if let dir = engine.autoScrollDirection {
+                    HStack(spacing: 8) {
+                        Image(systemName: dir == .up ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
+                        Text("AUTO-SCROLLING (\(dir == .up ? "UP" : "DOWN") - SPEED: \(engine.autoScrollSpeed))")
+                            .font(.system(size: 14, weight: .black, design: .monospaced))
+                    }
+                    .foregroundColor(.orange)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .background(Capsule().fill(.orange.opacity(0.1)))
+                    .overlay(Capsule().stroke(.orange.opacity(0.3), lineWidth: 1))
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .id("autoscroll-status")
+                }
+
                 // Keyboard Layout (5 columns: _UIO_ / HJKL; / _M,._)
                 VStack(spacing: 25) {
                     Grid(horizontalSpacing: 15, verticalSpacing: 15) {

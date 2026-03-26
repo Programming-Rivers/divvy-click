@@ -57,7 +57,8 @@ final class KeyMapTests: XCTestCase {
     func testScrollLayerLabels() {
         let expected: [(KeyCode, String)] = [
             (.h, "Undo"),
-            (.i, "Scroll Up"), (.comma, "Scroll Down"),
+            (.u, "Scroll Up"), (.i, "Auto Up"), (.k, "Stop"),
+            (.m, "Scroll Down"), (.comma, "Auto Down"),
             (.j, "Scroll Left"), (.l, "Scroll Right")
         ]
 

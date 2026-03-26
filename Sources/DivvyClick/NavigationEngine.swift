@@ -199,9 +199,13 @@ class NavigationEngine: ObservableObject {
         case center
     }
 
+    @Published var autoScrollDirection: ScrollDirection? = nil
+    @Published var autoScrollSpeed: Int32 = 0
+
     enum Action {
         case click, doubleClick, rightClick, middleClick, move, mouseDown, mouseUp
         case scroll(ScrollDirection)
+        case autoScroll(ScrollDirection?)
     }
 
     enum ScrollDirection {

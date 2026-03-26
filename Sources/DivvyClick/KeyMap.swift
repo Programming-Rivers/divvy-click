@@ -68,11 +68,14 @@ class KeyMap {
             .comma: KeyBinding(label: "Drop") { coordinator, flags in coordinator.execute(.mouseUp, flags: flags) }
         ]
         
-        // Scroll Layer (D)
+        // Scroll Layer
         mappings[.scroll] = [
             .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
-            .i: KeyBinding(label: "Scroll Up") { coordinator, flags in coordinator.execute(.scroll(.up), flags: flags) },
-            .comma: KeyBinding(label: "Scroll Down") { coordinator, flags in coordinator.execute(.scroll(.down), flags: flags) },
+            .u: KeyBinding(label: "Scroll Up") { coordinator, flags in coordinator.execute(.scroll(.up), flags: flags) },
+            .i: KeyBinding(label: "Auto Up") { coordinator, _ in coordinator.execute(.autoScroll(.up)) },
+            .k: KeyBinding(label: "Stop") { coordinator, _ in coordinator.execute(.autoScroll(nil)) },
+            .m: KeyBinding(label: "Scroll Down") { coordinator, flags in coordinator.execute(.scroll(.down), flags: flags) },
+            .comma: KeyBinding(label: "Auto Down") { coordinator, _ in coordinator.execute(.autoScroll(.down)) },
             .j: KeyBinding(label: "Scroll Left") { coordinator, flags in coordinator.execute(.scroll(.left), flags: flags) },
             .l: KeyBinding(label: "Scroll Right") { coordinator, flags in coordinator.execute(.scroll(.right), flags: flags) }
         ]
