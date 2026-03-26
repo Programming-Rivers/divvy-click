@@ -390,8 +390,8 @@ struct GridOverlayView: View {
 
     private func layerTitle(_ layer: NavigationEngine.ActiveLayer) -> String {
         switch layer {
-        case .action: return "ACTION LAYER (F)"
-        case .scroll: return "SCROLL LAYER (D)"
+        case .action: return "ACTION LAYER (D)"
+        case .scroll: return "SCROLL LAYER (F)"
         case .fastMove: return "FAST MOVE LAYER (S)"
         case .management: return "MANAGEMENT LAYER (A)"
         case .defaultNav: return "NAVIGATION"

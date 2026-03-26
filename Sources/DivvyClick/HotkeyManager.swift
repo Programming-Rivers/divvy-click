@@ -195,8 +195,8 @@ class HotkeyManager {
     }
 
     private func updateActiveLayer() {
-        if isFHeld { engine.activeLayer = .action }
-        else if isDHeld { engine.activeLayer = .scroll }
+        if isDHeld { engine.activeLayer = .action }
+        else if isFHeld { engine.activeLayer = .scroll }
         else if isSHeld { engine.activeLayer = .fastMove }
         else if isAHeld { engine.activeLayer = .management }
         else { engine.activeLayer = nil }
