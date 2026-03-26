@@ -146,7 +146,7 @@ struct GridOverlayView: View {
             
             // Only show cues if they fit comfortably (32x32 cue + 20px padding)
             if thirdW > 72 && thirdH > 72 {
-                let keys: [[String]] = [["Y", "U", "I"], ["H", "J", "K"], ["N", "M", ","]]
+                let keys: [[String]] = [["U", "I", "O"], ["J", "K", "L"], ["M", ",", "."]]
                 
                 ZStack(alignment: .topLeading) {
                     ForEach(0..<3) { row in
@@ -200,7 +200,7 @@ struct GridOverlayView: View {
                     .shadow(color: .cyan.opacity(0.3), radius: 10)
 
                 let screens = NSScreen.screens
-                let keys: [[String]] = [["Y", "U", "I"], ["H", "J", "K"], ["N", "M", ","]]
+                let keys: [[String]] = [["U", "I", "O"], ["J", "K", "L"], ["M", ",", "."]]
                 
                 Grid(horizontalSpacing: 20, verticalSpacing: 20) {
                     ForEach(0..<3) { row in
@@ -298,15 +298,15 @@ struct GridOverlayView: View {
                     .tracking(2)
                     .shadow(color: .cyan.opacity(0.5), radius: 8)
 
-                // Keyboard Layout (5 columns: YUI / HJKL; / NM,)
+                // Keyboard Layout (5 columns: _UIO_ / HJKL; / _M,._)
                 VStack(spacing: 25) {
                     Grid(horizontalSpacing: 15, verticalSpacing: 15) {
-                        // Row 1: Y U I _ _
+                        // Row 1: _ U I O _
                         GridRow {
-                            keyView(key: "Y", action: keyAction(layer, "Y"))
+                            Color.clear.frame(width: 55, height: 55)
                             keyView(key: "U", action: keyAction(layer, "U"))
                             keyView(key: "I", action: keyAction(layer, "I"))
-                            Color.clear.frame(width: 55, height: 55)
+                            keyView(key: "O", action: keyAction(layer, "O"))
                             Color.clear.frame(width: 55, height: 55)
                         }
 
@@ -319,12 +319,12 @@ struct GridOverlayView: View {
                             keyView(key: ";", action: keyAction(layer, ";"))
                         }
 
-                        // Row 3: N M , _ _
+                        // Row 3: _ M , . _
                         GridRow {
-                            keyView(key: "N", action: keyAction(layer, "N"))
+                            Color.clear.frame(width: 55, height: 55)
                             keyView(key: "M", action: keyAction(layer, "M"))
                             keyView(key: ",", action: keyAction(layer, ","))
-                            Color.clear.frame(width: 55, height: 55)
+                            keyView(key: ".", action: keyAction(layer, "."))
                             Color.clear.frame(width: 55, height: 55)
                         }
                     }
