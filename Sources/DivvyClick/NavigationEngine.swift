@@ -26,9 +26,12 @@ class NavigationEngine: ObservableObject {
             let mouseLoc = screenProvider.mouseLocation
             let frame = screenProvider.screenFrame(at: mouseLoc) ?? NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
             
+            // Storing the mouse location as a marker for the "Final Undo"
+            // Using a 0x0 Rect as a marker
+            let marker = CGRect(origin: mouseLoc, size: .zero)
             activeScreenFrame = frame
             currentRegion = frame
-            history = []
+            history = [marker]
             redoStack = []
         }
         isActive = true

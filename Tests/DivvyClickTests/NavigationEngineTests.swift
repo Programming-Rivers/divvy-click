@@ -185,13 +185,14 @@ final class NavigationEngineTests: XCTestCase {
         XCTAssertEqual(engine.currentRegion, original)
     }
 
-    func testUndoOnEmptyHistoryReturnsFalse() {
+    func testUndoAtStartReturnsToMarkerThenFalse() {
         let engine = makeEngine()
         engine.start()
 
-        let result = engine.undo()
-
-        XCTAssertFalse(result)
+        // First undo returns to the initial mouse position marker
+        XCTAssertTrue(engine.undo())
+        // Second undo fails because the marker was the last item
+        XCTAssertFalse(engine.undo())
     }
 
     func testRedoRestoresUndoneRegion() {

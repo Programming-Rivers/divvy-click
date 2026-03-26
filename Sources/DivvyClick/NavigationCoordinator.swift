@@ -17,10 +17,19 @@ class NavigationCoordinator {
     }
 
     private func setupObservers() {
-        // Automatically perform a drag event when the region changes during a mouse-down session.
+        // Active Sync: Whenever the region changes, jump the cursor to its center.
         engine.$currentRegion
-            .sink { [weak self] _ in
-                self?.autoMoveIfDragging()
+            .sink { [weak self] region in
+                guard let self = self, let r = region, self.engine.isActive else { return }
+                
+                // If it's a marker (0x0), jump to its origin and stop.
+                if r.size == .zero {
+                    self.cursorEngine.jump(to: CGRect(origin: r.origin, size: .zero))
+                    self.engine.reset()
+                    return
+                }
+                
+                self.cursorEngine.jump(to: r)
             }
             .store(in: &cancellables)
 
@@ -57,10 +66,6 @@ class NavigationCoordinator {
     }
 
     private func performAutoScroll(_ direction: NavigationEngine.ScrollDirection) {
-        // Ensure mouse is at the crosshair before scrolling
-        guard let region = engine.currentRegion else { return }
-        cursorEngine.jump(to: region)
-        
         let delta = autoScrollBaseDelta * engine.autoScrollSpeed
         switch direction {
         case .up:    self.cursorEngine.scroll(deltaY: delta)
@@ -76,28 +81,24 @@ class NavigationCoordinator {
 
         switch action {
         case .click:
-            cursorEngine.jump(to: region)
             Task {
                 try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
                 self.cursorEngine.click(button: .left, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .doubleClick:
-            cursorEngine.jump(to: region)
             Task {
                 try? await Task.sleep(nanoseconds: 50_000_000)
                 self.cursorEngine.click(button: .left, count: 2, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .rightClick:
-            cursorEngine.jump(to: region)
             Task {
                 try? await Task.sleep(nanoseconds: 50_000_000)
                 self.cursorEngine.click(button: .right, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .middleClick:
-            cursorEngine.jump(to: region)
             Task {
                 try? await Task.sleep(nanoseconds: 50_000_000)
                 self.cursorEngine.click(button: .center, flags: flags, at: targetPoint)
@@ -107,11 +108,9 @@ class NavigationCoordinator {
             if engine.isMouseDown {
                 cursorEngine.mouseDrag(button: .left, flags: flags, at: targetPoint)
             } else {
-                cursorEngine.jump(to: region)
                 self.engine.stop()
             }
         case .mouseDown:
-            cursorEngine.jump(to: region)
             Task {
                 try? await Task.sleep(nanoseconds: 50_000_000)
                 self.cursorEngine.mouseDown(button: .left, flags: flags, at: targetPoint)
@@ -123,7 +122,6 @@ class NavigationCoordinator {
             if engine.isMouseDown {
                 cursorEngine.mouseUp(button: .left, flags: flags, at: targetPoint)
             } else {
-                cursorEngine.jump(to: region)
                 cursorEngine.mouseUp(button: .left, flags: flags, at: targetPoint)
             }
             
@@ -134,7 +132,6 @@ class NavigationCoordinator {
                 self.engine.start()
             }
         case .scroll(let direction):
-            cursorEngine.jump(to: region) // Jump to the eyepiece before scrolling
             let delta: Int32 = 100
             switch direction {
             case .up:    self.cursorEngine.scroll(deltaY: delta, flags: flags)
