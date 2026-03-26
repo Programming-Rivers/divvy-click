@@ -28,8 +28,8 @@ final class KeyMapTests: XCTestCase {
     func testActionLayerLabels() {
         let expected: [(KeyCode, String)] = [
             (.h, "Undo"),
-            (.j, "Double"), (.k, "Left Click"), (.l, "Right Click"),
-            (.m, "Start Drag"), (.comma, "Drop"), (.period, "Middle")
+            (.j, "Double"), (.k, "Middle"), (.l, "Left Click"),
+            (.m, "Start Drag"), (.comma, "Drop")
         ]
 
         for (key, expectedLabel) in expected {
