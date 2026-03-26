@@ -271,9 +271,27 @@ final class NavigationEngineTests: XCTestCase {
         let engine = makeEngine()
         engine.start()
         let regionBefore = engine.currentRegion
-
+        
         engine.selectDisplay(at: 999)
-
+        
         XCTAssertEqual(engine.currentRegion, regionBefore)
+    }
+
+    func testPhysicalScreenMapping() {
+        // Arrange: 3 screens in a horizontal row
+        let screenLeft = CGRect(x: -1920, y: 0, width: 1920, height: 1080)
+        let screenMid = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let screenRight = CGRect(x: 1920, y: 0, width: 1920, height: 1080)
+        
+        let provider = MockScreenProvider(screens: [screenMid, screenRight, screenLeft])
+        let engine = NavigationEngine(screenProvider: provider)
+        
+        // Act
+        let mapping = engine.screenMapping()
+        
+        // Assert: J(3)=Left, K(4)=Mid, L(5)=Right
+        XCTAssertEqual(mapping[3], screenLeft)
+        XCTAssertEqual(mapping[4], screenMid)
+        XCTAssertEqual(mapping[5], screenRight)
     }
 }

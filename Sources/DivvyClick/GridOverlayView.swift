@@ -199,7 +199,7 @@ struct GridOverlayView: View {
                     .foregroundColor(.cyan)
                     .shadow(color: .cyan.opacity(0.3), radius: 10)
 
-                let screens = NSScreen.screens
+                let mapping = engine.screenMapping()
                 let keys: [[String]] = [["U", "I", "O"], ["J", "K", "L"], ["M", ",", "."]]
                 
                 Grid(horizontalSpacing: 20, verticalSpacing: 20) {
@@ -207,8 +207,9 @@ struct GridOverlayView: View {
                         GridRow {
                             ForEach(0..<3) { col in
                                 let index = row * 3 + col
-                                if index < 8 && index < screens.count {
-                                    displayTile(for: screens[index], key: keys[row][col])
+                                if let screenRect = mapping[index] {
+                                    let screen = NSScreen.screens.first { $0.frame == screenRect }
+                                    displayTile(for: screen, rect: screenRect, key: keys[row][col])
                                 } else {
                                     reservedTile(key: keys[row][col], isReserved: index == 8)
                                 }
@@ -224,7 +225,7 @@ struct GridOverlayView: View {
         }
     }
 
-    private func displayTile(for screen: NSScreen, key: String) -> some View {
+    private func displayTile(for screen: NSScreen?, rect: CGRect, key: String) -> some View {
         VStack(spacing: 12) {
             Text(key)
                 .font(.system(size: 24, weight: .black, design: .monospaced))
@@ -234,10 +235,10 @@ struct GridOverlayView: View {
                 .shadow(color: .cyan.opacity(0.5), radius: 8)
 
             VStack(spacing: 4) {
-                Text(screen.localizedName)
+                Text(screen?.localizedName ?? "Unknown Display")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .multilineTextAlignment(.center)
-                Text("\(Int(screen.frame.width))x\(Int(screen.frame.height))")
+                Text("\(Int(rect.width))x\(Int(rect.height))")
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
                     .foregroundColor(.white.opacity(0.6))
             }

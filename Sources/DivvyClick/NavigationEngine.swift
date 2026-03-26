@@ -62,16 +62,66 @@ class NavigationEngine: ObservableObject {
     }
 
     func selectDisplay(at index: Int) {
-        let screens = screenProvider.screens
-        guard index >= 0 && index < screens.count else { return }
+        let screens = screenMapping()
+        guard index >= 0 && index < 9, let frame = screens[index] else { return }
         
-        let frame = screens[index]
         activeScreenFrame = frame
         currentRegion = frame
         isSelectingDisplay = false
         isActive = true
         history = []
         redoStack = []
+    }
+
+    /// Maps physical screens to a 3x3 grid (indices 0-8) based on their physical arrangement.
+    func screenMapping() -> [Int: CGRect] {
+        let screens = screenProvider.screens
+        guard !screens.isEmpty else { return [:] }
+
+        // 1. Calculate the overall bounding box
+        let minX = screens.map { $0.minX }.min() ?? 0
+        let maxX = screens.map { $0.maxX }.max() ?? 0
+        let minY = screens.map { $0.minY }.min() ?? 0
+        let maxY = screens.map { $0.maxY }.max() ?? 0
+
+        let totalWidth = max(1, maxX - minX)
+        let totalHeight = max(1, maxY - minY)
+
+        var mapping: [Int: CGRect] = [:]
+
+        // 2. Map screens to grid cells based on normalized coordinates
+        for screen in screens {
+            let cx = screen.midX
+            let cy = screen.midY
+
+            let nx = (cx - minX) / totalWidth
+            let ny = (cy - minY) / totalHeight
+
+            // macOS origin is bottom-left, so high NY = Top (gy=0)
+            let gx = min(max(Int(floor(nx * 3)), 0), 2)
+            let gy = min(max(2 - Int(floor(ny * 3)), 0), 2)
+            
+            var index = gy * 3 + gx
+            
+            // 3. Collision handling: if cell is occupied, find the nearest free cell
+            if mapping[index] != nil {
+                let neighbors = [
+                    (gx-1, gy), (gx+1, gy), (gx, gy-1), (gx, gy+1),
+                    (gx-1, gy-1), (gx+1, gy-1), (gx-1, gy+1), (gx+1, gy+1)
+                ]
+                for (nx, ny) in neighbors where nx >= 0 && nx < 3 && ny >= 0 && ny < 3 {
+                    let nextIndex = ny * 3 + nx
+                    if mapping[nextIndex] == nil {
+                        index = nextIndex
+                        break
+                    }
+                }
+            }
+            
+            mapping[index] = screen
+        }
+
+        return mapping
     }
 
     @discardableResult
