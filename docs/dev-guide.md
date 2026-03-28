@@ -1,4 +1,4 @@
-# 
+# DivvyClick Development Guide
 
 ## Formatting the swift code
 
