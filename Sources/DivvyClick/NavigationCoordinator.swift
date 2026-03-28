@@ -31,17 +31,26 @@ class NavigationCoordinator {
                         self?.engine.reset()
                     }
                 case .region(let r):
-                    self.cursorEngine.jump(to: r)
+                    if self.engine.isMouseDown {
+                        self.autoMoveIfDragging(to: r)
+                    } else {
+                        self.cursorEngine.jump(to: r)
+                    }
                 }
             }
             .store(in: &cancellables)
 
-        // Clear auto-scroll when navigation stops or layer changes
+        // Clear auto-scroll and pending drags when navigation stops
         engine.$isActive
             .sink { [weak self] active in
                 if !active { 
                     self?.engine.scrollState.autoScrollDirection = nil 
                     self?.actionTask?.cancel()
+                    
+                    if let self = self, self.engine.isMouseDown, let region = self.engine.currentRegion {
+                        let targetPoint = CGPoint(x: region.midX, y: region.midY)
+                        self.cursorEngine.mouseUp(button: .left, flags: [], at: targetPoint)
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -168,8 +177,8 @@ class NavigationCoordinator {
         }
     }
 
-    private func autoMoveIfDragging() {
-        guard engine.isMouseDown, let region = engine.currentRegion else { return }
+    private func autoMoveIfDragging(to region: CGRect) {
+        guard engine.isMouseDown else { return }
         let targetPoint = CGPoint(x: region.midX, y: region.midY)
         cursorEngine.mouseDrag(button: .left, at: targetPoint)
     }

@@ -46,6 +46,7 @@ class NavigationEngine: ObservableObject {
         isActive = false
         isSelectingDisplay = false
         layerState.showHUD = false
+        isMouseDown = false
     }
 
 
@@ -56,6 +57,7 @@ class NavigationEngine: ObservableObject {
         currentTarget = nil
         history = []
         redoStack = []
+        isMouseDown = false
     }
 
 
