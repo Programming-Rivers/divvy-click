@@ -31,7 +31,8 @@ Divvy-click uses a sophisticated layering system. **Hold a layer key** (Home row
 ### 🏠 Global & HUD Keys
 - **`H`**: Universal Undo (Available in all layers)
 - **`Space`**: Primary Left Click
-- **`?`**: Show physical display selection grid
+- **`;`**: Show physical display selection grid
+- **`?` (Shift + `/`)**: Toggle the Heads-Up Display (HUD) manually
 
 ### ⚡ Action & Scroll Layers (Hold key + Shortcut)
 
