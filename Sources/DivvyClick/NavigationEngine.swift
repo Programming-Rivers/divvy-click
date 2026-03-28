@@ -61,6 +61,7 @@ class NavigationEngine: ObservableObject {
         
         activeScreenFrame = frame
         currentTarget = .region(frame)
+        isActive = true
         history = []
         isSelectingDisplay = true
     }
@@ -191,8 +192,8 @@ class NavigationEngine: ObservableObject {
         case .center, .left, .right:
             newRegion.origin.y = region.origin.y + yStep
         }
-
-        currentTarget = .region(newRegion)
+        let clampedRegion = newRegion.intersection(activeScreenFrame)
+        currentTarget = .region(clampedRegion)
     }
 
     @Published var isMouseDown: Bool = false
