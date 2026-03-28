@@ -63,6 +63,14 @@ class NavigationCoordinator {
                 }
             }
             .store(in: &cancellables)
+
+        // Stop navigation if display configuration changes (e.g. monitor unplugged)
+        NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)
+            .sink { [weak self] _ in
+                guard let self = self, self.engine.isActive else { return }
+                self.engine.stop()
+            }
+            .store(in: &cancellables)
     }
 
     private func performAutoScroll(_ direction: NavigationEngine.ScrollDirection) {
