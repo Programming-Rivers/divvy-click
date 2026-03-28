@@ -93,32 +93,30 @@ class NavigationCoordinator {
         guard let region = engine.currentRegion else { return }
         let targetPoint = CGPoint(x: region.midX, y: region.midY)
 
+        let clickDelay = 0.05 // 50ms
+
         switch action {
         case .click:
-            actionTask = Task {
-                try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
-                guard !Task.isCancelled else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + clickDelay) { [weak self] in
+                guard let self = self, self.engine.isActive else { return }
                 self.cursorEngine.click(button: .left, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .doubleClick:
-            actionTask = Task {
-                try? await Task.sleep(nanoseconds: 50_000_000)
-                guard !Task.isCancelled else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + clickDelay) { [weak self] in
+                guard let self = self, self.engine.isActive else { return }
                 self.cursorEngine.click(button: .left, count: 2, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .rightClick:
-            actionTask = Task {
-                try? await Task.sleep(nanoseconds: 50_000_000)
-                guard !Task.isCancelled else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + clickDelay) { [weak self] in
+                guard let self = self, self.engine.isActive else { return }
                 self.cursorEngine.click(button: .right, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .middleClick:
-            actionTask = Task {
-                try? await Task.sleep(nanoseconds: 50_000_000)
-                guard !Task.isCancelled else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + clickDelay) { [weak self] in
+                guard let self = self, self.engine.isActive else { return }
                 self.cursorEngine.click(button: .center, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
@@ -129,24 +127,18 @@ class NavigationCoordinator {
                 self.engine.stop()
             }
         case .mouseDown:
-            actionTask = Task {
-                try? await Task.sleep(nanoseconds: 50_000_000)
-                guard !Task.isCancelled else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + clickDelay) { [weak self] in
+                guard let self = self, self.engine.isActive else { return }
                 self.cursorEngine.mouseDown(button: .left, flags: flags, at: targetPoint)
                 self.engine.isMouseDown = true
                 self.cursorEngine.mouseDrag(button: .left, flags: flags, at: targetPoint)
-                self.engine.start()
+                // We keep the engine active for dragging
+                self.engine.start() 
             }
         case .mouseUp:
-            if engine.isMouseDown {
-                cursorEngine.mouseUp(button: .left, flags: flags, at: targetPoint)
-            } else {
-                cursorEngine.mouseUp(button: .left, flags: flags, at: targetPoint)
-            }
-            
-            actionTask = Task {
-                try? await Task.sleep(nanoseconds: 50_000_000)
-                guard !Task.isCancelled else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + clickDelay) { [weak self] in
+                guard let self = self else { return }
+                self.cursorEngine.mouseUp(button: .left, flags: flags, at: targetPoint)
                 self.engine.isMouseDown = false
                 self.engine.reset()
                 self.engine.start()
