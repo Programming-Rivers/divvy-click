@@ -27,7 +27,9 @@ class NavigationCoordinator {
                 switch t {
                 case .restoreCursor(let point):
                     self.cursorEngine.jump(to: CGRect(origin: point, size: .zero))
-                    self.engine.reset()
+                    DispatchQueue.main.async { [weak self] in
+                        self?.engine.reset()
+                    }
                 case .region(let r):
                     self.cursorEngine.jump(to: r)
                 }

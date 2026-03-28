@@ -168,19 +168,36 @@ class NavigationEngine: ObservableObject {
         if redoStack.count > maxStackSize {
             redoStack.removeFirst()
         }
-        currentTarget = history.removeLast()
-        isActive = true // Reactivate if it was hidden
+        
+        let target = history.removeLast()
+        currentTarget = target
+        
+        if case .restoreCursor = target {
+            isActive = false
+        } else {
+            isActive = true // Reactivate if it was hidden
+        }
         return true
     }
 
     func redo() {
         guard let current = currentTarget, !redoStack.isEmpty else { return }
         history.append(current)
-        if history.count > maxStackSize {
-            history.removeFirst()
-        }
+        pruneHistory()
         currentTarget = redoStack.removeLast()
         isActive = true // Reactivate if it was hidden
+    }
+
+    private func pruneHistory() {
+        if history.count > maxStackSize {
+            if case .restoreCursor = history.first {
+                if history.count > 1 {
+                    history.remove(at: 1)
+                }
+            } else {
+                history.removeFirst()
+            }
+        }
     }
 
     /// Divide the current region into parts with an overlapping "venn" zone.
@@ -188,9 +205,7 @@ class NavigationEngine: ObservableObject {
         guard isActive, let current = currentTarget, let region = current.region else { return }
         
         history.append(current)
-        if history.count > maxStackSize {
-            history.removeFirst()
-        }
+        pruneHistory()
         redoStack.removeAll()
 
         // 3x3 grid with slight overlap
