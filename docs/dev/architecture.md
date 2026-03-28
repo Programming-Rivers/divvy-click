@@ -27,24 +27,23 @@ The visual feedback system.
 
 ## The Vennfurcation Process
 
-Vennfurcation is a method of dividing a region into multiple parts that retain a shared, overlapping zone, similar how a Venn diagram shows overlapping parts. This reduces "pixel hunting" and provides a higher tolerance for error during navigation.
+Vennfurcation is a method of dividing a region into nine overlapping parts (a 3x3 grid) that retain a shared, overlapping "Venn" zone. This reduces "pixel hunting" and provides a higher tolerance for error during navigation.
 
 ### The Algorithm
 
-Unlike a binary split (bifurcation), Vennfurcation uses an **Expansion Factor** to ensure the two halves overlap.
+Unlike a simple binary split (bifurcation), DivvyClick uses a **3x3 Trifurcation** grid with an overlap factor to ensure sub-regions share boundaries.
 
-1. **Overlap Constant**: DivvyClick uses a constant overlap factor (typically `0.33` or 1/3).
-2. **Expansion Factor**: Calculated as `(1.0 + Overlap) / 2.0`.
-   - With 1/3 overlap, the factor is approximately `0.666`.
-3. **Region Contraction**:
-   - **Left/Up Split**: The new dimension becomes `OriginalSize * ExpansionFactor`. The origin remains the same.
-   - **Right/Down Split**: The new dimension becomes `OriginalSize * ExpansionFactor`. The origin is shifted to ensure the new region aligns with the opposite edge.
-
-### Diagonal Vennfurcation (Corners)
-When a corner direction (e.g., Top-Left) is triggered, the engine applies the horizontal and vertical contraction independently in a single step. This allows for rapid diagonal narrowing.
+1. **Overlap Factor**: DivvyClick uses an overlap factor of `1.1`.
+2. **Dimension Calculation**:
+   - `thirdWidth = (OriginalWidth / 3.0) * OverlapFactor`
+   - `thirdHeight = (OriginalHeight / 3.0) * OverlapFactor`
+3. **Region Positioning**:
+   - The original region is divided into a 3x3 grid.
+   - For each horizontal and vertical dimension (Left/Center/Right and Top/Center/Bottom), the new region is anchored to the respective edge or centered within the parent.
+   - Because the sub-region is 110% of a strict third, it overlaps with its neighbors by 10% of the dimension, creating the "eyepiece" feel where the target pixel remains centered in the overlap zone.
 
 ### Mathematical Benefit
-The overlapping "Venn" zone means that if the user's intended target is near the border of a split, it remains present in both potential sub-regions. This eliminates the "one-pixel error" problem common in standard binary search navigation.
+The overlapping "Venn" zone means that if the user's intended target is near the border of a segment, it remains reachable via multiple overlapping grid tiles. This eliminates the "one-pixel error" problem common in standard grid-based navigation. Any final region calculation is automatically clamped to the physical screen bounds to prevent drift.
 
 ---
 
