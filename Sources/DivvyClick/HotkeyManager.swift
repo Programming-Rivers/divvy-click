@@ -15,7 +15,7 @@ class HotkeyManager {
     private var isFHeld = false
 
     // Double-tap tracking
-    private var lastCommandTapTime: Date = .distantPast
+    private var lastCommandTapTime: ContinuousClock.Instant?
     private var wasCommandPressed = false
 
     let coordinator: NavigationCoordinator
@@ -117,6 +117,7 @@ class HotkeyManager {
         }
 
         if type == .keyDown {
+            lastCommandTapTime = nil // Any regular key breaks the command double-tap sequence
             if handleKeyDown(keyCode, flags: flags) {
                 return nil
             }
@@ -129,10 +130,12 @@ class HotkeyManager {
         let isCommand = flags.contains(.maskCommand)
         if type == .flagsChanged {
             if isCommand && !wasCommandPressed {
-                let now = Date()
-                if now.timeIntervalSince(lastCommandTapTime) < 0.3 {
-                    if engine.isActive { engine.stop() } else { engine.start() }
-                    lastCommandTapTime = .distantPast
+                let now = ContinuousClock.now
+                if let tapTime = lastCommandTapTime, tapTime.duration(to: now) < .seconds(0.3) {
+                    if let tap = eventTap, CGEvent.tapIsEnabled(tap: tap) {
+                        if engine.isActive { engine.stop() } else { engine.start() }
+                    }
+                    lastCommandTapTime = nil
                 } else {
                     lastCommandTapTime = now
                 }
