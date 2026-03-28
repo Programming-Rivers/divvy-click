@@ -183,7 +183,7 @@ class HotkeyManager {
         if type == .flagsChanged {
             if isCommand && !wasCommandPressed {
                 let now = ContinuousClock.now
-                let triggered = if let tapTime = lastCommandTapTime, tapTime.duration(to: now) < .seconds(0.3) {
+                let triggered = if let tapTime = lastCommandTapTime, tapTime.duration(to: now) < .seconds(AppConstants.doubleTapThreshold) {
                     true
                 } else {
                     false

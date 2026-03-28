@@ -19,7 +19,7 @@ class NavigationEngine: ObservableObject {
     // (We formerly held NSScreen directly, but holding CGRect makes testing purely deterministic)
     private var history: [NavigationTarget] = []
     private var redoStack: [NavigationTarget] = []
-    private let maxStackSize = 100
+    private let maxStackSize = AppConstants.maxHistorySize
     private let screenProvider: ScreenProviding
 
     init(screenProvider: ScreenProviding = SystemScreenProvider()) {
@@ -166,7 +166,7 @@ class NavigationEngine: ObservableObject {
         redoStack.removeAll()
 
         // 3x3 grid with slight overlap
-        let overlapFactor: CGFloat = 1.1 
+        let overlapFactor: CGFloat = CGFloat(AppConstants.overlapFactor) 
         let thirdWidth = (region.size.width / 3.0) * overlapFactor
         let thirdHeight = (region.size.height / 3.0) * overlapFactor
 

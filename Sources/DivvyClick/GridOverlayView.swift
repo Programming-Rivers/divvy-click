@@ -36,8 +36,8 @@ struct GridOverlayView: View {
             showCues = false
             guard engine.isActive && layerState.activeLayer == nil && !engine.isSelectingDisplay else { return }
             
-            // Wait 1 second for cues
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            // Wait for cues
+            try? await Task.sleep(nanoseconds: AppConstants.cueIdleDelay)
             withAnimation { showCues = true }
         }
 
@@ -340,16 +340,16 @@ struct GridOverlayView: View {
 
                         // Row 3: _ M , . _
                         GridRow {
-                            Color.clear.frame(width: 55, height: 55)
+                            Color.clear.frame(width: CGFloat(AppConstants.keyViewSize), height: CGFloat(AppConstants.keyViewSize))
                             keyView(key: "M", action: keyAction(layer, "M"))
                             keyView(key: ",", action: keyAction(layer, ","))
                             keyView(key: ".", action: keyAction(layer, "."))
-                            Color.clear.frame(width: 55, height: 55)
+                            Color.clear.frame(width: CGFloat(AppConstants.keyViewSize), height: CGFloat(AppConstants.keyViewSize))
                         }
                     }
 
                     // Wide Space bar row below all keys
-                    keyView(key: "␣", action: keyAction(layer, "Space"), width: 335)
+                    keyView(key: "␣", action: keyAction(layer, "Space"), width: CGFloat(AppConstants.keyViewSize * 5 + 60))
                 }
                 .padding(40)
                 .background(.ultraThinMaterial)
@@ -360,19 +360,19 @@ struct GridOverlayView: View {
                 )
                 .shadow(color: .black.opacity(0.3), radius: 30, x: 0, y: 15)
             }
-            .padding(40) // Give it room in its corner
+            .padding(AppConstants.hudCornerPadding) // Give it room in its corner
         }
         .transition(.scale(scale: 0.9).combined(with: .opacity))
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: "\(layer)-\(String(describing: engine.currentTarget))")
     }
 
     @ViewBuilder
-    private func keyView(key: String, action: String?, width: CGFloat = 55) -> some View {
+    private func keyView(key: String, action: String?, width: CGFloat = CGFloat(AppConstants.keyViewSize)) -> some View {
         VStack(spacing: 6) {
             Text(key)
-                .font(.system(size: 20, weight: .bold, design: .monospaced))
+                .font(.system(size: CGFloat(AppConstants.keyLabelSize), weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
-                .frame(width: width, height: 55)
+                .frame(width: width, height: CGFloat(AppConstants.keyViewSize))
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(.white.opacity(0.15))
@@ -385,7 +385,7 @@ struct GridOverlayView: View {
 
             if let action = action, !action.isEmpty {
                 Text(action)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .font(.system(size: CGFloat(AppConstants.actionLabelSize), weight: .medium, design: .rounded))
                     .foregroundColor(.white.opacity(0.8))
                     .frame(width: width + 10)
                     .multilineTextAlignment(.center)

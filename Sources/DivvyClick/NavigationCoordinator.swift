@@ -9,8 +9,8 @@ class NavigationCoordinator {
 
     private var autoScrollCancellable: AnyCancellable?
     private var actionTask: Task<Void, Never>?
-    private let autoScrollInterval: TimeInterval = 0.05
-    private let autoScrollBaseDelta: Int32 = 20
+    private let autoScrollInterval: TimeInterval = AppConstants.autoScrollInterval
+    private let autoScrollBaseDelta: Int32 = AppConstants.autoScrollBaseDelta
 
     init(engine: NavigationEngine, cursorEngine: CursorProviding = CursorEngine()) {
         self.engine = engine
@@ -93,7 +93,7 @@ class NavigationCoordinator {
         guard let region = engine.currentRegion else { return }
         let targetPoint = CGPoint(x: region.midX, y: region.midY)
 
-        let clickDelay = 0.05 // 50ms
+        let clickDelay = AppConstants.clickDelay
 
         switch action {
         case .click:
@@ -144,7 +144,7 @@ class NavigationCoordinator {
                 self.engine.start()
             }
         case .scroll(let direction):
-            let delta: Int32 = 100
+            let delta: Int32 = AppConstants.scrollStepDelta
             switch direction {
             case .up:    self.cursorEngine.scroll(deltaY: delta, flags: flags)
             case .down:  self.cursorEngine.scroll(deltaY: -delta, flags: flags)
