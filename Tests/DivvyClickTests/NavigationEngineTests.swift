@@ -295,4 +295,24 @@ final class NavigationEngineTests: XCTestCase {
         XCTAssertEqual(mapping[4], screenMid)
         XCTAssertEqual(mapping[5], screenRight)
     }
+
+    func testPhysicalScreenMappingGaplessCompression() {
+        // Arrange: 1 screen on top, 3 screens on bottom (T-shape)
+        let screenTop = CGRect(x: 1920, y: 1080, width: 2560, height: 1440)
+        let screenBottomLeft = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let screenBottomMid = CGRect(x: 1920, y: -360, width: 2560, height: 1440)
+        let screenBottomRight = CGRect(x: 4480, y: 0, width: 1920, height: 1080)
+        
+        let provider = MockScreenProvider(screens: [screenTop, screenBottomLeft, screenBottomMid, screenBottomRight])
+        let engine = NavigationEngine(screenProvider: provider)
+        
+        // Act
+        let mapping = engine.screenMapping()
+        
+        // Assert: I(1)=Top, J(3)=BottomLeft, K(4)=BottomMid, L(5)=BottomRight
+        XCTAssertEqual(mapping[1], screenTop)
+        XCTAssertEqual(mapping[3], screenBottomLeft)
+        XCTAssertEqual(mapping[4], screenBottomMid)
+        XCTAssertEqual(mapping[5], screenBottomRight)
+    }
 }

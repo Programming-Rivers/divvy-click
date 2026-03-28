@@ -130,7 +130,35 @@ class NavigationEngine: ObservableObject {
             mapping[index] = screen
         }
 
-        return mapping
+        // 4. Compress grid to remove empty rows and columns
+        var assigned = mapping.map { ($0.key % 3, $0.key / 3, $0.value) }
+
+        let activeRows = Set(assigned.map { $0.1 }).sorted()
+        var rowMap: [Int: Int] = [:]
+        for (i, r) in activeRows.enumerated() { rowMap[r] = i }
+
+        let activeCols = Set(assigned.map { $0.0 }).sorted()
+        var colMap: [Int: Int] = [:]
+        for (i, c) in activeCols.enumerated() { colMap[c] = i }
+
+        // Apply compression mapping
+        assigned = assigned.map { (colMap[$0.0]!, rowMap[$0.1]!, $0.2) }
+
+        // 5. Center the compressed grid
+        let maxGx = assigned.map { $0.0 }.max() ?? 0
+        let maxGy = assigned.map { $0.1 }.max() ?? 0
+
+        let shiftX = (3 - (maxGx + 1)) / 2
+        let shiftY = (3 - (maxGy + 1)) / 2
+
+        var finalMapping: [Int: CGRect] = [:]
+        for (gx, gy, screen) in assigned {
+            let finalX = gx + shiftX
+            let finalY = gy + shiftY
+            finalMapping[finalY * 3 + finalX] = screen
+        }
+
+        return finalMapping
     }
 
     @discardableResult
