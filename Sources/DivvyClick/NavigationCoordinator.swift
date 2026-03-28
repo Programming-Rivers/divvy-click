@@ -8,6 +8,7 @@ class NavigationCoordinator {
     private var cancellables = Set<AnyCancellable>()
 
     private var autoScrollCancellable: AnyCancellable?
+    private var actionTask: Task<Void, Never>?
     private let autoScrollInterval: TimeInterval = 0.05
     private let autoScrollBaseDelta: Int32 = 20
 
@@ -36,7 +37,10 @@ class NavigationCoordinator {
         // Clear auto-scroll when navigation stops or layer changes
         engine.$isActive
             .sink { [weak self] active in
-                if !active { self?.engine.scrollState.autoScrollDirection = nil }
+                if !active { 
+                    self?.engine.scrollState.autoScrollDirection = nil 
+                    self?.actionTask?.cancel()
+                }
             }
             .store(in: &cancellables)
             
@@ -84,31 +88,37 @@ class NavigationCoordinator {
     }
 
     func execute(_ action: NavigationEngine.Action, flags: CGEventFlags = []) {
+        actionTask?.cancel()
+        
         guard let region = engine.currentRegion else { return }
         let targetPoint = CGPoint(x: region.midX, y: region.midY)
 
         switch action {
         case .click:
-            Task {
+            actionTask = Task {
                 try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
+                guard !Task.isCancelled else { return }
                 self.cursorEngine.click(button: .left, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .doubleClick:
-            Task {
+            actionTask = Task {
                 try? await Task.sleep(nanoseconds: 50_000_000)
+                guard !Task.isCancelled else { return }
                 self.cursorEngine.click(button: .left, count: 2, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .rightClick:
-            Task {
+            actionTask = Task {
                 try? await Task.sleep(nanoseconds: 50_000_000)
+                guard !Task.isCancelled else { return }
                 self.cursorEngine.click(button: .right, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
         case .middleClick:
-            Task {
+            actionTask = Task {
                 try? await Task.sleep(nanoseconds: 50_000_000)
+                guard !Task.isCancelled else { return }
                 self.cursorEngine.click(button: .center, flags: flags, at: targetPoint)
                 self.engine.stop()
             }
@@ -119,8 +129,9 @@ class NavigationCoordinator {
                 self.engine.stop()
             }
         case .mouseDown:
-            Task {
+            actionTask = Task {
                 try? await Task.sleep(nanoseconds: 50_000_000)
+                guard !Task.isCancelled else { return }
                 self.cursorEngine.mouseDown(button: .left, flags: flags, at: targetPoint)
                 self.engine.isMouseDown = true
                 self.cursorEngine.mouseDrag(button: .left, flags: flags, at: targetPoint)
@@ -133,8 +144,9 @@ class NavigationCoordinator {
                 cursorEngine.mouseUp(button: .left, flags: flags, at: targetPoint)
             }
             
-            Task {
+            actionTask = Task {
                 try? await Task.sleep(nanoseconds: 50_000_000)
+                guard !Task.isCancelled else { return }
                 self.engine.isMouseDown = false
                 self.engine.reset()
                 self.engine.start()
