@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleIdentifier</key>
 	<string>house.rivers.programming.divvy-click</string>
+	<key>CFBundleExecutable</key>
+	<string>DivvyClick</string>
 	<key>CFBundleName</key>
 	<string>DivvyClick</string>
 	<key>CFBundlePackageType</key>
