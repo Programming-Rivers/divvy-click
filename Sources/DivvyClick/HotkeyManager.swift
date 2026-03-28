@@ -18,12 +18,35 @@ class HotkeyManager {
     private var lastCommandTapTime: ContinuousClock.Instant?
     private var wasCommandPressed = false
 
+    // We maintain a thread-safe atomic-like check for engine status to avoid main-thread sync blocks in the tap callback.
+    // While the engine is @MainActor, we use a simple unfair lock or similar for the 'isActive' flag used by the tap.
+    private static let lock = NSLock()
+    private static var _isActiveCached: Bool = false
+    static var isActiveCached: Bool {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _isActiveCached
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            _isActiveCached = newValue
+        }
+    }
+
     let coordinator: NavigationCoordinator
     var engine: NavigationEngine { coordinator.engine }
 
     init(coordinator: NavigationCoordinator) {
         self.coordinator = coordinator
         setupEventTap()
+        setupStateSync()
+    }
+
+    private func setupStateSync() {
+        // Sync the cached state with the engine state
+        Self.isActiveCached = engine.isActive
     }
 
     deinit {
@@ -44,19 +67,9 @@ class HotkeyManager {
             guard let refcon = refcon else { return Unmanaged.passUnretained(event) }
             let hotkeyManager = Unmanaged<HotkeyManager>.fromOpaque(refcon).takeUnretainedValue()
             
-            if Thread.isMainThread {
-                return MainActor.assumeIsolated {
-                    hotkeyManager.handleEvent(event, type: type)
-                }
-            } else {
-                var result: Unmanaged<CGEvent>?
-                DispatchQueue.main.sync {
-                    result = MainActor.assumeIsolated {
-                        hotkeyManager.handleEvent(event, type: type)
-                    }
-                }
-                return result
-            }
+            // CRITICAL: We avoid DispatchQueue.main.sync here to prevent system-wide input lag.
+            // We use a cached thread-safe flag for the basic 'isActive' check.
+            return hotkeyManager.handleEvent(event, type: type)
         }
 
         eventTap = CGEvent.tapCreate(
@@ -74,7 +87,7 @@ class HotkeyManager {
         }
 
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
-        CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
+        CFRunLoopAddSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
         
         secureInputTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -105,20 +118,45 @@ class HotkeyManager {
         let keyCode = KeyCode(rawValue: keyCodeRaw)
         let flags = event.flags
 
-        handleDoubleTapCommand(type: type, flags: flags)
+        // Double-tap Command needs some logic that should technically be on MainActor for engine toggling.
+        // We'll perform the timing check here and only jump to MainActor if a toggle is actually triggered.
+        let isToggleTriggered = checkDoubleTapCommand(type: type, flags: flags)
 
-        if !engine.isActive {
-            resetLayerState()
+        if isToggleTriggered {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if self.engine.isActive { self.engine.stop() } else { self.engine.start() }
+            }
+            // We don't necessarily consume the toggle flags here, but if we wanted to prevent them leaking, we'd return nil.
+            // For now, let the system handle the CMD press as usual.
+        }
+
+        // Use the thread-safe cached flag for routing decisions in the callback.
+        if !Self.isActiveCached {
             return Unmanaged.passUnretained(event)
         }
 
+        // For actual key processing, we dispatch to main actor asynchronously to avoid blocking.
+        // If we need to CONSUME the event (returning nil), we must decide synchronously.
+        // This is why keyboard-driven utilities often require the engine state to be accessible synchronously.
+        
         if type == .keyUp {
-            return handleKeyUp(keyCode, event: event)
+            // Processing keyUp asynchronously
+            DispatchQueue.main.async { [weak self] in
+                _ = self?.handleKeyUp(keyCode)
+            }
+            // Most keys are swallowed when active
+            if isSwallowedKey(keyCode) { return nil }
         }
 
         if type == .keyDown {
             lastCommandTapTime = nil // Any regular key breaks the command double-tap sequence
-            if handleKeyDown(keyCode, flags: flags) {
+            
+            // To decide whether to swallow the event, we check if it's a navigational key.
+            if isSwallowedKey(keyCode) {
+                DispatchQueue.main.async { [weak self] in
+                    _ = self?.handleKeyDown(keyCode, flags: flags)
+                }
                 return nil
             }
         }
@@ -126,46 +164,56 @@ class HotkeyManager {
         return Unmanaged.passUnretained(event)
     }
 
-    private func handleDoubleTapCommand(type: CGEventType, flags: CGEventFlags) {
+    private func checkSwallowedKey(_ keyCode: KeyCode?) -> Bool {
+        guard let keyCode = keyCode else { return false }
+        switch keyCode {
+        case .a, .s, .d, .f, .u, .i, .o, .h, .j, .k, .l, .m, .comma, .period, .space, .semicolon, .escape, .slash:
+            return true
+        default:
+            return false
+        }
+    }
+
+    private func isSwallowedKey(_ keyCode: KeyCode?) -> Bool {
+        return checkSwallowedKey(keyCode)
+    }
+
+    private func checkDoubleTapCommand(type: CGEventType, flags: CGEventFlags) -> Bool {
         let isCommand = flags.contains(.maskCommand)
         if type == .flagsChanged {
             if isCommand && !wasCommandPressed {
                 let now = ContinuousClock.now
-                if let tapTime = lastCommandTapTime, tapTime.duration(to: now) < .seconds(0.3) {
-                    if let tap = eventTap, CGEvent.tapIsEnabled(tap: tap) {
-                        if engine.isActive { engine.stop() } else { engine.start() }
-                    }
+                let triggered = if let tapTime = lastCommandTapTime, tapTime.duration(to: now) < .seconds(0.3) {
+                    true
+                } else {
+                    false
+                }
+                
+                if triggered {
                     lastCommandTapTime = nil
+                    wasCommandPressed = isCommand
+                    return true
                 } else {
                     lastCommandTapTime = now
                 }
             }
             wasCommandPressed = isCommand
         }
+        return false
     }
 
-    private func resetLayerState() {
-        isAHeld = false
-        isSHeld = false
-        isDHeld = false
-        isFHeld = false
-    }
-
-    private func handleKeyUp(_ keyCode: KeyCode?, event: CGEvent) -> Unmanaged<CGEvent>? {
-        guard let keyCode = keyCode else { return Unmanaged.passUnretained(event) }
+    private func handleKeyUp(_ keyCode: KeyCode?) {
+        guard let keyCode = keyCode else { return }
 
         switch keyCode {
         case .a: isAHeld = false
         case .s: isSHeld = false
         case .d: isDHeld = false
         case .f: isFHeld = false
-        case .escape: return nil
-        case .u, .i, .o, .h, .j, .k, .l, .m, .comma, .period, .space: return nil
         default: break
         }
 
         updateActiveLayer()
-        return Unmanaged.passUnretained(event)
     }
 
     private func handleKeyDown(_ keyCode: KeyCode?, flags: CGEventFlags) -> Bool {
@@ -185,13 +233,7 @@ class HotkeyManager {
         if handleUniversalKeys(keyCode, flags: flags) { return true }
         if handleLayerActions(keyCode, flags: flags) { return true }
 
-        // Consume layer keys so they don't leak into the active application
-        switch keyCode {
-        case .a, .s, .d, .f:
-            return true
-        default:
-            return false // Unknown key — let the system handle it
-        }
+        return false
     }
 
     private func handleDisplaySelection(_ keyCode: KeyCode) -> Bool {

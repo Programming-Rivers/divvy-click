@@ -5,7 +5,11 @@ class NavigationEngine: ObservableObject {
     @Published var currentTarget: NavigationTarget?
     var currentRegion: CGRect? { currentTarget?.region }
     @Published var activeScreenFrame: CGRect = .zero
-    @Published var isActive: Bool = false
+    @Published var isActive: Bool = false {
+        didSet {
+            HotkeyManager.isActiveCached = isActive
+        }
+    }
     @Published var isSelectingDisplay: Bool = false
     let layerState = LayerState()
     let scrollState = ScrollState()
