@@ -2,7 +2,7 @@ import AppKit
 import CoreGraphics
 import Foundation
 
-struct CursorEngine {
+struct CursorEngine: CursorProviding {
     /// Jumps the cursor to the center of a target region
     @discardableResult
     func jump(to rect: CGRect) -> Bool {

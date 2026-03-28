@@ -4,50 +4,50 @@ import Combine
 @MainActor
 class NavigationCoordinator {
     let engine: NavigationEngine
-    private let cursorEngine = CursorEngine()
+    private let cursorEngine: CursorProviding
     private var cancellables = Set<AnyCancellable>()
 
     private var autoScrollCancellable: AnyCancellable?
     private let autoScrollInterval: TimeInterval = 0.05
     private let autoScrollBaseDelta: Int32 = 20
 
-    init(engine: NavigationEngine) {
+    init(engine: NavigationEngine, cursorEngine: CursorProviding = CursorEngine()) {
         self.engine = engine
+        self.cursorEngine = cursorEngine
         setupObservers()
     }
 
     private func setupObservers() {
-        // Active Sync: Whenever the region changes, jump the cursor to its center.
-        engine.$currentRegion
-            .sink { [weak self] region in
-                guard let self = self, let r = region, self.engine.isActive else { return }
+        // Active Sync: Whenever the target changes, jump the cursor to its center.
+        engine.$currentTarget
+            .sink { [weak self] target in
+                guard let self = self, let t = target, self.engine.isActive else { return }
                 
-                // If it's a marker (0x0), jump to its origin and stop.
-                if r.size == .zero {
-                    self.cursorEngine.jump(to: CGRect(origin: r.origin, size: .zero))
+                switch t {
+                case .restoreCursor(let point):
+                    self.cursorEngine.jump(to: CGRect(origin: point, size: .zero))
                     self.engine.reset()
-                    return
+                case .region(let r):
+                    self.cursorEngine.jump(to: r)
                 }
-                
-                self.cursorEngine.jump(to: r)
             }
             .store(in: &cancellables)
 
         // Clear auto-scroll when navigation stops or layer changes
         engine.$isActive
             .sink { [weak self] active in
-                if !active { self?.engine.autoScrollDirection = nil }
+                if !active { self?.engine.scrollState.autoScrollDirection = nil }
             }
             .store(in: &cancellables)
             
-        engine.$activeLayer
+        engine.layerState.$activeLayer
             .sink { [weak self] _ in
-                self?.engine.autoScrollDirection = nil
+                self?.engine.scrollState.autoScrollDirection = nil
             }
             .store(in: &cancellables)
 
         // Handle Auto-Scroll Timer
-        engine.$autoScrollDirection
+        engine.scrollState.$autoScrollDirection
             .sink { [weak self] direction in
                 guard let self = self else { return }
                 self.autoScrollCancellable = nil 
@@ -59,14 +59,14 @@ class NavigationCoordinator {
                             self.performAutoScroll(dir)
                         }
                 } else {
-                    self.engine.autoScrollSpeed = 0
+                    self.engine.scrollState.autoScrollSpeed = 0
                 }
             }
             .store(in: &cancellables)
     }
 
     private func performAutoScroll(_ direction: NavigationEngine.ScrollDirection) {
-        let delta = autoScrollBaseDelta * engine.autoScrollSpeed
+        let delta = autoScrollBaseDelta * engine.scrollState.autoScrollSpeed
         switch direction {
         case .up:    self.cursorEngine.scroll(deltaY: delta)
         case .down:  self.cursorEngine.scroll(deltaY: -delta)
@@ -141,15 +141,15 @@ class NavigationCoordinator {
             }
         case .autoScroll(let direction):
             if direction == nil {
-                engine.autoScrollDirection = nil
-                engine.autoScrollSpeed = 0
-            } else if engine.autoScrollDirection == direction {
+                engine.scrollState.autoScrollDirection = nil
+                engine.scrollState.autoScrollSpeed = 0
+            } else if engine.scrollState.autoScrollDirection == direction {
                 // If same direction, increase speed (max 10)
-                engine.autoScrollSpeed = min(engine.autoScrollSpeed + 1, 10)
+                engine.scrollState.autoScrollSpeed = min(engine.scrollState.autoScrollSpeed + 1, 10)
             } else {
                 // Switch direction or start new
-                engine.autoScrollDirection = direction
-                engine.autoScrollSpeed = 1
+                engine.scrollState.autoScrollDirection = direction
+                engine.scrollState.autoScrollSpeed = 1
             }
         }
     }

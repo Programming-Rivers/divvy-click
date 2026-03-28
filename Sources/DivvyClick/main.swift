@@ -1,5 +1,5 @@
 import AppKit
-@testable import Sources_DivvyClick_lib
+import Sources_DivvyClick_lib
 
 MainActor.assumeIsolated {
     let app = NSApplication.shared

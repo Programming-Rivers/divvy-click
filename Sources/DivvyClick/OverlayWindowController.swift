@@ -27,11 +27,11 @@ class OverlayWindowController {
         window.hidesOnDeactivate = false
         window.isFloatingPanel = true
 
-        let hostingView = NSHostingView(rootView: GridOverlayView(engine: engine))
+        let hostingView = NSHostingView(rootView: GridOverlayView(engine: engine, layerState: engine.layerState, scrollState: engine.scrollState))
         window.contentView = hostingView
 
         // Observe engine region, active screen frame, and active state
-        Publishers.CombineLatest3(engine.$currentRegion, engine.$activeScreenFrame, engine.$isActive)
+        Publishers.CombineLatest3(engine.$currentTarget, engine.$activeScreenFrame, engine.$isActive)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] region, screenFrame, isActive in
                 guard let self = self else { return }

@@ -2,6 +2,8 @@ import SwiftUI
 
 struct GridOverlayView: View {
     @ObservedObject var engine: NavigationEngine
+    @ObservedObject var layerState: LayerState
+    @ObservedObject var scrollState: ScrollState
     @State private var showCues = false
 
 
@@ -22,17 +24,17 @@ struct GridOverlayView: View {
             }
 
             // 4. Layer HUD (Active Layer or 10s idle Default Layer)
-            if let layer = engine.activeLayer {
+            if let layer = layerState.activeLayer {
                 layerHUD(for: layer)
-            } else if engine.isActive && engine.showHUD {
+            } else if engine.isActive && layerState.showHUD {
                 layerHUD(for: .defaultNav)
             }
 
         }
         .ignoresSafeArea()
-        .task(id: "\(String(describing: engine.currentRegion))-\(engine.activeLayer == nil)-\(engine.isActive)-\(engine.isSelectingDisplay)") {
+        .task(id: "\(String(describing: engine.currentTarget))-\(layerState.activeLayer == nil)-\(engine.isActive)-\(engine.isSelectingDisplay)") {
             showCues = false
-            guard engine.isActive && engine.activeLayer == nil && !engine.isSelectingDisplay else { return }
+            guard engine.isActive && layerState.activeLayer == nil && !engine.isSelectingDisplay else { return }
             
             // Wait 1 second for cues
             try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -300,10 +302,10 @@ struct GridOverlayView: View {
                     .shadow(color: .cyan.opacity(0.5), radius: 8)
 
                 // Auto-Scroll Status
-                if let dir = engine.autoScrollDirection {
+                if let dir = scrollState.autoScrollDirection {
                     HStack(spacing: 8) {
                         Image(systemName: dir == .up ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
-                        Text("AUTO-SCROLLING (\(dir == .up ? "UP" : "DOWN") - SPEED: \(engine.autoScrollSpeed))")
+                        Text("AUTO-SCROLLING (\(dir == .up ? "UP" : "DOWN") - SPEED: \(scrollState.autoScrollSpeed))")
                             .font(.system(size: 14, weight: .black, design: .monospaced))
                     }
                     .foregroundColor(.orange)
@@ -361,7 +363,7 @@ struct GridOverlayView: View {
             .padding(40) // Give it room in its corner
         }
         .transition(.scale(scale: 0.9).combined(with: .opacity))
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: "\(layer)-\(String(describing: engine.currentRegion))")
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: "\(layer)-\(String(describing: engine.currentTarget))")
     }
 
     @ViewBuilder

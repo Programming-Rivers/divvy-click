@@ -2,18 +2,19 @@ import AppKit
 
 @MainActor
 class NavigationEngine: ObservableObject {
-    @Published var currentRegion: CGRect?
+    @Published var currentTarget: NavigationTarget?
+    var currentRegion: CGRect? { currentTarget?.region }
     @Published var activeScreenFrame: CGRect = .zero
     @Published var isActive: Bool = false
     @Published var isSelectingDisplay: Bool = false
-    @Published var activeLayer: ActiveLayer? = nil
-    @Published var showHUD: Bool = false
+    let layerState = LayerState()
+    let scrollState = ScrollState()
 
 
     // Original screen bounding box to constrain navigation
     // (We formerly held NSScreen directly, but holding CGRect makes testing purely deterministic)
-    private var history: [CGRect] = []
-    private var redoStack: [CGRect] = []
+    private var history: [NavigationTarget] = []
+    private var redoStack: [NavigationTarget] = []
     private let maxStackSize = 100
     private let screenProvider: ScreenProviding
 
@@ -22,15 +23,15 @@ class NavigationEngine: ObservableObject {
     }
 
     func start() {
-        if currentRegion == nil {
+        if currentTarget == nil {
             let mouseLoc = screenProvider.mouseLocation
             let frame = screenProvider.screenFrame(at: mouseLoc) ?? NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
             
             // Storing the mouse location as a marker for the "Final Undo"
-            // Using a 0x0 Rect as a marker
-            let marker = CGRect(origin: mouseLoc, size: .zero)
+            // Using a restoreCursor target as a marker
+            let marker = NavigationTarget.restoreCursor(mouseLoc)
             activeScreenFrame = frame
-            currentRegion = frame
+            currentTarget = .region(frame)
             history = [marker]
             redoStack = []
         }
@@ -40,15 +41,15 @@ class NavigationEngine: ObservableObject {
     func stop() {
         isActive = false
         isSelectingDisplay = false
-        showHUD = false
+        layerState.showHUD = false
     }
 
 
     func reset() {
         isActive = false
         isSelectingDisplay = false
-        showHUD = false
-        currentRegion = nil
+        layerState.showHUD = false
+        currentTarget = nil
         history = []
         redoStack = []
     }
@@ -59,8 +60,8 @@ class NavigationEngine: ObservableObject {
         let frame = screenProvider.screenFrame(at: mouseLoc) ?? NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
         
         activeScreenFrame = frame
-        currentRegion = frame
-        isActive = true
+        currentTarget = .region(frame)
+        history = []
         isSelectingDisplay = true
     }
 
@@ -69,7 +70,7 @@ class NavigationEngine: ObservableObject {
         guard index >= 0 && index < 9, let frame = screens[index] else { return }
         
         activeScreenFrame = frame
-        currentRegion = frame
+        currentTarget = .region(frame)
         isSelectingDisplay = false
         isActive = true
         history = []
@@ -129,31 +130,31 @@ class NavigationEngine: ObservableObject {
 
     @discardableResult
     func undo() -> Bool {
-        guard let current = currentRegion, !history.isEmpty else { return false }
+        guard let current = currentTarget, !history.isEmpty else { return false }
         redoStack.append(current)
         if redoStack.count > maxStackSize {
             redoStack.removeFirst()
         }
-        currentRegion = history.removeLast()
+        currentTarget = history.removeLast()
         isActive = true // Reactivate if it was hidden
         return true
     }
 
     func redo() {
-        guard let current = currentRegion, !redoStack.isEmpty else { return }
+        guard let current = currentTarget, !redoStack.isEmpty else { return }
         history.append(current)
         if history.count > maxStackSize {
             history.removeFirst()
         }
-        currentRegion = redoStack.removeLast()
+        currentTarget = redoStack.removeLast()
         isActive = true // Reactivate if it was hidden
     }
 
     /// Divide the current region into parts with an overlapping "venn" zone.
     func vennfurcate(_ direction: Direction) {
-        guard isActive, let region = currentRegion else { return }
+        guard isActive, let current = currentTarget, let region = current.region else { return }
         
-        history.append(region)
+        history.append(current)
         if history.count > maxStackSize {
             history.removeFirst()
         }
@@ -191,7 +192,7 @@ class NavigationEngine: ObservableObject {
             newRegion.origin.y = region.origin.y + yStep
         }
 
-        currentRegion = newRegion
+        currentTarget = .region(newRegion)
     }
 
     @Published var isMouseDown: Bool = false
@@ -202,8 +203,7 @@ class NavigationEngine: ObservableObject {
         case center
     }
 
-    @Published var autoScrollDirection: ScrollDirection? = nil
-    @Published var autoScrollSpeed: Int32 = 0
+
 
     enum Action {
         case click, doubleClick, rightClick, middleClick, move, mouseDown, mouseUp

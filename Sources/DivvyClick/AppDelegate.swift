@@ -3,7 +3,10 @@ import SwiftUI
 import Combine
 
 @MainActor
-class AppDelegate: NSObject, NSApplicationDelegate {
+public class AppDelegate: NSObject, NSApplicationDelegate {
+    public override init() {
+        super.init()
+    }
     var statusItem: NSStatusItem!
     let navigationEngine = NavigationEngine()
     var navigationCoordinator: NavigationCoordinator!
@@ -14,7 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var mainMenu: NSMenu!
 
-    func applicationDidFinishLaunching(_: Notification) {
+    public func applicationDidFinishLaunching(_: Notification) {
         navigationCoordinator = NavigationCoordinator(engine: navigationEngine)
         // Create the status bar icon
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -75,7 +78,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         navigationEngine.stop()
     }
 
-    func applicationWillTerminate(_: Notification) {
+    public func applicationWillTerminate(_: Notification) {
         // Teardown
     }
 

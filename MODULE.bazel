@@ -1,4 +1,4 @@
-""" Bazel module containing laser cutting and woodwork schemas made by FreeCAD """
+""" Bazel module for DivvyClick, a keyboard-driven mouse emulation utility for macOS """
 
 module(
     name = "divvy-click",

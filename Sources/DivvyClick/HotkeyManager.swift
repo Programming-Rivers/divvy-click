@@ -6,6 +6,7 @@ import Foundation
 class HotkeyManager {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
+    private var secureInputTimer: Timer?
 
     // Layer keys state tracking
     private var isAHeld = false
@@ -26,6 +27,7 @@ class HotkeyManager {
     }
 
     deinit {
+        secureInputTimer?.invalidate()
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
             if let runLoopSource = runLoopSource {
@@ -39,9 +41,21 @@ class HotkeyManager {
         let eventMask = (1 << CGEventType.keyDown.rawValue) | (1 << CGEventType.keyUp.rawValue) | (1 << CGEventType.flagsChanged.rawValue)
 
         let callback: CGEventTapCallBack = { _, type, event, refcon -> Unmanaged<CGEvent>? in
-            let hotkeyManager = Unmanaged<HotkeyManager>.fromOpaque(refcon!).takeUnretainedValue()
-            return MainActor.assumeIsolated {
-                hotkeyManager.handleEvent(event, type: type)
+            guard let refcon = refcon else { return Unmanaged.passUnretained(event) }
+            let hotkeyManager = Unmanaged<HotkeyManager>.fromOpaque(refcon).takeUnretainedValue()
+            
+            if Thread.isMainThread {
+                return MainActor.assumeIsolated {
+                    hotkeyManager.handleEvent(event, type: type)
+                }
+            } else {
+                var result: Unmanaged<CGEvent>?
+                DispatchQueue.main.sync {
+                    result = MainActor.assumeIsolated {
+                        hotkeyManager.handleEvent(event, type: type)
+                    }
+                }
+                return result
             }
         }
 
@@ -62,10 +76,31 @@ class HotkeyManager {
         runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
+        
+        secureInputTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.checkSecureInput()
+            }
+        }
     }
 
+    private func checkSecureInput() {
+        guard let tap = eventTap else { return }
+        if !CGEvent.tapIsEnabled(tap: tap) {
+            // Re-enable if possible, fails if secure input is active
+            CGEvent.tapEnable(tap: tap, enable: true)
+            if !CGEvent.tapIsEnabled(tap: tap) && engine.isActive {
+                engine.stop()
+            }
+        }
+    }
 
     private func handleEvent(_ event: CGEvent, type: CGEventType) -> Unmanaged<CGEvent>? {
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            if let tap = eventTap { CGEvent.tapEnable(tap: tap, enable: true) }
+            return Unmanaged.passUnretained(event)
+        }
+
         let keyCodeRaw = event.getIntegerValueField(.keyboardEventKeycode)
         let keyCode = KeyCode(rawValue: keyCodeRaw)
         let flags = event.flags
@@ -147,7 +182,13 @@ class HotkeyManager {
         if handleUniversalKeys(keyCode, flags: flags) { return true }
         if handleLayerActions(keyCode, flags: flags) { return true }
 
-        return true // Consume all keys during navigation
+        // Consume layer keys so they don't leak into the active application
+        switch keyCode {
+        case .a, .s, .d, .f:
+            return true
+        default:
+            return false // Unknown key — let the system handle it
+        }
     }
 
     private func handleDisplaySelection(_ keyCode: KeyCode) -> Bool {
@@ -177,14 +218,14 @@ class HotkeyManager {
             return true
         }
         if keyCode == .slash && flags.contains(.maskShift) {
-            engine.showHUD.toggle()
+            engine.layerState.showHUD.toggle()
             return true
         }
         return false
     }
 
     private func handleLayerActions(_ keyCode: KeyCode, flags: CGEventFlags) -> Bool {
-        if KeyMap.shared.execute(for: engine.activeLayer ?? .defaultNav, key: keyCode, coordinator: coordinator, flags: flags) {
+        if KeyMap.shared.execute(for: engine.layerState.activeLayer ?? .defaultNav, key: keyCode, coordinator: coordinator, flags: flags) {
             return true
         }
         if keyCode == .escape {
@@ -195,10 +236,10 @@ class HotkeyManager {
     }
 
     private func updateActiveLayer() {
-        if isDHeld { engine.activeLayer = .action }
-        else if isFHeld { engine.activeLayer = .scroll }
-        else if isSHeld { engine.activeLayer = .fastMove }
-        else if isAHeld { engine.activeLayer = .management }
-        else { engine.activeLayer = nil }
+        if isDHeld { engine.layerState.activeLayer = .action }
+        else if isFHeld { engine.layerState.activeLayer = .scroll }
+        else if isSHeld { engine.layerState.activeLayer = .fastMove }
+        else if isAHeld { engine.layerState.activeLayer = .management }
+        else { engine.layerState.activeLayer = nil }
     }
 }
