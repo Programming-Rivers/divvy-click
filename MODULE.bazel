@@ -29,6 +29,11 @@ bazel_dep(
     version = "0.11.0",
     dev_dependency = True,
 )
+bazel_dep(
+    name = "rules_shell",
+    version = "0.7.1",
+    dev_dependency = True,
+)
 
 bazel_dep(
     name = "apple_support",
