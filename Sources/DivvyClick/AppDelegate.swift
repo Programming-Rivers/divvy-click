@@ -33,10 +33,10 @@ public class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Define menu
         mainMenu = NSMenu()
-        mainMenu.addItem(NSMenuItem(title: "Start Navigation", action: #selector(startNav), keyEquivalent: "s"))
-        mainMenu.addItem(NSMenuItem(title: "Stop Navigation", action: #selector(stopNav), keyEquivalent: "x"))
+        mainMenu.addItem(NSMenuItem(title: "Start Navigation", action: #selector(startNav), keyEquivalent: ""))
+        mainMenu.addItem(NSMenuItem(title: "Stop Navigation", action: #selector(stopNav), keyEquivalent: ""))
         mainMenu.addItem(NSMenuItem.separator())
-        mainMenu.addItem(NSMenuItem(title: "Quit Divvy-click", action: #selector(quitApp), keyEquivalent: "q"))
+        mainMenu.addItem(NSMenuItem(title: "Quit DivvyClick", action: #selector(quitApp), keyEquivalent: ""))
 
         hotkeyManager = HotkeyManager(coordinator: navigationCoordinator)
         overlayController = OverlayWindowController(engine: navigationEngine)
