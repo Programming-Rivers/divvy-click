@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="0.3">
+<plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
 	<string>house.rivers.programming.divvy-click</string>
@@ -18,7 +18,7 @@
 	<string>Divvy-click requires Input Monitoring to intercept navigational keystrokes without passing them to active applications.</string>
 
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>0.4.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 </dict>
