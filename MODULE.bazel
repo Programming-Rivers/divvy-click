@@ -25,11 +25,6 @@ bazel_dep(
     dev_dependency = True,
 )
 bazel_dep(
-    name = "rules_multitool",
-    version = "0.11.0",
-    dev_dependency = True,
-)
-bazel_dep(
     name = "rules_shell",
     version = "0.7.1",
     dev_dependency = True,
@@ -53,7 +48,3 @@ llvm = use_extension("@llvm//extensions:llvm.bzl", "llvm")
 use_repo(llvm, "llvm-project")
 
 register_toolchains("@llvm-project//:all")
-
-multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool")
-multitool.hub(lockfile = "//tools/format:multitool.lock.json")
-use_repo(multitool, "multitool")

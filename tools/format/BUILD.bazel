@@ -1,17 +1,2 @@
 """
 """
-
-load("@aspect_rules_lint//format:defs.bzl", "format_multirun")
-
-# 1. Define where the SwiftFormat binary comes from
-# This assumes you have it in your multitool lockfile or installed on the host
-alias(
-    name = "swiftformat_bin",
-    actual = "@multitool//tools/swiftformat", # Change this to your binary source
-)
-
-# 2. Configure the formatter
-format_multirun(
-    name = "format",
-    swift = ":swiftformat_bin",
-)
