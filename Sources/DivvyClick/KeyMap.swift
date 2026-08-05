@@ -91,29 +91,19 @@ class KeyMap {
         // Fast Move Layer (S)
         mappings[.fastMove] = [
             .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
-            .u: KeyBinding(label: "Fast ↖") { coordinator, _ in coordinator.engine.vennfurcate(.topLeft); coordinator.engine.vennfurcate(.topLeft) },
             .i: KeyBinding(label: "Fast ↑") { coordinator, _ in coordinator.engine.vennfurcate(.up); coordinator.engine.vennfurcate(.up) },
-            .o: KeyBinding(label: "Fast ↗") { coordinator, _ in coordinator.engine.vennfurcate(.topRight); coordinator.engine.vennfurcate(.topRight) },
+            .k: KeyBinding(label: "Fast ↓") { coordinator, _ in coordinator.engine.vennfurcate(.down); coordinator.engine.vennfurcate(.down) },
             .j: KeyBinding(label: "Fast ←") { coordinator, _ in coordinator.engine.vennfurcate(.left); coordinator.engine.vennfurcate(.left) },
-            .k: KeyBinding(label: "Fast ○") { coordinator, _ in coordinator.engine.vennfurcate(.center); coordinator.engine.vennfurcate(.center) },
-            .l: KeyBinding(label: "Fast →") { coordinator, _ in coordinator.engine.vennfurcate(.right); coordinator.engine.vennfurcate(.right) },
-            .m: KeyBinding(label: "Fast ↙") { coordinator, _ in coordinator.engine.vennfurcate(.bottomLeft); coordinator.engine.vennfurcate(.bottomLeft) },
-            .comma: KeyBinding(label: "Fast ↓") { coordinator, _ in coordinator.engine.vennfurcate(.down); coordinator.engine.vennfurcate(.down) },
-            .period: KeyBinding(label: "Fast ↘") { coordinator, _ in coordinator.engine.vennfurcate(.bottomRight); coordinator.engine.vennfurcate(.bottomRight) }
+            .l: KeyBinding(label: "Fast →") { coordinator, _ in coordinator.engine.vennfurcate(.right); coordinator.engine.vennfurcate(.right) }
         ]
         
         // Default Navigation
         mappings[.defaultNav] = [
             .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
-            .u: KeyBinding(label: "↖") { coordinator, _ in coordinator.engine.vennfurcate(.topLeft) },
             .i: KeyBinding(label: "↑") { coordinator, _ in coordinator.engine.vennfurcate(.up) },
-            .o: KeyBinding(label: "↗") { coordinator, _ in coordinator.engine.vennfurcate(.topRight) },
+            .k: KeyBinding(label: "↓") { coordinator, _ in coordinator.engine.vennfurcate(.down) },
             .j: KeyBinding(label: "←") { coordinator, _ in coordinator.engine.vennfurcate(.left) },
-            .k: KeyBinding(label: "○") { coordinator, _ in coordinator.engine.vennfurcate(.center) },
-            .l: KeyBinding(label: "→") { coordinator, _ in coordinator.engine.vennfurcate(.right) },
-            .m: KeyBinding(label: "↙") { coordinator, _ in coordinator.engine.vennfurcate(.bottomLeft) },
-            .comma: KeyBinding(label: "↓") { coordinator, _ in coordinator.engine.vennfurcate(.down) },
-            .period: KeyBinding(label: "↘") { coordinator, _ in coordinator.engine.vennfurcate(.bottomRight) }
+            .l: KeyBinding(label: "→") { coordinator, _ in coordinator.engine.vennfurcate(.right) }
         ]
     }
     

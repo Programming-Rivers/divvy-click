@@ -109,29 +109,30 @@ struct GridOverlayView: View {
                 
                 context.stroke(crosshairPath, with: .color(neonColor), lineWidth: 2.0)
 
-                // 3. Draw 3x3 grid lines (tic-tac-toe)
+                // 3. Draw overlapping pair tile boundaries
                 var globalPath = Path()
-                let thirdW = localRegion.width / 3.0
-                let thirdH = localRegion.height / 3.0
+                let overlapFactor: CGFloat = CGFloat(AppConstants.overlapFactor)
+                let halfW = (localRegion.width / 2.0) * overlapFactor
+                let halfH = (localRegion.height / 2.0) * overlapFactor
                 
-                let leftLineX = localRegion.minX + thirdW
-                let rightLineX = localRegion.minX + 2.0 * thirdW
-                let bottomLineY = localRegion.minY + thirdH
-                let topLineY2 = localRegion.minY + 2.0 * thirdH
+                let leftTileRightX = localRegion.minX + halfW
+                let rightTileLeftX = localRegion.maxX - halfW
+                let topTileBottomY = localRegion.minY + halfH
+                let bottomTileTopY = localRegion.maxY - halfH
                 
-                // Vertical lines
-                globalPath.move(to: CGPoint(x: leftLineX, y: localRegion.minY))
-                globalPath.addLine(to: CGPoint(x: leftLineX, y: localRegion.maxY))
+                // Vertical boundary lines (Left / Right overlap)
+                globalPath.move(to: CGPoint(x: leftTileRightX, y: localRegion.minY))
+                globalPath.addLine(to: CGPoint(x: leftTileRightX, y: localRegion.maxY))
                 
-                globalPath.move(to: CGPoint(x: rightLineX, y: localRegion.minY))
-                globalPath.addLine(to: CGPoint(x: rightLineX, y: localRegion.maxY))
+                globalPath.move(to: CGPoint(x: rightTileLeftX, y: localRegion.minY))
+                globalPath.addLine(to: CGPoint(x: rightTileLeftX, y: localRegion.maxY))
                 
-                // Horizontal lines
-                globalPath.move(to: CGPoint(x: localRegion.minX, y: bottomLineY))
-                globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: bottomLineY))
+                // Horizontal boundary lines (Top / Bottom overlap)
+                globalPath.move(to: CGPoint(x: localRegion.minX, y: topTileBottomY))
+                globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: topTileBottomY))
                 
-                globalPath.move(to: CGPoint(x: localRegion.minX, y: topLineY2))
-                globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: topLineY2))
+                globalPath.move(to: CGPoint(x: localRegion.minX, y: bottomTileTopY))
+                globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: bottomTileTopY))
                 
                 context.stroke(globalPath, with: .color(neonColor.opacity(0.3)), lineWidth: 1.0)
             }
@@ -143,20 +144,19 @@ struct GridOverlayView: View {
     private var gridKeyCues: some View {
         if engine.isActive, let region = engine.currentRegion {
             let localRegion = localRect(for: region, in: engine.activeScreenFrame)
-            let thirdW = localRegion.width / 3.0
-            let thirdH = localRegion.height / 3.0
             
-            // Only show cues if they fit comfortably (32x32 cue + 20px padding)
-            if thirdW > 72 && thirdH > 72 {
-                let keys: [[String]] = [["U", "I", "O"], ["J", "K", "L"], ["M", ",", "."]]
+            // Only show cues if they fit comfortably
+            if localRegion.width > 72 && localRegion.height > 72 {
+                let cueItems: [(key: String, x: CGFloat, y: CGFloat)] = [
+                    ("I", localRegion.midX, localRegion.minY + 20),
+                    ("K", localRegion.midX, localRegion.maxY - 20),
+                    ("J", localRegion.minX + 20, localRegion.midY),
+                    ("L", localRegion.maxX - 20, localRegion.midY)
+                ]
                 
-                ZStack(alignment: .topLeading) {
-                    ForEach(0..<3) { row in
-                        ForEach(0..<3) { col in
-                            let x = localRegion.minX + CGFloat(col) * thirdW + 8
-                            let y = localRegion.minY + CGFloat(row) * thirdH + 8
-                        
-                        Text(keys[row][col])
+                ZStack {
+                    ForEach(cueItems, id: \.key) { item in
+                        Text(item.key)
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .foregroundColor(.white)
                             .frame(width: 32, height: 32)
@@ -169,8 +169,7 @@ struct GridOverlayView: View {
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke(.white.opacity(0.3), lineWidth: 1)
                             )
-                            .position(x: x + 16, y: y + 16) // center of the 32x32 box
-                        }
+                            .position(x: item.x, y: item.y)
                     }
                 }
                 .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)

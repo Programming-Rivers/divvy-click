@@ -9,9 +9,8 @@ final class KeyMapTests: XCTestCase {
     func testDefaultNavLabelsForGridKeys() {
         let expected: [(KeyCode, String)] = [
             (.h, "Undo"),
-            (.u, "↖"), (.i, "↑"), (.o, "↗"),
-            (.j, "←"), (.k, "○"), (.l, "→"),
-            (.m, "↙"), (.comma, "↓"), (.period, "↘")
+            (.i, "↑"), (.k, "↓"),
+            (.j, "←"), (.l, "→")
         ]
 
         for (key, expectedLabel) in expected {
@@ -19,6 +18,14 @@ final class KeyMapTests: XCTestCase {
                 KeyMap.shared.label(for: .defaultNav, key: key),
                 expectedLabel,
                 "Default nav label for \(key.string) should be \(expectedLabel)"
+            )
+        }
+
+        let unboundKeys: [KeyCode] = [.u, .o, .m, .comma, .period]
+        for key in unboundKeys {
+            XCTAssertNil(
+                KeyMap.shared.label(for: .defaultNav, key: key),
+                "Default nav layer should not have binding for \(key.string)"
             )
         }
     }
@@ -42,7 +49,7 @@ final class KeyMapTests: XCTestCase {
     }
 
     func testActionLayerUnboundKeysReturnNil() {
-        // Top row navigation keys should not have bindings in action layer
+        // Unbound keys in action layer
         let unboundKeys: [KeyCode] = [.u, .i, .o]
         for key in unboundKeys {
             XCTAssertNil(
@@ -76,9 +83,8 @@ final class KeyMapTests: XCTestCase {
     func testFastMoveLayerLabels() {
         let expected: [(KeyCode, String)] = [
             (.h, "Undo"),
-            (.u, "Fast ↖"), (.i, "Fast ↑"), (.o, "Fast ↗"),
-            (.j, "Fast ←"), (.k, "Fast ○"), (.l, "Fast →"),
-            (.m, "Fast ↙"), (.comma, "Fast ↓"), (.period, "Fast ↘")
+            (.i, "Fast ↑"), (.k, "Fast ↓"),
+            (.j, "Fast ←"), (.l, "Fast →")
         ]
 
         for (key, expectedLabel) in expected {

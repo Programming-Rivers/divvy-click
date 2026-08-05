@@ -14,13 +14,14 @@ The overlay is designed to be completely transparent until needed.
 
 ## 🕹️ How It Works
 
-Instead of dragging a cursor across physical space, Divvy-click treats your screen as a 3x3 grid. By repeatedly dividing the screen into 9 smaller tiles, you can reach any pixel in just a few keystrokes.
+Instead of dragging a cursor across physical space, Divvy-click divides your display into two overlapping pairs of tiles (Top/Bottom and Left/Right). By repeatedly narrowing down the active tile using home-row navigation keys, you can reach any pixel in just a few keystrokes.
 
-1. **Vennfurcate**: Use the 3x3 grid keys (centered on **K**) to select one of the 9 tiles to dive into.
-   - `U` `I` `O` - Top Left / Top / Top Right
-   - `J` `K` `L` - Left / **Center** / Right
-   - `M` `,` `.` - Bottom Left / Bottom / Bottom Right
-2. **Refine**: The active area shrinks by 2/3 with each keystroke. Precision increases exponentially.
+1. **Vennfurcate**: Use the primary navigation keys to select an overlapping tile:
+   - `I`: **Top** tile
+   - `K`: **Bottom** tile
+   - `J`: **Left** tile
+   - `L`: **Right** tile
+2. **Refine**: The active region shrinks by ~50% in height or width with each keystroke. Precision increases exponentially.
 3. **Active Mouse Sync**: The physical mouse cursor follows the eyepiece in real-time as you navigate.
 4. **Execute**: Once positioned, use the **Action Layer** or **Scroll Layer** to interact.
 
@@ -40,7 +41,7 @@ Divvy-click uses a sophisticated layering system. **Hold a layer key** (Home row
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`D`** | **Action** | - | - | - | Double | Middle | **Left Click** | Drag | Drop | - |
 | **`F`** | **Scroll** | **Scroll Up** | **Auto Up** | - | Left | **STOP** | Right | **Scroll Down** | **Auto Down**| - |
-| **`S`** | **Fast Move** | ↖ (2x) | ↑ (2x) | ↗ (2x) | ← (2x) | ○ (2x) | → (2x) | ↙ (2x) | ↓ (2x) | ↘ (2x) |
+| **`S`** | **Fast Move** | - | ↑ (2x) | - | ← (2x) | ↓ (2x) | → (2x) | - | - | - |
 | **`A`** | **Management**| - | - | - | Redo | Reset | Displays | - | - | - |
 
 - **Auto-Scroll (Incremental)**: Pressing **I** (Auto Up) or **,** (Auto Down) repeatedly increases the scrolling speed (1x to 10x). Press **K** to stop.

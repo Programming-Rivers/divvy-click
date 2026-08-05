@@ -202,7 +202,7 @@ class NavigationEngine: ObservableObject {
         }
     }
 
-    /// Divide the current region into parts with an overlapping "venn" zone.
+    /// Divide the current region into two pairs of overlapping tiles: Top/Bottom and Left/Right.
     func vennfurcate(_ direction: Direction) {
         guard isActive, let current = currentTarget, let region = current.region else { return }
         
@@ -210,37 +210,36 @@ class NavigationEngine: ObservableObject {
         pruneHistory()
         redoStack.removeAll()
 
-        // 3x3 grid with slight overlap
-        let overlapFactor: CGFloat = CGFloat(AppConstants.overlapFactor) 
-        let thirdWidth = (region.size.width / 3.0) * overlapFactor
-        let thirdHeight = (region.size.height / 3.0) * overlapFactor
-
-        let xStep = (region.size.width - thirdWidth) / 2.0
-        let yStep = (region.size.height - thirdHeight) / 2.0
-
+        let overlapFactor: CGFloat = CGFloat(AppConstants.overlapFactor)
         var newRegion = region
-        newRegion.size.width = thirdWidth
-        newRegion.size.height = thirdHeight
-        
-        // Handle Horizontal component
+
         switch direction {
-        case .left, .topLeft, .bottomLeft:
+        case .up:
+            let halfHeight = (region.size.height / 2.0) * overlapFactor
+            newRegion.size.width = region.size.width
+            newRegion.size.height = halfHeight
             newRegion.origin.x = region.origin.x
-        case .right, .topRight, .bottomRight:
-            newRegion.origin.x = region.origin.x + region.size.width - thirdWidth
-        case .center, .up, .down:
-            newRegion.origin.x = region.origin.x + xStep
-        }
-        
-        // Handle Vertical component (macOS origin is bottom-left)
-        switch direction {
-        case .up, .topLeft, .topRight:
-            newRegion.origin.y = region.origin.y + region.size.height - thirdHeight
-        case .down, .bottomLeft, .bottomRight:
+            newRegion.origin.y = region.origin.y + region.size.height - halfHeight
+        case .down:
+            let halfHeight = (region.size.height / 2.0) * overlapFactor
+            newRegion.size.width = region.size.width
+            newRegion.size.height = halfHeight
+            newRegion.origin.x = region.origin.x
             newRegion.origin.y = region.origin.y
-        case .center, .left, .right:
-            newRegion.origin.y = region.origin.y + yStep
+        case .left:
+            let halfWidth = (region.size.width / 2.0) * overlapFactor
+            newRegion.size.width = halfWidth
+            newRegion.size.height = region.size.height
+            newRegion.origin.x = region.origin.x
+            newRegion.origin.y = region.origin.y
+        case .right:
+            let halfWidth = (region.size.width / 2.0) * overlapFactor
+            newRegion.size.width = halfWidth
+            newRegion.size.height = region.size.height
+            newRegion.origin.x = region.origin.x + region.size.width - halfWidth
+            newRegion.origin.y = region.origin.y
         }
+
         let clampedRegion = newRegion.intersection(activeScreenFrame)
         currentTarget = .region(clampedRegion)
     }
@@ -248,9 +247,7 @@ class NavigationEngine: ObservableObject {
     @Published var isMouseDown: Bool = false
 
     enum Direction {
-        case left, right, up, down
-        case topLeft, topRight, bottomLeft, bottomRight
-        case center
+        case up, down, left, right
     }
 
 
