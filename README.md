@@ -1,20 +1,28 @@
 # Divvy-click
 
-**Divvy-click** is a premium, keyboard-driven mouse emulation utility designed for power users who want to navigate their screen without ever lifting their hands from the home row.
+**Control your mouse without lifting your fingers from the keyboard.**
 
-By leveraging a **recursive 3x3 grid (Vennfurcation) algorithm**, Divvy-click allows you to "zero in" on any pixel on your display through a series of rapid, logarithmic screen subdivisions.
+**Divvy-click** is a keyboard-driven mouse emulation utility for power users who want to navigate their screen without ever lifting their hands from the keyboard.
+
+Divvy-click allows you to "zero in" on any pixel on your display through a series of rapid, screen subdivisions.
+Divvy-click repeatedly tiles the entire screen with a semi-transparent overlay
+and allows the user to select a tile using single key keyboard shortcuts to move the mouse pointer to the center of the selected tile.
+
+Once the pointer reaches the desired location, the user can use the action keys to perform actions such as clicking, dragging, or scrolling.
 
 ## 🚀 Activation
 
-The overlay is designed to be completely transparent until needed.
+The overlay is transparent until activated.
+Activation is done by double-tapping `⌘ Command`.
 
-- **Double-tap `⌘ Command`**: Instantly activate or deactivate the overlay.
-- **`Escape`**: Exit the overlay without performing an action (Cursor remains at the last target).
+- **Double-tap `⌘ Command`**: Activates or deactivates the overlay.
+- **`Escape`**: Deactivates the overlay without performing an action (Cursor remains at the last target).
 - **Menu Bar Icon**: Toggle the utility status directly from the macOS menu bar.
 
 ## 🕹️ How It Works
 
-Instead of dragging a cursor across physical space, Divvy-click divides your display into two overlapping pairs of tiles (Top/Bottom and Left/Right). By repeatedly narrowing down the active tile using home-row navigation keys, you can reach any pixel in just a few keystrokes.
+Instead of dragging a cursor across physical space, Divvy-click repeatedly subdivides the active region of your display into smaller tiles (Top/Bottom and Left/Right).
+By repeatedly narrowing down the active region using home-row navigation keys, you can reach any pixel in just a few keystrokes.
 
 1. **Vennfurcate**: Use the primary navigation keys to select an overlapping tile:
    - `I`: **Top** tile
