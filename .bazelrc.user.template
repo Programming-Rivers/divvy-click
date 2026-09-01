@@ -2,3 +2,12 @@
 
 build --action_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 build --repo_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+
+test --action_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+test --repo_env=DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+
+# XCTest runtime library search paths
+test --linkopt=-Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib
+test --linkopt=-Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks
+test --linkopt=-Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks
+
