@@ -27,6 +27,8 @@ class NavigationEngine: ObservableObject {
     }
 
     func start() {
+        layerState.activeLayer = nil
+        isActive = true
         if currentTarget == nil {
             let mouseLoc = screenProvider.mouseLocation
             let frame = screenProvider.screenFrame(at: mouseLoc) ?? NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
@@ -39,13 +41,13 @@ class NavigationEngine: ObservableObject {
             history = [marker]
             redoStack = []
         }
-        isActive = true
     }
 
     func stop() {
         isActive = false
         isSelectingDisplay = false
         layerState.showHUD = false
+        layerState.activeLayer = nil
         isMouseDown = false
     }
 
@@ -54,6 +56,7 @@ class NavigationEngine: ObservableObject {
         isActive = false
         isSelectingDisplay = false
         layerState.showHUD = false
+        layerState.activeLayer = nil
         currentTarget = nil
         history = []
         redoStack = []
