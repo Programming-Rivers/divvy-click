@@ -1,7 +1,33 @@
 load("@rules_swift//swift:swift_test.bzl", "swift_test")
 
 swift_test(
-    name = "DivvyClickTests",
-    srcs = glob(["*.swift"]),
+    name = "KeyCodeTests",
+    srcs = ["KeyCodeTests.swift"],
     deps = ["//Sources/DivvyClick:lib"],
 )
+
+swift_test(
+    name = "KeyMapTests",
+    srcs = ["KeyMapTests.swift"],
+    deps = ["//Sources/DivvyClick:lib"],
+)
+
+swift_test(
+    name = "NavigationCoordinatorTests",
+    srcs = [
+        "MockCursorEngine.swift",
+        "MockScreenProvider.swift",
+        "NavigationCoordinatorTests.swift",
+    ],
+    deps = ["//Sources/DivvyClick:lib"],
+)
+
+swift_test(
+    name = "NavigationEngineTests",
+    srcs = [
+        "MockScreenProvider.swift",
+        "NavigationEngineTests.swift",
+    ],
+    deps = ["//Sources/DivvyClick:lib"],
+)
+
