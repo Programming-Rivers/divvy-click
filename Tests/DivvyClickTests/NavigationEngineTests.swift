@@ -65,11 +65,32 @@ final class NavigationEngineTests: XCTestCase {
         let engine = makeEngine()
         engine.start()
         engine.vennfurcate(.up)
+        engine.layerState.activeLayer = .management
 
         engine.reset()
 
         XCTAssertFalse(engine.isActive)
         XCTAssertNil(engine.currentRegion)
+        XCTAssertNil(engine.layerState.activeLayer)
+    }
+
+    func testStopResetsActiveLayer() {
+        let engine = makeEngine()
+        engine.start()
+        engine.layerState.activeLayer = .action
+
+        engine.stop()
+
+        XCTAssertNil(engine.layerState.activeLayer)
+    }
+
+    func testStartResetsActiveLayer() {
+        let engine = makeEngine()
+        engine.layerState.activeLayer = .scroll
+
+        engine.start()
+
+        XCTAssertNil(engine.layerState.activeLayer)
     }
 
     // MARK: - Vennfurcate Tests

@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import CoreGraphics
 import Foundation
 
@@ -7,6 +8,7 @@ class HotkeyManager {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var secureInputTimer: Timer?
+    private var cancellables = Set<AnyCancellable>()
 
     // Layer keys state tracking
     private var isAHeld = false
@@ -47,6 +49,14 @@ class HotkeyManager {
     private func setupStateSync() {
         // Sync the cached state with the engine state
         Self.isActiveCached = engine.isActive
+
+        engine.$isActive
+            .sink { [weak self] active in
+                if !active {
+                    self?.resetHeldKeys()
+                }
+            }
+            .store(in: &cancellables)
     }
 
     deinit {
@@ -278,6 +288,14 @@ class HotkeyManager {
             return true
         }
         return false
+    }
+
+    private func resetHeldKeys() {
+        isAHeld = false
+        isSHeld = false
+        isDHeld = false
+        isFHeld = false
+        updateActiveLayer()
     }
 
     private func updateActiveLayer() {
