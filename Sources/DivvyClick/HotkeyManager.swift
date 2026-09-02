@@ -174,7 +174,7 @@ class HotkeyManager {
         return Unmanaged.passUnretained(event)
     }
 
-    private func checkSwallowedKey(_ keyCode: KeyCode?) -> Bool {
+    private func isSwallowedKey(_ keyCode: KeyCode?) -> Bool {
         guard let keyCode = keyCode else { return false }
         switch keyCode {
         case .a, .s, .d, .f, .u, .i, .o, .h, .j, .k, .l, .m, .comma, .period, .space, .semicolon, .escape, .slash:
@@ -182,10 +182,6 @@ class HotkeyManager {
         default:
             return false
         }
-    }
-
-    private func isSwallowedKey(_ keyCode: KeyCode?) -> Bool {
-        return checkSwallowedKey(keyCode)
     }
 
     private func checkDoubleTapCommand(type: CGEventType, flags: CGEventFlags) -> Bool {

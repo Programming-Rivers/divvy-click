@@ -52,15 +52,12 @@ class NavigationEngine: ObservableObject {
     }
 
 
+    /// Like stop, but also clear the target and history.
     func reset() {
-        isActive = false
-        isSelectingDisplay = false
-        layerState.showHUD = false
-        layerState.activeLayer = nil
+        stop()
         currentTarget = nil
         history = []
         redoStack = []
-        isMouseDown = false
     }
 
 
