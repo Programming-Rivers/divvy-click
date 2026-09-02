@@ -31,3 +31,13 @@ swift_test(
     deps = ["//Sources/DivvyClick:lib"],
 )
 
+swift_test(
+    name = "HotkeyManagerTests",
+    srcs = [
+        "MockCursorEngine.swift",
+        "MockScreenProvider.swift",
+        "HotkeyManagerTests.swift",
+    ],
+    deps = ["//Sources/DivvyClick:lib"],
+)
+
