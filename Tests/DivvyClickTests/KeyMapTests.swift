@@ -31,6 +31,24 @@ final class KeyMapTests: XCTestCase {
         }
     }
 
+    func testGrid3x3KeyMapLabels() {
+        let keyMap3x3 = KeyMap(layout: Grid3x3Layout())
+        let expected: [(KeyCode, String)] = [
+            (.h, "Undo"),
+            (.u, "↖"), (.i, "↑"), (.o, "↗"),
+            (.j, "←"), (.k, "○"), (.l, "→"),
+            (.m, "↙"), (.comma, "↓"), (.period, "↘")
+        ]
+
+        for (key, expectedLabel) in expected {
+            XCTAssertEqual(
+                keyMap3x3.label(for: .defaultNav, key: key),
+                expectedLabel,
+                "3x3 nav label for \(key.string) should be \(expectedLabel)"
+            )
+        }
+    }
+
     // MARK: - Action Layer
 
     func testActionLayerLabels() {

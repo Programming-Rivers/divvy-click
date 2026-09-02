@@ -33,7 +33,7 @@ struct GridOverlayView: View {
 
         }
         .ignoresSafeArea()
-        .task(id: "\(String(describing: engine.currentTarget))-\(layerState.activeLayer == nil)-\(engine.isActive)-\(engine.isSelectingDisplay)") {
+        .task(id: "\(String(describing: engine.currentTarget))-\(layerState.activeLayer == nil)-\(engine.isActive)-\(engine.isSelectingDisplay)-\(engine.activeLayout.id)") {
             showCues = false
             guard engine.isActive && layerState.activeLayer == nil && !engine.isSelectingDisplay else { return }
             
@@ -59,7 +59,7 @@ struct GridOverlayView: View {
                 )
                 .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
 
-            // 2. Polished Sniper Eyepiece centered on the active region
+            // 2. Polished Sniper Eyepiece centered on active region & fainter crosshairs for prospective tiles
             Canvas { context, size in
                 // Convert region to local coordinates
                 let localRegion = localRect(for: region, in: engine.activeScreenFrame)
@@ -67,75 +67,64 @@ struct GridOverlayView: View {
                 let midY = localRegion.midY
 
                 let neonColor = engine.isMouseDown ? Color.red : Color(red: 0.0, green: 1.0, blue: 1.0) // Cyan
-                
-                context.addFilter(.shadow(color: neonColor.opacity(0.6), radius: 4, x: 0, y: 0))
-                context.addFilter(.shadow(color: neonColor.opacity(0.4), radius: 8, x: 0, y: 0))
 
-                // Arcs (Segmented Circle)
-                let radius: CGFloat = 20.0
-                let gapAngle: Angle = .degrees(10)
-                let arcWidth: CGFloat = 1.5
-                
-                for i in 0..<4 {
-                    let startAngle = Angle.degrees(Double(i) * 90 + gapAngle.degrees)
-                    let endAngle = Angle.degrees(Double(i + 1) * 90 - gapAngle.degrees)
-                    
-                    var arcPath = Path()
-                    arcPath.addArc(center: CGPoint(x: midX, y: midY),
-                                   radius: radius,
-                                   startAngle: startAngle,
-                                   endAngle: endAngle,
-                                   clockwise: false)
-                    
-                    context.stroke(arcPath, with: .color(neonColor), lineWidth: arcWidth)
+                // 2a. Draw layout-specific boundary lines
+                engine.activeLayout.drawGridLines(context: context, localRegion: localRegion, neonColor: neonColor)
+
+                // 2b. Draw fainter crosshairs for prospective tile endpoints
+                let prospectivePoints = engine.activeLayout.prospectiveTargetPoints(for: region, screenFrame: engine.activeScreenFrame)
+                context.drawLayer { faintContext in
+                    faintContext.addFilter(.shadow(color: neonColor.opacity(0.3), radius: 3, x: 0, y: 0))
+                    for pt in prospectivePoints {
+                        let localPt = localPoint(for: pt, in: engine.activeScreenFrame)
+                        drawFaintCrosshair(context: faintContext, at: localPt, color: neonColor.opacity(0.45))
+                    }
                 }
 
-                // Gapped Crosshairs
-                let innerGap: CGFloat = 4.0
-                let outerGap: CGFloat = 6.0
-                
-                var crosshairPath = Path()
-                // Top
-                crosshairPath.move(to: CGPoint(x: midX, y: midY - innerGap))
-                crosshairPath.addLine(to: CGPoint(x: midX, y: midY - radius + outerGap))
-                // Bottom
-                crosshairPath.move(to: CGPoint(x: midX, y: midY + innerGap))
-                crosshairPath.addLine(to: CGPoint(x: midX, y: midY + radius - outerGap))
-                // Left
-                crosshairPath.move(to: CGPoint(x: midX - innerGap, y: midY))
-                crosshairPath.addLine(to: CGPoint(x: midX - radius + outerGap, y: midY))
-                // Right
-                crosshairPath.move(to: CGPoint(x: midX + innerGap, y: midY))
-                crosshairPath.addLine(to: CGPoint(x: midX + radius - outerGap, y: midY))
-                
-                context.stroke(crosshairPath, with: .color(neonColor), lineWidth: 2.0)
+                // 2c. Sniper Eyepiece centered on the active region
+                context.drawLayer { sniperContext in
+                    sniperContext.addFilter(.shadow(color: neonColor.opacity(0.6), radius: 4, x: 0, y: 0))
+                    sniperContext.addFilter(.shadow(color: neonColor.opacity(0.4), radius: 8, x: 0, y: 0))
 
-                // 3. Draw overlapping pair tile boundaries
-                var globalPath = Path()
-                let overlapFactor: CGFloat = CGFloat(AppConstants.overlapFactor)
-                let halfW = (localRegion.width / 2.0) * overlapFactor
-                let halfH = (localRegion.height / 2.0) * overlapFactor
-                
-                let leftTileRightX = localRegion.minX + halfW
-                let rightTileLeftX = localRegion.maxX - halfW
-                let topTileBottomY = localRegion.minY + halfH
-                let bottomTileTopY = localRegion.maxY - halfH
-                
-                // Vertical boundary lines (Left / Right overlap)
-                globalPath.move(to: CGPoint(x: leftTileRightX, y: localRegion.minY))
-                globalPath.addLine(to: CGPoint(x: leftTileRightX, y: localRegion.maxY))
-                
-                globalPath.move(to: CGPoint(x: rightTileLeftX, y: localRegion.minY))
-                globalPath.addLine(to: CGPoint(x: rightTileLeftX, y: localRegion.maxY))
-                
-                // Horizontal boundary lines (Top / Bottom overlap)
-                globalPath.move(to: CGPoint(x: localRegion.minX, y: topTileBottomY))
-                globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: topTileBottomY))
-                
-                globalPath.move(to: CGPoint(x: localRegion.minX, y: bottomTileTopY))
-                globalPath.addLine(to: CGPoint(x: localRegion.maxX, y: bottomTileTopY))
-                
-                context.stroke(globalPath, with: .color(neonColor.opacity(0.3)), lineWidth: 1.0)
+                    // Arcs (Segmented Circle)
+                    let radius: CGFloat = 20.0
+                    let gapAngle: Angle = .degrees(10)
+                    let arcWidth: CGFloat = 1.5
+                    
+                    for i in 0..<4 {
+                        let startAngle = Angle.degrees(Double(i) * 90 + gapAngle.degrees)
+                        let endAngle = Angle.degrees(Double(i + 1) * 90 - gapAngle.degrees)
+                        
+                        var arcPath = Path()
+                        arcPath.addArc(center: CGPoint(x: midX, y: midY),
+                                       radius: radius,
+                                       startAngle: startAngle,
+                                       endAngle: endAngle,
+                                       clockwise: false)
+                        
+                        sniperContext.stroke(arcPath, with: .color(neonColor), lineWidth: arcWidth)
+                    }
+
+                    // Gapped Crosshairs
+                    let innerGap: CGFloat = 4.0
+                    let outerGap: CGFloat = 6.0
+                    
+                    var crosshairPath = Path()
+                    // Top
+                    crosshairPath.move(to: CGPoint(x: midX, y: midY - innerGap))
+                    crosshairPath.addLine(to: CGPoint(x: midX, y: midY - radius + outerGap))
+                    // Bottom
+                    crosshairPath.move(to: CGPoint(x: midX, y: midY + innerGap))
+                    crosshairPath.addLine(to: CGPoint(x: midX, y: midY + radius - outerGap))
+                    // Left
+                    crosshairPath.move(to: CGPoint(x: midX - innerGap, y: midY))
+                    crosshairPath.addLine(to: CGPoint(x: midX - radius + outerGap, y: midY))
+                    // Right
+                    crosshairPath.move(to: CGPoint(x: midX + innerGap, y: midY))
+                    crosshairPath.addLine(to: CGPoint(x: midX + radius - outerGap, y: midY))
+                    
+                    sniperContext.stroke(crosshairPath, with: .color(neonColor), lineWidth: 2.0)
+                }
             }
             .animation(.spring(response: 0.06, dampingFraction: 0.9), value: region)
         }
@@ -145,18 +134,11 @@ struct GridOverlayView: View {
     private var gridKeyCues: some View {
         if engine.isActive, let region = engine.currentRegion {
             let localRegion = localRect(for: region, in: engine.activeScreenFrame)
+            let cueItems = engine.activeLayout.keyCues(localRegion: localRegion)
             
-            // Only show cues if they fit comfortably
-            if localRegion.width > 72 && localRegion.height > 72 {
-                let cueItems: [(key: String, x: CGFloat, y: CGFloat)] = [
-                    ("I", localRegion.midX, localRegion.minY + 20),
-                    ("K", localRegion.midX, localRegion.maxY - 20),
-                    ("J", localRegion.minX + 20, localRegion.midY),
-                    ("L", localRegion.maxX - 20, localRegion.midY)
-                ]
-                
+            if !cueItems.isEmpty {
                 ZStack {
-                    ForEach(cueItems, id: \.key) { item in
+                    ForEach(cueItems) { item in
                         Text(item.key)
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .foregroundColor(.white)
@@ -317,34 +299,19 @@ struct GridOverlayView: View {
                     .id("autoscroll-status")
                 }
 
-                // Keyboard Layout (5 columns: _UIO_ / HJKL; / _M,._)
+                // Keyboard Layout
                 VStack(spacing: 25) {
                     Grid(horizontalSpacing: 15, verticalSpacing: 15) {
-                        // Row 1: _ U I O _
-                        GridRow {
-                            Color.clear.frame(width: 55, height: 55)
-                            keyView(key: "U", action: keyAction(layer, "U"))
-                            keyView(key: "I", action: keyAction(layer, "I"))
-                            keyView(key: "O", action: keyAction(layer, "O"))
-                            Color.clear.frame(width: 55, height: 55)
-                        }
-
-                        // Row 2: H J K L ;
-                        GridRow {
-                            keyView(key: "H", action: keyAction(layer, "H"))
-                            keyView(key: "J", action: keyAction(layer, "J"))
-                            keyView(key: "K", action: keyAction(layer, "K"))
-                            keyView(key: "L", action: keyAction(layer, "L"))
-                            keyView(key: ";", action: keyAction(layer, ";"))
-                        }
-
-                        // Row 3: _ M , . _
-                        GridRow {
-                            Color.clear.frame(width: CGFloat(AppConstants.keyViewSize), height: CGFloat(AppConstants.keyViewSize))
-                            keyView(key: "M", action: keyAction(layer, "M"))
-                            keyView(key: ",", action: keyAction(layer, ","))
-                            keyView(key: ".", action: keyAction(layer, "."))
-                            Color.clear.frame(width: CGFloat(AppConstants.keyViewSize), height: CGFloat(AppConstants.keyViewSize))
+                        ForEach(0..<engine.activeLayout.hudStructure.rows.count, id: \.self) { rowIndex in
+                            GridRow {
+                                ForEach(0..<engine.activeLayout.hudStructure.rows[rowIndex].count, id: \.self) { colIndex in
+                                    if let key = engine.activeLayout.hudStructure.rows[rowIndex][colIndex] {
+                                        keyView(key: key, action: keyAction(layer, key))
+                                    } else {
+                                        Color.clear.frame(width: CGFloat(AppConstants.keyViewSize), height: CGFloat(AppConstants.keyViewSize))
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -403,7 +370,7 @@ struct GridOverlayView: View {
         if key == ";" { return "Displays" }
         
         guard let code = KeyCode.from(string: key) else { return nil }
-        return keyMap.label(for: layer, key: code)
+        return KeyMap(layout: engine.activeLayout).label(for: layer, key: code)
     }
 
     private func layerTitle(_ layer: NavigationEngine.ActiveLayer) -> String {
@@ -414,6 +381,48 @@ struct GridOverlayView: View {
         case .management: return "MANAGEMENT LAYER (A)"
         case .defaultNav: return "NAVIGATION"
         }
+    }
+
+    private func drawFaintCrosshair(context: GraphicsContext, at point: CGPoint, color: Color) {
+        let radius: CGFloat = 6.0
+        let innerGap: CGFloat = 2.0
+        let outerArm: CGFloat = 7.0
+        let lineWidth: CGFloat = 1.0
+
+        // Subtle mini circle ring
+        var circlePath = Path()
+        circlePath.addArc(
+            center: point,
+            radius: radius,
+            startAngle: .degrees(0),
+            endAngle: .degrees(360),
+            clockwise: false
+        )
+        context.stroke(circlePath, with: .color(color.opacity(0.5)), lineWidth: lineWidth)
+
+        // Mini gapped crosshairs
+        var crosshairPath = Path()
+        // Top
+        crosshairPath.move(to: CGPoint(x: point.x, y: point.y - innerGap))
+        crosshairPath.addLine(to: CGPoint(x: point.x, y: point.y - outerArm))
+        // Bottom
+        crosshairPath.move(to: CGPoint(x: point.x, y: point.y + innerGap))
+        crosshairPath.addLine(to: CGPoint(x: point.x, y: point.y + outerArm))
+        // Left
+        crosshairPath.move(to: CGPoint(x: point.x - innerGap, y: point.y))
+        crosshairPath.addLine(to: CGPoint(x: point.x - outerArm, y: point.y))
+        // Right
+        crosshairPath.move(to: CGPoint(x: point.x + innerGap, y: point.y))
+        crosshairPath.addLine(to: CGPoint(x: point.x + outerArm, y: point.y))
+
+        context.stroke(crosshairPath, with: .color(color), lineWidth: lineWidth)
+    }
+
+    private func localPoint(for point: CGPoint, in screen: CGRect) -> CGPoint {
+        CGPoint(
+            x: point.x - screen.origin.x,
+            y: screen.height - (point.y - screen.origin.y)
+        )
     }
 
     private func localRect(for region: CGRect, in screen: CGRect) -> CGRect {

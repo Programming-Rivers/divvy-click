@@ -335,4 +335,76 @@ final class NavigationEngineTests: XCTestCase {
         XCTAssertEqual(mapping[4], screenBottomMid)
         XCTAssertEqual(mapping[5], screenBottomRight)
     }
+
+    // MARK: - Layout Switching Tests
+
+    func testRuntimeLayoutSwitching() {
+        let registry = LayoutRegistry()
+        let provider = makeMockProvider()
+        let engine = NavigationEngine(screenProvider: provider, layoutRegistry: registry)
+        
+        // Default layout is OverlappingPairsLayout
+        XCTAssertEqual(registry.activeLayout.id, "overlapping_pairs")
+
+        // Switch to 3x3 Grid
+        registry.selectLayout(byId: "grid_3x3")
+        XCTAssertEqual(registry.activeLayout.id, "grid_3x3")
+        XCTAssertEqual(registry.activeLayout.name, "3x3 Grid (UIO/JKL/M,.)")
+
+        engine.start()
+        engine.vennfurcate(.center)
+        let region = engine.currentRegion!
+        let expectedWidth = (1920.0 / 3.0) * 1.1
+        XCTAssertEqual(region.width, expectedWidth, accuracy: 0.01)
+
+        // Switch back
+        registry.selectLayout(byId: "overlapping_pairs")
+        XCTAssertEqual(registry.activeLayout.id, "overlapping_pairs")
+    }
+
+    func testGrid3x3Subdivision() {
+        let gridLayout = Grid3x3Layout()
+        let screen = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+
+        let centerRegion = gridLayout.subdivide(region: screen, tileId: "center", screenFrame: screen)
+        let expectedWidth = (screen.width / 3.0) * 1.1
+        let expectedHeight = (screen.height / 3.0) * 1.1
+
+        XCTAssertEqual(centerRegion.width, expectedWidth, accuracy: 0.01)
+        XCTAssertEqual(centerRegion.height, expectedHeight, accuracy: 0.01)
+        XCTAssertEqual(centerRegion.midX, screen.midX, accuracy: 0.01)
+        XCTAssertEqual(centerRegion.midY, screen.midY, accuracy: 0.01)
+    }
+
+    func testProspectiveTargetPointsForGrid3x3() {
+        let gridLayout = Grid3x3Layout()
+        let screen = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+
+        let prospectivePoints = gridLayout.prospectiveTargetPoints(for: screen, screenFrame: screen)
+        // 3x3 layout has 9 tiles, center matches current center so 8 prospective endpoints are returned
+        XCTAssertEqual(prospectivePoints.count, 8)
+
+        let currentCenter = CGPoint(x: screen.midX, y: screen.midY)
+        for pt in prospectivePoints {
+            // All prospective points should be strictly inside screen bounds
+            XCTAssertTrue(screen.contains(pt))
+            // None should be the current center
+            XCTAssertGreaterThan(hypot(pt.x - currentCenter.x, pt.y - currentCenter.y), 1.0)
+        }
+    }
+
+    func testProspectiveTargetPointsForOverlappingPairs() {
+        let pairsLayout = OverlappingPairsLayout()
+        let screen = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+
+        let prospectivePoints = pairsLayout.prospectiveTargetPoints(for: screen, screenFrame: screen)
+        // 2x2 overlapping pairs layout has 4 tiles (up, down, left, right)
+        XCTAssertEqual(prospectivePoints.count, 4)
+
+        let currentCenter = CGPoint(x: screen.midX, y: screen.midY)
+        for pt in prospectivePoints {
+            XCTAssertTrue(screen.contains(pt))
+            XCTAssertGreaterThan(hypot(pt.x - currentCenter.x, pt.y - currentCenter.y), 1.0)
+        }
+    }
 }

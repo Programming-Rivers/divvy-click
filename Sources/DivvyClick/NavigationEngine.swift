@@ -17,9 +17,15 @@ class NavigationEngine: ObservableObject {
     private var redoStack: [NavigationTarget] = []
     private let maxStackSize = AppConstants.maxHistorySize
     private let screenProvider: ScreenProviding
+    let layoutRegistry: LayoutRegistry
 
-    init(screenProvider: ScreenProviding = SystemScreenProvider()) {
+    var activeLayout: any NavigationLayout {
+        layoutRegistry.activeLayout
+    }
+
+    init(screenProvider: ScreenProviding = SystemScreenProvider(), layoutRegistry: LayoutRegistry? = nil) {
         self.screenProvider = screenProvider
+        self.layoutRegistry = layoutRegistry ?? .shared
     }
 
     func start() {
@@ -198,52 +204,43 @@ class NavigationEngine: ObservableObject {
         }
     }
 
-    /// Divide the current region into two pairs of overlapping tiles: Top/Bottom and Left/Right.
-    func vennfurcate(_ direction: Direction) {
+    /// Subdivide the current region using the active layout and the specified tile identifier.
+    func navigate(tileId: String) {
         guard isActive, let current = currentTarget, let region = current.region else { return }
-        
+
         history.append(current)
         pruneHistory()
         redoStack.removeAll()
 
-        let overlapFactor: CGFloat = CGFloat(AppConstants.overlapFactor)
-        var newRegion = region
+        let nextRegion = layoutRegistry.activeLayout.subdivide(region: region, tileId: tileId, screenFrame: activeScreenFrame)
+        currentTarget = .region(nextRegion)
+    }
 
-        switch direction {
-        case .up:
-            let halfHeight = (region.size.height / 2.0) * overlapFactor
-            newRegion.size.width = region.size.width
-            newRegion.size.height = halfHeight
-            newRegion.origin.x = region.origin.x
-            newRegion.origin.y = region.origin.y + region.size.height - halfHeight
-        case .down:
-            let halfHeight = (region.size.height / 2.0) * overlapFactor
-            newRegion.size.width = region.size.width
-            newRegion.size.height = halfHeight
-            newRegion.origin.x = region.origin.x
-            newRegion.origin.y = region.origin.y
-        case .left:
-            let halfWidth = (region.size.width / 2.0) * overlapFactor
-            newRegion.size.width = halfWidth
-            newRegion.size.height = region.size.height
-            newRegion.origin.x = region.origin.x
-            newRegion.origin.y = region.origin.y
-        case .right:
-            let halfWidth = (region.size.width / 2.0) * overlapFactor
-            newRegion.size.width = halfWidth
-            newRegion.size.height = region.size.height
-            newRegion.origin.x = region.origin.x + region.size.width - halfWidth
-            newRegion.origin.y = region.origin.y
-        }
-
-        let clampedRegion = newRegion.intersection(activeScreenFrame)
-        currentTarget = .region(clampedRegion)
+    /// Convenience method to subdivide based on a Direction enum.
+    func vennfurcate(_ direction: Direction) {
+        navigate(tileId: direction.tileId)
     }
 
     @Published var isMouseDown: Bool = false
 
     enum Direction {
         case up, down, left, right
+        case topLeft, topRight, bottomLeft, bottomRight
+        case center
+
+        var tileId: String {
+            switch self {
+            case .up: return "up"
+            case .down: return "down"
+            case .left: return "left"
+            case .right: return "right"
+            case .topLeft: return "topLeft"
+            case .topRight: return "topRight"
+            case .bottomLeft: return "bottomLeft"
+            case .bottomRight: return "bottomRight"
+            case .center: return "center"
+            }
+        }
     }
 
 

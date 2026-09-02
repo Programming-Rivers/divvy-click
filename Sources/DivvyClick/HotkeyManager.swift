@@ -21,12 +21,16 @@ class HotkeyManager {
     private(set) var wasCommandPressed = false
 
     let coordinator: NavigationCoordinator
-    let keyMap: KeyMap
+    private var explicitKeyMap: KeyMap?
+    var keyMap: KeyMap {
+        if let explicit = explicitKeyMap { return explicit }
+        return KeyMap(layout: engine.activeLayout)
+    }
     var engine: NavigationEngine { coordinator.engine }
 
-    init(coordinator: NavigationCoordinator, keyMap: KeyMap = .default) {
+    init(coordinator: NavigationCoordinator, keyMap: KeyMap? = nil) {
         self.coordinator = coordinator
-        self.keyMap = keyMap
+        self.explicitKeyMap = keyMap
         setupEventTap()
         setupStateSync()
     }

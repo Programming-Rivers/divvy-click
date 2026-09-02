@@ -59,57 +59,79 @@ struct KeyMap: Sendable {
         self.mappings = mappings
     }
 
-    static let `default` = KeyMap(mappings: defaultMappings)
+    init(layout: any NavigationLayout) {
+        self.mappings = KeyMap.createMappings(for: layout)
+    }
 
-    static let defaultMappings: [NavigationEngine.ActiveLayer: [KeyCode: KeyBinding]] = [
-        // Action Layer (D)
-        .action: [
-            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
-            .j: KeyBinding(label: "Double") { coordinator, flags in coordinator.execute(.doubleClick, flags: flags) },
-            .k: KeyBinding(label: "Middle") { coordinator, flags in coordinator.execute(.middleClick, flags: flags) },
-            .l: KeyBinding(label: "Left Click") { coordinator, flags in coordinator.execute(.click, flags: flags) },
-            .m: KeyBinding(label: "Start Drag") { coordinator, flags in coordinator.execute(.mouseDown, flags: flags) },
-            .comma: KeyBinding(label: "Drop") { coordinator, flags in coordinator.execute(.mouseUp, flags: flags) }
-        ],
+    static let `default` = KeyMap(layout: OverlappingPairsLayout())
 
-        // Scroll Layer (F)
-        .scroll: [
-            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
-            .u: KeyBinding(label: "Scroll Up") { coordinator, flags in coordinator.execute(.scroll(.up), flags: flags) },
-            .i: KeyBinding(label: "Auto Up") { coordinator, _ in coordinator.execute(.autoScroll(.up)) },
-            .k: KeyBinding(label: "Stop") { coordinator, _ in coordinator.execute(.autoScroll(nil)) },
-            .m: KeyBinding(label: "Scroll Down") { coordinator, flags in coordinator.execute(.scroll(.down), flags: flags) },
-            .comma: KeyBinding(label: "Auto Down") { coordinator, _ in coordinator.execute(.autoScroll(.down)) },
-            .j: KeyBinding(label: "Scroll Left") { coordinator, flags in coordinator.execute(.scroll(.left), flags: flags) },
-            .l: KeyBinding(label: "Scroll Right") { coordinator, flags in coordinator.execute(.scroll(.right), flags: flags) }
-        ],
+    static var defaultMappings: [NavigationEngine.ActiveLayer: [KeyCode: KeyBinding]] {
+        createMappings(for: OverlappingPairsLayout())
+    }
 
-        // Management Layer (A)
-        .management: [
-            .h: KeyBinding(label: "Undo") { coordinator, _ in if !coordinator.engine.undo() { coordinator.engine.showDisplaySelection() } },
-            .j: KeyBinding(label: "Redo") { coordinator, _ in coordinator.engine.redo() },
-            .k: KeyBinding(label: "Reset") { coordinator, _ in coordinator.engine.reset() },
-            .l: KeyBinding(label: "Display") { coordinator, _ in coordinator.engine.showDisplaySelection() }
-        ],
+    static let defaultActionMappings: [KeyCode: KeyBinding] = [
+        .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
+        .j: KeyBinding(label: "Double") { coordinator, flags in coordinator.execute(.doubleClick, flags: flags) },
+        .k: KeyBinding(label: "Middle") { coordinator, flags in coordinator.execute(.middleClick, flags: flags) },
+        .l: KeyBinding(label: "Left Click") { coordinator, flags in coordinator.execute(.click, flags: flags) },
+        .m: KeyBinding(label: "Start Drag") { coordinator, flags in coordinator.execute(.mouseDown, flags: flags) },
+        .comma: KeyBinding(label: "Drop") { coordinator, flags in coordinator.execute(.mouseUp, flags: flags) }
+    ]
+
+    static let defaultScrollMappings: [KeyCode: KeyBinding] = [
+        .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
+        .u: KeyBinding(label: "Scroll Up") { coordinator, flags in coordinator.execute(.scroll(.up), flags: flags) },
+        .i: KeyBinding(label: "Auto Up") { coordinator, _ in coordinator.execute(.autoScroll(.up)) },
+        .k: KeyBinding(label: "Stop") { coordinator, _ in coordinator.execute(.autoScroll(nil)) },
+        .m: KeyBinding(label: "Scroll Down") { coordinator, flags in coordinator.execute(.scroll(.down), flags: flags) },
+        .comma: KeyBinding(label: "Auto Down") { coordinator, _ in coordinator.execute(.autoScroll(.down)) },
+        .j: KeyBinding(label: "Scroll Left") { coordinator, flags in coordinator.execute(.scroll(.left), flags: flags) },
+        .l: KeyBinding(label: "Scroll Right") { coordinator, flags in coordinator.execute(.scroll(.right), flags: flags) }
+    ]
+
+    static let defaultManagementMappings: [KeyCode: KeyBinding] = [
+        .h: KeyBinding(label: "Undo") { coordinator, _ in if !coordinator.engine.undo() { coordinator.engine.showDisplaySelection() } },
+        .j: KeyBinding(label: "Redo") { coordinator, _ in coordinator.engine.redo() },
+        .k: KeyBinding(label: "Reset") { coordinator, _ in coordinator.engine.reset() },
+        .l: KeyBinding(label: "Display") { coordinator, _ in coordinator.engine.showDisplaySelection() }
+    ]
+
+    static func createMappings(for layout: any NavigationLayout) -> [NavigationEngine.ActiveLayer: [KeyCode: KeyBinding]] {
+        var map: [NavigationEngine.ActiveLayer: [KeyCode: KeyBinding]] = [
+            .action: defaultActionMappings,
+            .scroll: defaultScrollMappings,
+            .management: defaultManagementMappings
+        ]
 
         // Fast Move Layer (S)
-        .fastMove: [
-            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
-            .i: KeyBinding(label: "Fast ↑") { coordinator, _ in coordinator.engine.vennfurcate(.up); coordinator.engine.vennfurcate(.up) },
-            .k: KeyBinding(label: "Fast ↓") { coordinator, _ in coordinator.engine.vennfurcate(.down); coordinator.engine.vennfurcate(.down) },
-            .j: KeyBinding(label: "Fast ←") { coordinator, _ in coordinator.engine.vennfurcate(.left); coordinator.engine.vennfurcate(.left) },
-            .l: KeyBinding(label: "Fast →") { coordinator, _ in coordinator.engine.vennfurcate(.right); coordinator.engine.vennfurcate(.right) }
-        ],
-
-        // Default Navigation
-        .defaultNav: [
-            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() },
-            .i: KeyBinding(label: "↑") { coordinator, _ in coordinator.engine.vennfurcate(.up) },
-            .k: KeyBinding(label: "↓") { coordinator, _ in coordinator.engine.vennfurcate(.down) },
-            .j: KeyBinding(label: "←") { coordinator, _ in coordinator.engine.vennfurcate(.left) },
-            .l: KeyBinding(label: "→") { coordinator, _ in coordinator.engine.vennfurcate(.right) }
+        var fastMoveMap: [KeyCode: KeyBinding] = [
+            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() }
         ]
-    ]
+        for (key, tileBinding) in layout.fastMoveBindings {
+            let tileId = tileBinding.tileId
+            let count = tileBinding.fastRepeatCount
+            fastMoveMap[key] = KeyBinding(label: tileBinding.label) { coordinator, _ in
+                for _ in 0..<count {
+                    coordinator.engine.navigate(tileId: tileId)
+                }
+            }
+        }
+        map[.fastMove] = fastMoveMap
+
+        // Default Navigation Layer
+        var defaultNavMap: [KeyCode: KeyBinding] = [
+            .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() }
+        ]
+        for (key, tileBinding) in layout.defaultNavBindings {
+            let tileId = tileBinding.tileId
+            defaultNavMap[key] = KeyBinding(label: tileBinding.label) { coordinator, _ in
+                coordinator.engine.navigate(tileId: tileId)
+            }
+        }
+        map[.defaultNav] = defaultNavMap
+
+        return map
+    }
 
     func label(for layer: NavigationEngine.ActiveLayer, key: KeyCode) -> String? {
         return mappings[layer]?[key]?.label
