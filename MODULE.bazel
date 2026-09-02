@@ -2,7 +2,7 @@
 
 module(
     name = "divvy-click",
-    version = "0.4.next",
+    version = "0.7.next",
 )
 
 bazel_dep(
