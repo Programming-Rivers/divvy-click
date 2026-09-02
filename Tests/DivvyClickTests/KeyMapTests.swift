@@ -1,4 +1,5 @@
 import XCTest
+import CoreGraphics
 @testable import Sources_DivvyClick_lib
 
 @MainActor
@@ -15,7 +16,7 @@ final class KeyMapTests: XCTestCase {
 
         for (key, expectedLabel) in expected {
             XCTAssertEqual(
-                KeyMap.shared.label(for: .defaultNav, key: key),
+                KeyMap.default.label(for: .defaultNav, key: key),
                 expectedLabel,
                 "Default nav label for \(key.string) should be \(expectedLabel)"
             )
@@ -24,7 +25,7 @@ final class KeyMapTests: XCTestCase {
         let unboundKeys: [KeyCode] = [.u, .o, .m, .comma, .period]
         for key in unboundKeys {
             XCTAssertNil(
-                KeyMap.shared.label(for: .defaultNav, key: key),
+                KeyMap.default.label(for: .defaultNav, key: key),
                 "Default nav layer should not have binding for \(key.string)"
             )
         }
@@ -41,7 +42,7 @@ final class KeyMapTests: XCTestCase {
 
         for (key, expectedLabel) in expected {
             XCTAssertEqual(
-                KeyMap.shared.label(for: .action, key: key),
+                KeyMap.default.label(for: .action, key: key),
                 expectedLabel,
                 "Action layer label for \(key.string) should be \(expectedLabel)"
             )
@@ -53,7 +54,7 @@ final class KeyMapTests: XCTestCase {
         let unboundKeys: [KeyCode] = [.u, .i, .o]
         for key in unboundKeys {
             XCTAssertNil(
-                KeyMap.shared.label(for: .action, key: key),
+                KeyMap.default.label(for: .action, key: key),
                 "Action layer should not have binding for \(key.string)"
             )
         }
@@ -71,7 +72,7 @@ final class KeyMapTests: XCTestCase {
 
         for (key, expectedLabel) in expected {
             XCTAssertEqual(
-                KeyMap.shared.label(for: .scroll, key: key),
+                KeyMap.default.label(for: .scroll, key: key),
                 expectedLabel,
                 "Scroll layer label for \(key.string) should be \(expectedLabel)"
             )
@@ -89,7 +90,7 @@ final class KeyMapTests: XCTestCase {
 
         for (key, expectedLabel) in expected {
             XCTAssertEqual(
-                KeyMap.shared.label(for: .fastMove, key: key),
+                KeyMap.default.label(for: .fastMove, key: key),
                 expectedLabel,
                 "Fast move layer label for \(key.string) should be \(expectedLabel)"
             )
@@ -106,7 +107,7 @@ final class KeyMapTests: XCTestCase {
 
         for (key, expectedLabel) in expected {
             XCTAssertEqual(
-                KeyMap.shared.label(for: .management, key: key),
+                KeyMap.default.label(for: .management, key: key),
                 expectedLabel,
                 "Management layer label for \(key.string) should be \(expectedLabel)"
             )
@@ -120,10 +121,58 @@ final class KeyMapTests: XCTestCase {
 
         for layer in layers {
             for key in KeyCode.allCases {
-                if let label = KeyMap.shared.label(for: layer, key: key) {
+                if let label = KeyMap.default.label(for: layer, key: key) {
                     XCTAssertFalse(label.isEmpty, "Label for \(key.string) in \(layer) should not be empty")
                 }
             }
         }
+    }
+
+    // MARK: - Custom Mappings & Injection
+
+    func testCustomKeyMapInitializationAndLookup() {
+        let customKeyMap = KeyMap(mappings: [
+            .defaultNav: [
+                .space: KeyBinding(label: "Custom Space")
+            ]
+        ])
+
+        XCTAssertEqual(customKeyMap.label(for: .defaultNav, key: .space), "Custom Space")
+        XCTAssertNil(customKeyMap.label(for: .defaultNav, key: .i), "Custom key map should not contain unmapped default keys")
+        XCTAssertNil(customKeyMap.label(for: .action, key: .j), "Custom key map should have empty action layer")
+    }
+
+    // MARK: - Execution Tests
+
+    func testKeyMapExecution() {
+        let screenProvider = MockScreenProvider(
+            screenFrame: CGRect(x: 0, y: 0, width: 1920, height: 1080),
+            mouseLocation: CGPoint(x: 960, y: 540)
+        )
+        let engine = NavigationEngine(screenProvider: screenProvider)
+        let coordinator = NavigationCoordinator(engine: engine, cursorEngine: MockCursorEngine())
+
+        var executedCustomAction = false
+        let customKeyMap = KeyMap(mappings: [
+            .defaultNav: [
+                .a: KeyBinding(label: "Custom Action") { _, _ in
+                    executedCustomAction = true
+                },
+                .s: KeyBinding(label: "No Action", action: nil)
+            ]
+        ])
+
+        // Mapped key with action
+        let executed = customKeyMap.execute(for: .defaultNav, key: .a, coordinator: coordinator, flags: [])
+        XCTAssertTrue(executed)
+        XCTAssertTrue(executedCustomAction)
+
+        // Mapped key without action
+        let noActionExecuted = customKeyMap.execute(for: .defaultNav, key: .s, coordinator: coordinator, flags: [])
+        XCTAssertFalse(noActionExecuted)
+
+        // Unmapped key
+        let unmappedExecuted = customKeyMap.execute(for: .defaultNav, key: .d, coordinator: coordinator, flags: [])
+        XCTAssertFalse(unmappedExecuted)
     }
 }

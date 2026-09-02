@@ -7,13 +7,14 @@ final class HotkeyManagerTests: XCTestCase {
 
     private func makeHotkeyManager(
         screenFrame: CGRect = CGRect(x: 0, y: 0, width: 1920, height: 1080),
-        mouseLocation: CGPoint = CGPoint(x: 960, y: 540)
+        mouseLocation: CGPoint = CGPoint(x: 960, y: 540),
+        keyMap: KeyMap = .default
     ) -> (HotkeyManager, NavigationCoordinator, NavigationEngine, MockCursorEngine) {
         let screenProvider = MockScreenProvider(screenFrame: screenFrame, mouseLocation: mouseLocation)
         let engine = NavigationEngine(screenProvider: screenProvider)
         let cursorEngine = MockCursorEngine()
         let coordinator = NavigationCoordinator(engine: engine, cursorEngine: cursorEngine)
-        let hotkeyManager = HotkeyManager(coordinator: coordinator)
+        let hotkeyManager = HotkeyManager(coordinator: coordinator, keyMap: keyMap)
         return (hotkeyManager, coordinator, engine, cursorEngine)
     }
 
@@ -211,5 +212,28 @@ final class HotkeyManagerTests: XCTestCase {
 
         XCTAssertFalse(hotkeyManager.isAHeld, "Engine deactivation should reset held keys")
         XCTAssertNil(engine.layerState.activeLayer)
+    }
+
+    // MARK: - Custom KeyMap Dependency Injection Tests
+
+    func testCustomKeyMapExecutionInHotkeyManager() {
+        var customActionInvoked = false
+        let customKeyMap = KeyMap(mappings: [
+            .defaultNav: [
+                .h: KeyBinding(label: "Custom Handler") { _, _ in
+                    customActionInvoked = true
+                }
+            ]
+        ])
+
+        let (hotkeyManager, _, engine, _) = makeHotkeyManager(keyMap: customKeyMap)
+        engine.start()
+        XCTAssertTrue(engine.isActive)
+
+        let hKeyDown = createKeyEvent(type: .keyDown, keyCode: .h)
+        let result = hotkeyManager.handleEvent(hKeyDown, type: .keyDown)
+
+        XCTAssertNil(result, "Event should be swallowed by custom key binding")
+        XCTAssertTrue(customActionInvoked, "Custom key binding action should be executed")
     }
 }

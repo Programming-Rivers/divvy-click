@@ -21,10 +21,12 @@ class HotkeyManager {
     private(set) var wasCommandPressed = false
 
     let coordinator: NavigationCoordinator
+    let keyMap: KeyMap
     var engine: NavigationEngine { coordinator.engine }
 
-    init(coordinator: NavigationCoordinator) {
+    init(coordinator: NavigationCoordinator, keyMap: KeyMap = .default) {
         self.coordinator = coordinator
+        self.keyMap = keyMap
         setupEventTap()
         setupStateSync()
     }
@@ -263,7 +265,7 @@ class HotkeyManager {
     }
 
     private func handleLayerActions(_ keyCode: KeyCode, flags: CGEventFlags) -> Bool {
-        if KeyMap.shared.execute(for: engine.layerState.activeLayer ?? .defaultNav, key: keyCode, coordinator: coordinator, flags: flags) {
+        if keyMap.execute(for: engine.layerState.activeLayer ?? .defaultNav, key: keyCode, coordinator: coordinator, flags: flags) {
             return true
         }
         if keyCode == .escape {

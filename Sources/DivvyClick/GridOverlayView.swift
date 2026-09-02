@@ -4,6 +4,7 @@ struct GridOverlayView: View {
     @ObservedObject var engine: NavigationEngine
     @ObservedObject var layerState: LayerState
     @ObservedObject var scrollState: ScrollState
+    var keyMap: KeyMap = .default
     @State private var showCues = false
 
 
@@ -402,7 +403,7 @@ struct GridOverlayView: View {
         if key == ";" { return "Displays" }
         
         guard let code = KeyCode.from(string: key) else { return nil }
-        return KeyMap.shared.label(for: layer, key: code)
+        return keyMap.label(for: layer, key: code)
     }
 
     private func layerTitle(_ layer: NavigationEngine.ActiveLayer) -> String {

@@ -8,7 +8,7 @@ class OverlayWindowController {
     let engine: NavigationEngine
     private var cancellables = Set<AnyCancellable>()
 
-    init(engine: NavigationEngine) {
+    init(engine: NavigationEngine, keyMap: KeyMap = .default) {
         self.engine = engine
 
         window = NSPanel(
@@ -27,7 +27,7 @@ class OverlayWindowController {
         window.hidesOnDeactivate = false
         window.isFloatingPanel = true
 
-        let hostingView = NSHostingView(rootView: GridOverlayView(engine: engine, layerState: engine.layerState, scrollState: engine.scrollState))
+        let hostingView = NSHostingView(rootView: GridOverlayView(engine: engine, layerState: engine.layerState, scrollState: engine.scrollState, keyMap: keyMap))
         window.contentView = hostingView
 
         // Observe engine region, active screen frame, and active state

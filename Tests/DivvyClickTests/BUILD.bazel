@@ -8,7 +8,11 @@ swift_test(
 
 swift_test(
     name = "KeyMapTests",
-    srcs = ["KeyMapTests.swift"],
+    srcs = [
+        "MockCursorEngine.swift",
+        "MockScreenProvider.swift",
+        "KeyMapTests.swift",
+    ],
     deps = ["//Sources/DivvyClick:lib"],
 )
 
