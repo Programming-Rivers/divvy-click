@@ -1,6 +1,6 @@
 import CoreGraphics
 
-protocol CursorProviding {
+public protocol CursorProviding {
     @discardableResult
     func jump(to rect: CGRect) -> Bool
     
@@ -11,7 +11,7 @@ protocol CursorProviding {
     func scroll(deltaX: Int32, deltaY: Int32, flags: CGEventFlags)
 }
 
-extension CursorProviding {
+public extension CursorProviding {
     func click(button: CGMouseButton = .left, count: Int = 1, flags: CGEventFlags = [], at location: CGPoint? = nil) {
         click(button: button, count: count, flags: flags, at: location)
     }

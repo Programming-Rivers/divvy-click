@@ -1,15 +1,16 @@
 import AppKit
 import CoreGraphics
+import DivvyClickCore
 import SwiftUI
 
-struct Grid3x3Layout: NavigationLayout {
-    let id: String = "grid_3x3"
-    let name: String = "3x3 Grid (UIO/JKL/M,.)"
-    let description: String = "Classic 9-tile grid layout navigated with U, I, O, J, K, L, M, ,, ."
+public struct Grid3x3Layout: NavigationLayout {
+    public let id: String = "grid_3x3"
+    public let name: String = "3x3 Grid (UIO/JKL/M,.)"
+    public let description: String = "Classic 9-tile grid layout navigated with U, I, O, J, K, L, M, ,, ."
 
-    init() {}
+    public init() {}
 
-    var defaultNavBindings: [KeyCode: LayoutTileBinding] {
+    public var defaultNavBindings: [KeyCode: LayoutTileBinding] {
         [
             .u: LayoutTileBinding(tileId: "topLeft", label: "↖"),
             .i: LayoutTileBinding(tileId: "up", label: "↑"),
@@ -23,7 +24,7 @@ struct Grid3x3Layout: NavigationLayout {
         ]
     }
 
-    var fastMoveBindings: [KeyCode: LayoutTileBinding] {
+    public var fastMoveBindings: [KeyCode: LayoutTileBinding] {
         [
             .u: LayoutTileBinding(tileId: "topLeft", label: "Fast ↖", fastRepeatCount: 2),
             .i: LayoutTileBinding(tileId: "up", label: "Fast ↑", fastRepeatCount: 2),
@@ -37,7 +38,7 @@ struct Grid3x3Layout: NavigationLayout {
         ]
     }
 
-    func subdivide(region: CGRect, tileId: String, screenFrame: CGRect) -> CGRect {
+    public func subdivide(region: CGRect, tileId: String, screenFrame: CGRect) -> CGRect {
         let overlapFactor: CGFloat = CGFloat(AppConstants.overlapFactor)
         let thirdWidth = (region.size.width / 3.0) * overlapFactor
         let thirdHeight = (region.size.height / 3.0) * overlapFactor
@@ -76,7 +77,7 @@ struct Grid3x3Layout: NavigationLayout {
         return newRegion.intersection(screenFrame)
     }
 
-    func drawGridLines(context: GraphicsContext, localRegion: CGRect, neonColor: Color) {
+    public func drawGridLines(context: GraphicsContext, localRegion: CGRect, neonColor: Color) {
         var globalPath = Path()
         let thirdW = localRegion.width / 3.0
         let thirdH = localRegion.height / 3.0
@@ -103,7 +104,7 @@ struct Grid3x3Layout: NavigationLayout {
         context.stroke(globalPath, with: .color(neonColor.opacity(0.3)), lineWidth: 1.0)
     }
 
-    func keyCues(localRegion: CGRect) -> [LayoutKeyCue] {
+    public func keyCues(localRegion: CGRect) -> [LayoutKeyCue] {
         let thirdW = localRegion.width / 3.0
         let thirdH = localRegion.height / 3.0
         guard thirdW > 72 && thirdH > 72 else { return [] }
@@ -125,7 +126,7 @@ struct Grid3x3Layout: NavigationLayout {
         return cues
     }
 
-    var hudStructure: LayoutHUDStructure {
+    public var hudStructure: LayoutHUDStructure {
         LayoutHUDStructure(rows: [
             [nil, "U", "I", "O", nil],
             ["H", "J", "K", "L", ";"],

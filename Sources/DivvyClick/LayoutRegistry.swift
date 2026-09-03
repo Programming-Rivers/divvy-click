@@ -2,15 +2,15 @@ import Combine
 import Foundation
 
 @MainActor
-class LayoutRegistry: ObservableObject {
-    static let shared = LayoutRegistry()
+public class LayoutRegistry: ObservableObject {
+    public static let shared = LayoutRegistry()
 
     private let userDefaultsKey = "DivvyClickSelectedLayoutId"
 
-    @Published private(set) var registeredLayouts: [any NavigationLayout] = []
-    @Published private(set) var activeLayout: any NavigationLayout
+    @Published public private(set) var registeredLayouts: [any NavigationLayout] = []
+    @Published public private(set) var activeLayout: any NavigationLayout
 
-    init() {
+    public init() {
         let defaultLayout = OverlappingPairsLayout()
         let gridLayout = Grid3x3Layout()
 
@@ -25,19 +25,19 @@ class LayoutRegistry: ObservableObject {
         }
     }
 
-    func register(_ layout: any NavigationLayout) {
+    public func register(_ layout: any NavigationLayout) {
         if !registeredLayouts.contains(where: { $0.id == layout.id }) {
             registeredLayouts.append(layout)
         }
     }
 
-    func selectLayout(byId id: String) {
+    public func selectLayout(byId id: String) {
         guard let layout = registeredLayouts.first(where: { $0.id == id }) else { return }
         activeLayout = layout
         UserDefaults.standard.set(id, forKey: userDefaultsKey)
     }
 
-    func selectLayout(_ layout: any NavigationLayout) {
+    public func selectLayout(_ layout: any NavigationLayout) {
         selectLayout(byId: layout.id)
     }
 }

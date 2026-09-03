@@ -1,14 +1,16 @@
 import AppKit
 import Combine
+import DivvyClickCoordination
+import DivvyClickEngine
 import SwiftUI
 
 @MainActor
-class OverlayWindowController {
+public class OverlayWindowController {
     private var window: NSPanel
-    let engine: NavigationEngine
+    public let engine: NavigationEngine
     private var cancellables = Set<AnyCancellable>()
 
-    init(engine: NavigationEngine, keyMap: KeyMap = .default) {
+    public init(engine: NavigationEngine, keyMap: KeyMap = .default) {
         self.engine = engine
 
         window = NSPanel(

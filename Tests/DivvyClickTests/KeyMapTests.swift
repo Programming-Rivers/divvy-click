@@ -1,6 +1,9 @@
-import XCTest
 import CoreGraphics
-@testable import Sources_DivvyClick_lib
+import DivvyClickCoordination
+import DivvyClickCore
+import DivvyClickEngine
+import DivvyClickLayouts
+import XCTest
 
 @MainActor
 final class KeyMapTests: XCTestCase {

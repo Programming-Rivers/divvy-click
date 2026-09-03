@@ -1,9 +1,11 @@
 import AppKit
 import Combine
+import DivvyClickCore
+import DivvyClickEngine
 
 @MainActor
-class NavigationCoordinator {
-    let engine: NavigationEngine
+public class NavigationCoordinator {
+    public let engine: NavigationEngine
     private let cursorEngine: CursorProviding
     private var cancellables = Set<AnyCancellable>()
 
@@ -12,7 +14,7 @@ class NavigationCoordinator {
     private let autoScrollInterval: TimeInterval = AppConstants.autoScrollInterval
     private let autoScrollBaseDelta: Int32 = AppConstants.autoScrollBaseDelta
 
-    init(engine: NavigationEngine, cursorEngine: CursorProviding = CursorEngine()) {
+    public init(engine: NavigationEngine, cursorEngine: CursorProviding = CursorEngine()) {
         self.engine = engine
         self.cursorEngine = cursorEngine
         setupObservers()
@@ -98,7 +100,7 @@ class NavigationCoordinator {
         }
     }
 
-    func execute(_ action: NavigationEngine.Action, flags: CGEventFlags = []) {
+    public func execute(_ action: NavigationEngine.Action, flags: CGEventFlags = []) {
         actionTask?.cancel()
         
         guard let region = engine.currentRegion else { return }

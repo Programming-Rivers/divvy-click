@@ -1,16 +1,107 @@
 load("@rules_swift//swift:swift_library.bzl", "swift_library")
 
+# Layer 1: Core Foundation & Primitives
 swift_library(
-    name = "lib",
-    srcs = glob(["*.swift"], exclude = ["main.swift"]),
+    name = "core",
+    srcs = [
+        "AppConstants.swift",
+        "CursorProviding.swift",
+        "KeyCode.swift",
+        "NavigationTarget.swift",
+        "ScreenProviding.swift",
+    ],
+    module_name = "DivvyClickCore",
     visibility = ["//visibility:public"],
 )
 
+# Layer 2: Layout System & Registry
+swift_library(
+    name = "layouts",
+    srcs = [
+        "Grid3x3Layout.swift",
+        "LayoutRegistry.swift",
+        "NavigationLayout.swift",
+        "OverlappingPairsLayout.swift",
+    ],
+    module_name = "DivvyClickLayouts",
+    visibility = ["//visibility:public"],
+    deps = [":core"],
+)
+
+# Layer 3: Navigation State Machine
+swift_library(
+    name = "engine",
+    srcs = [
+        "LayerState.swift",
+        "NavigationEngine.swift",
+        "ScrollState.swift",
+    ],
+    module_name = "DivvyClickEngine",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core",
+        ":layouts",
+    ],
+)
+
+# Layer 4: Coordination & Input Mapping
+swift_library(
+    name = "coordination",
+    srcs = [
+        "CursorEngine.swift",
+        "KeyMap.swift",
+        "NavigationCoordinator.swift",
+    ],
+    module_name = "DivvyClickCoordination",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":core",
+        ":engine",
+        ":layouts",
+    ],
+)
+
+# Layer 5: Presentation & Input
+swift_library(
+    name = "ui",
+    srcs = [
+        "GridOverlayView.swift",
+        "HotkeyManager.swift",
+        "OverlayWindowController.swift",
+    ],
+    module_name = "DivvyClickUI",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":coordination",
+        ":core",
+        ":engine",
+        ":layouts",
+    ],
+)
+
+# Layer 6: Application Delegate
+swift_library(
+    name = "lib",
+    srcs = [
+        "AppDelegate.swift",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":coordination",
+        ":engine",
+        ":ui",
+    ],
+)
+
+# Layer 7: Main Entry Point
 swift_library(
     name = "main",
     srcs = ["main.swift"],
-    deps = [":lib"],
     visibility = ["//visibility:public"],
+    deps = [":lib"],
 )
 
-exports_files(["Info.plist", "DivvyClick.entitlements"])
+exports_files([
+    "Info.plist",
+    "DivvyClick.entitlements",
+])

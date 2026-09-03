@@ -1,0 +1,199 @@
+digraph DivvyClickDependencies {
+    rankdir=TB;
+    compound=true;
+    newrank=true;
+    node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded", margin="0.2,0.1"];
+    edge [fontname="Helvetica", fontsize=9, color="#555555", arrowsize=0.8];
+
+    // Source Clusters
+    subgraph cluster_sources {
+        label = "Sources / DivvyClick";
+        style = "rounded,filled";
+        color = "#B0BEC5";
+        fillcolor = "#F8F9FA";
+
+        // Entry & Presentation Layer
+        subgraph cluster_ui {
+            label = "Presentation & App Entry";
+            style = "rounded,filled";
+            color = "#90CAF9";
+            fillcolor = "#E3F2FD";
+
+            "main.swift" [fillcolor="#BBDEFB", color="#1976D2"];
+            "AppDelegate.swift" [fillcolor="#BBDEFB", color="#1976D2"];
+            "OverlayWindowController.swift" [fillcolor="#BBDEFB", color="#1976D2"];
+            "GridOverlayView.swift" [fillcolor="#BBDEFB", color="#1976D2"];
+        }
+
+        // Coordination Layer
+        subgraph cluster_coordination {
+            label = "Coordination & Input";
+            style = "rounded,filled";
+            color = "#FFE082";
+            fillcolor = "#FFF8E1";
+
+            "HotkeyManager.swift" [fillcolor="#FFF9C4", color="#FFA000"];
+            "NavigationCoordinator.swift" [fillcolor="#FFF9C4", color="#FFA000"];
+            "CursorEngine.swift" [fillcolor="#FFF9C4", color="#FFA000"];
+        }
+
+        // Engine & State Layer
+        subgraph cluster_engine {
+            label = "Navigation Engine & State";
+            style = "rounded,filled";
+            color = "#C8E6C9";
+            fillcolor = "#E8F5E9";
+
+            "NavigationEngine.swift" [fillcolor="#C8E6C9", color="#388E3C"];
+            "LayerState.swift" [fillcolor="#C8E6C9", color="#388E3C"];
+            "ScrollState.swift" [fillcolor="#C8E6C9", color="#388E3C"];
+        }
+
+        // Layouts & Key Mapping
+        subgraph cluster_layouts {
+            label = "Layouts & Key Mapping";
+            style = "rounded,filled";
+            color = "#D1C4E9";
+            fillcolor = "#EDE7F6";
+
+            "LayoutRegistry.swift" [fillcolor="#D1C4E9", color="#512DA8"];
+            "Grid3x3Layout.swift" [fillcolor="#D1C4E9", color="#512DA8"];
+            "OverlappingPairsLayout.swift" [fillcolor="#D1C4E9", color="#512DA8"];
+            "KeyMap.swift" [fillcolor="#D1C4E9", color="#512DA8"];
+            "NavigationLayout.swift" [fillcolor="#D1C4E9", color="#512DA8"];
+        }
+
+        // Foundation / Leaf Layer
+        subgraph cluster_core {
+            label = "Core Abstractions & Constants";
+            style = "rounded,filled";
+            color = "#CFD8DC";
+            fillcolor = "#ECEFF1";
+
+            "AppConstants.swift" [fillcolor="#ECEFF1", color="#455A64"];
+            "NavigationTarget.swift" [fillcolor="#ECEFF1", color="#455A64"];
+            "CursorProviding.swift" [fillcolor="#ECEFF1", color="#455A64"];
+            "ScreenProviding.swift" [fillcolor="#ECEFF1", color="#455A64"];
+        }
+    }
+
+    // Test Cluster
+    subgraph cluster_tests {
+        label = "Tests / DivvyClickTests";
+        style = "rounded,filled";
+        color = "#FFCDD2";
+        fillcolor = "#FFEBEE";
+
+        subgraph cluster_test_doubles {
+            label = "Mocks";
+            style = "rounded,filled";
+            color = "#FFAB91";
+            fillcolor = "#FBE9E7";
+
+            "MockCursorEngine.swift" [fillcolor="#FFCCBC", color="#D84315"];
+            "MockScreenProvider.swift" [fillcolor="#FFCCBC", color="#D84315"];
+        }
+
+        subgraph cluster_test_suites {
+            label = "Test Suites";
+            style = "rounded,filled";
+            color = "#EF9A9A";
+            fillcolor = "#FFEBEE";
+
+            "KeyCodeTests.swift" [fillcolor="#FFCDD2", color="#C62828"];
+            "KeyMapTests.swift" [fillcolor="#FFCDD2", color="#C62828"];
+            "NavigationCoordinatorTests.swift" [fillcolor="#FFCDD2", color="#C62828"];
+            "NavigationEngineTests.swift" [fillcolor="#FFCDD2", color="#C62828"];
+            "HotkeyManagerTests.swift" [fillcolor="#FFCDD2", color="#C62828"];
+        }
+    }
+
+    // UI & App Dependencies
+    "main.swift" -> "AppDelegate.swift" [label="AppDelegate"];
+    "AppDelegate.swift" -> "NavigationEngine.swift" [label="NavigationEngine"];
+    "AppDelegate.swift" -> "NavigationCoordinator.swift" [label="NavigationCoordinator"];
+    "AppDelegate.swift" -> "HotkeyManager.swift" [label="HotkeyManager"];
+    "AppDelegate.swift" -> "OverlayWindowController.swift" [label="OverlayWindowController"];
+    "OverlayWindowController.swift" -> "GridOverlayView.swift" [label="GridOverlayView"];
+    "OverlayWindowController.swift" -> "NavigationEngine.swift" [label="NavigationEngine"];
+    "OverlayWindowController.swift" -> "KeyMap.swift" [label="KeyMap"];
+    "GridOverlayView.swift" -> "NavigationEngine.swift" [label="NavigationEngine"];
+    "GridOverlayView.swift" -> "LayerState.swift" [label="LayerState"];
+    "GridOverlayView.swift" -> "ScrollState.swift" [label="ScrollState"];
+    "GridOverlayView.swift" -> "KeyMap.swift" [label="KeyCode, KeyMap"];
+    "GridOverlayView.swift" -> "AppConstants.swift" [label="AppConstants"];
+
+    // Hotkey & Coordination Dependencies
+    "HotkeyManager.swift" -> "NavigationCoordinator.swift" [label="NavigationCoordinator"];
+    "HotkeyManager.swift" -> "NavigationEngine.swift" [label="NavigationEngine"];
+    "HotkeyManager.swift" -> "KeyMap.swift" [label="KeyCode, KeyMap"];
+    "HotkeyManager.swift" -> "AppConstants.swift" [label="AppConstants"];
+    "NavigationCoordinator.swift" -> "NavigationEngine.swift" [label="NavigationEngine"];
+    "NavigationCoordinator.swift" -> "CursorProviding.swift" [label="CursorProviding"];
+    "NavigationCoordinator.swift" -> "CursorEngine.swift" [label="CursorEngine"];
+    "NavigationCoordinator.swift" -> "AppConstants.swift" [label="AppConstants"];
+    "CursorEngine.swift" -> "CursorProviding.swift" [label="CursorProviding"];
+
+    // NavigationEngine & State Dependencies
+    "NavigationEngine.swift" -> "NavigationTarget.swift" [label="NavigationTarget"];
+    "NavigationEngine.swift" -> "ScreenProviding.swift" [label="ScreenProviding, SystemScreenProvider"];
+    "NavigationEngine.swift" -> "LayoutRegistry.swift" [label="LayoutRegistry"];
+    "NavigationEngine.swift" -> "NavigationLayout.swift" [label="NavigationLayout"];
+    "NavigationEngine.swift" -> "LayerState.swift" [label="LayerState"];
+    "NavigationEngine.swift" -> "ScrollState.swift" [label="ScrollState"];
+    "NavigationEngine.swift" -> "AppConstants.swift" [label="AppConstants"];
+
+    // Cycles between Engine and State
+    "LayerState.swift" -> "NavigationEngine.swift" [color="#D32F2F", style=dashed, fontcolor="#D32F2F", label="ActiveLayer (cycle)"];
+    "ScrollState.swift" -> "NavigationEngine.swift" [color="#D32F2F", style=dashed, fontcolor="#D32F2F", label="ScrollDirection (cycle)"];
+
+    // Layouts & KeyMap Dependencies
+    "LayoutRegistry.swift" -> "NavigationLayout.swift" [label="NavigationLayout"];
+    "LayoutRegistry.swift" -> "Grid3x3Layout.swift" [label="Grid3x3Layout"];
+    "LayoutRegistry.swift" -> "OverlappingPairsLayout.swift" [label="OverlappingPairsLayout"];
+    "Grid3x3Layout.swift" -> "NavigationLayout.swift" [label="NavigationLayout, HUD"];
+    "Grid3x3Layout.swift" -> "AppConstants.swift" [label="AppConstants"];
+    "OverlappingPairsLayout.swift" -> "NavigationLayout.swift" [label="NavigationLayout, HUD"];
+    "OverlappingPairsLayout.swift" -> "AppConstants.swift" [label="AppConstants"];
+
+    // Cycles between Layouts and KeyMap
+    "NavigationLayout.swift" -> "KeyMap.swift" [color="#D32F2F", style=dashed, fontcolor="#D32F2F", label="KeyCode (cycle)"];
+    "Grid3x3Layout.swift" -> "KeyMap.swift" [color="#D32F2F", style=dashed, fontcolor="#D32F2F", label="KeyCode (cycle)"];
+    "OverlappingPairsLayout.swift" -> "KeyMap.swift" [color="#D32F2F", style=dashed, fontcolor="#D32F2F", label="KeyCode (cycle)"];
+    "KeyMap.swift" -> "NavigationLayout.swift" [color="#D32F2F", style=dashed, fontcolor="#D32F2F", label="NavigationLayout (cycle)"];
+    "KeyMap.swift" -> "OverlappingPairsLayout.swift" [color="#D32F2F", style=dashed, fontcolor="#D32F2F", label="OverlappingPairsLayout (cycle)"];
+    "KeyMap.swift" -> "NavigationCoordinator.swift" [label="NavigationCoordinator"];
+    "KeyMap.swift" -> "NavigationEngine.swift" [label="ActiveLayer"];
+
+    // Test Double Dependencies
+    "MockCursorEngine.swift" -> "CursorProviding.swift" [label="CursorProviding", style=dotted, color="#7B1FA2"];
+    "MockScreenProvider.swift" -> "ScreenProviding.swift" [label="ScreenProviding", style=dotted, color="#7B1FA2"];
+
+    // Test Suite Dependencies
+    "KeyCodeTests.swift" -> "KeyMap.swift" [label="KeyCode", style=dotted, color="#7B1FA2"];
+    "KeyMapTests.swift" -> "KeyMap.swift" [label="KeyMap, KeyCode", style=dotted, color="#7B1FA2"];
+    "KeyMapTests.swift" -> "NavigationEngine.swift" [label="NavigationEngine", style=dotted, color="#7B1FA2"];
+    "KeyMapTests.swift" -> "NavigationCoordinator.swift" [label="NavigationCoordinator", style=dotted, color="#7B1FA2"];
+    "KeyMapTests.swift" -> "Grid3x3Layout.swift" [label="Grid3x3Layout", style=dotted, color="#7B1FA2"];
+    "KeyMapTests.swift" -> "MockCursorEngine.swift" [label="MockCursorEngine", style=dotted, color="#7B1FA2"];
+    "KeyMapTests.swift" -> "MockScreenProvider.swift" [label="MockScreenProvider", style=dotted, color="#7B1FA2"];
+
+    "NavigationCoordinatorTests.swift" -> "NavigationCoordinator.swift" [label="NavigationCoordinator", style=dotted, color="#7B1FA2"];
+    "NavigationCoordinatorTests.swift" -> "NavigationEngine.swift" [label="NavigationEngine", style=dotted, color="#7B1FA2"];
+    "NavigationCoordinatorTests.swift" -> "AppConstants.swift" [label="AppConstants", style=dotted, color="#7B1FA2"];
+    "NavigationCoordinatorTests.swift" -> "MockCursorEngine.swift" [label="MockCursorEngine", style=dotted, color="#7B1FA2"];
+    "NavigationCoordinatorTests.swift" -> "MockScreenProvider.swift" [label="MockScreenProvider", style=dotted, color="#7B1FA2"];
+
+    "NavigationEngineTests.swift" -> "NavigationEngine.swift" [label="NavigationEngine", style=dotted, color="#7B1FA2"];
+    "NavigationEngineTests.swift" -> "LayoutRegistry.swift" [label="LayoutRegistry", style=dotted, color="#7B1FA2"];
+    "NavigationEngineTests.swift" -> "Grid3x3Layout.swift" [label="Grid3x3Layout", style=dotted, color="#7B1FA2"];
+    "NavigationEngineTests.swift" -> "OverlappingPairsLayout.swift" [label="OverlappingPairsLayout", style=dotted, color="#7B1FA2"];
+    "NavigationEngineTests.swift" -> "MockScreenProvider.swift" [label="MockScreenProvider", style=dotted, color="#7B1FA2"];
+
+    "HotkeyManagerTests.swift" -> "HotkeyManager.swift" [label="HotkeyManager", style=dotted, color="#7B1FA2"];
+    "HotkeyManagerTests.swift" -> "KeyMap.swift" [label="KeyMap, KeyCode", style=dotted, color="#7B1FA2"];
+    "HotkeyManagerTests.swift" -> "NavigationCoordinator.swift" [label="NavigationCoordinator", style=dotted, color="#7B1FA2"];
+    "HotkeyManagerTests.swift" -> "NavigationEngine.swift" [label="NavigationEngine", style=dotted, color="#7B1FA2"];
+    "HotkeyManagerTests.swift" -> "MockCursorEngine.swift" [label="MockCursorEngine", style=dotted, color="#7B1FA2"];
+    "HotkeyManagerTests.swift" -> "MockScreenProvider.swift" [label="MockScreenProvider", style=dotted, color="#7B1FA2"];
+}

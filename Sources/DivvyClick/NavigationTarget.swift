@@ -1,10 +1,10 @@
 import Foundation
 
-enum NavigationTarget: Equatable {
+public enum NavigationTarget: Equatable, Sendable {
     case region(CGRect)
     case restoreCursor(CGPoint)
 
-    var region: CGRect? {
+    public var region: CGRect? {
         if case .region(let r) = self { return r }
         return nil
     }

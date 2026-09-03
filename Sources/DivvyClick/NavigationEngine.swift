@@ -1,14 +1,16 @@
 import AppKit
+import DivvyClickCore
+import DivvyClickLayouts
 
 @MainActor
-class NavigationEngine: ObservableObject {
-    @Published var currentTarget: NavigationTarget?
-    var currentRegion: CGRect? { currentTarget?.region }
-    @Published var activeScreenFrame: CGRect = .zero
-    @Published var isActive: Bool = false
-    @Published var isSelectingDisplay: Bool = false
-    let layerState = LayerState()
-    let scrollState = ScrollState()
+public class NavigationEngine: ObservableObject {
+    @Published public var currentTarget: NavigationTarget?
+    public var currentRegion: CGRect? { currentTarget?.region }
+    @Published public var activeScreenFrame: CGRect = .zero
+    @Published public var isActive: Bool = false
+    @Published public var isSelectingDisplay: Bool = false
+    public let layerState = LayerState()
+    public let scrollState = ScrollState()
 
 
     // Original screen bounding box to constrain navigation
@@ -17,18 +19,18 @@ class NavigationEngine: ObservableObject {
     private var redoStack: [NavigationTarget] = []
     private let maxStackSize = AppConstants.maxHistorySize
     private let screenProvider: ScreenProviding
-    let layoutRegistry: LayoutRegistry
+    public let layoutRegistry: LayoutRegistry
 
-    var activeLayout: any NavigationLayout {
+    public var activeLayout: any NavigationLayout {
         layoutRegistry.activeLayout
     }
 
-    init(screenProvider: ScreenProviding = SystemScreenProvider(), layoutRegistry: LayoutRegistry? = nil) {
+    public init(screenProvider: ScreenProviding = SystemScreenProvider(), layoutRegistry: LayoutRegistry? = nil) {
         self.screenProvider = screenProvider
         self.layoutRegistry = layoutRegistry ?? .shared
     }
 
-    func start() {
+    public func start() {
         layerState.activeLayer = nil
         isActive = true
         if currentTarget == nil {
@@ -45,7 +47,7 @@ class NavigationEngine: ObservableObject {
         }
     }
 
-    func stop() {
+    public func stop() {
         isActive = false
         isSelectingDisplay = false
         layerState.showHUD = false
@@ -55,7 +57,7 @@ class NavigationEngine: ObservableObject {
 
 
     /// Like stop, but also clear the target and history.
-    func reset() {
+    public func reset() {
         stop()
         currentTarget = nil
         history = []
@@ -63,7 +65,7 @@ class NavigationEngine: ObservableObject {
     }
 
 
-    func showDisplaySelection() {
+    public func showDisplaySelection() {
         let mouseLoc = screenProvider.mouseLocation
         let frame = screenProvider.screenFrame(at: mouseLoc) ?? NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
         
@@ -74,7 +76,7 @@ class NavigationEngine: ObservableObject {
         isSelectingDisplay = true
     }
 
-    func selectDisplay(at index: Int) {
+    public func selectDisplay(at index: Int) {
         let screens = screenMapping()
         guard index >= 0 && index < 9, let frame = screens[index] else { return }
         
@@ -87,7 +89,7 @@ class NavigationEngine: ObservableObject {
     }
 
     /// Maps physical screens to a 3x3 grid (indices 0-8) based on their physical arrangement.
-    func screenMapping() -> [Int: CGRect] {
+    public func screenMapping() -> [Int: CGRect] {
         let screens = screenProvider.screens
         guard !screens.isEmpty else { return [:] }
 
@@ -166,7 +168,7 @@ class NavigationEngine: ObservableObject {
     }
 
     @discardableResult
-    func undo() -> Bool {
+    public func undo() -> Bool {
         guard let current = currentTarget, !history.isEmpty else { return false }
         redoStack.append(current)
         if redoStack.count > maxStackSize {
@@ -184,7 +186,7 @@ class NavigationEngine: ObservableObject {
         return true
     }
 
-    func redo() {
+    public func redo() {
         guard let current = currentTarget, !redoStack.isEmpty else { return }
         history.append(current)
         pruneHistory()
@@ -205,7 +207,7 @@ class NavigationEngine: ObservableObject {
     }
 
     /// Subdivide the current region using the active layout and the specified tile identifier.
-    func navigate(tileId: String) {
+    public func navigate(tileId: String) {
         guard isActive, let current = currentTarget, let region = current.region else { return }
 
         history.append(current)
@@ -217,18 +219,18 @@ class NavigationEngine: ObservableObject {
     }
 
     /// Convenience method to subdivide based on a Direction enum.
-    func vennfurcate(_ direction: Direction) {
+    public func vennfurcate(_ direction: Direction) {
         navigate(tileId: direction.tileId)
     }
 
-    @Published var isMouseDown: Bool = false
+    @Published public var isMouseDown: Bool = false
 
-    enum Direction {
+    public enum Direction: Sendable {
         case up, down, left, right
         case topLeft, topRight, bottomLeft, bottomRight
         case center
 
-        var tileId: String {
+        public var tileId: String {
             switch self {
             case .up: return "up"
             case .down: return "down"
@@ -245,17 +247,17 @@ class NavigationEngine: ObservableObject {
 
 
 
-    enum Action {
+    public enum Action: Sendable {
         case click, doubleClick, rightClick, middleClick, move, mouseDown, mouseUp
         case scroll(ScrollDirection)
         case autoScroll(ScrollDirection?)
     }
 
-    enum ScrollDirection {
+    public enum ScrollDirection: Sendable {
         case up, down, left, right
     }
 
-    enum ActiveLayer {
+    public enum ActiveLayer: Sendable {
         case action, scroll, fastMove, management, defaultNav
     }
 }

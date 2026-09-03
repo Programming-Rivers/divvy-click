@@ -1,21 +1,22 @@
 import AppKit
 
 /// Abstracts access to screen information.
-protocol ScreenProviding {
+public protocol ScreenProviding {
     var screens: [CGRect] { get }
     var mouseLocation: CGPoint { get }
 
     func screenFrame(at location: CGPoint) -> CGRect?
 }
 
-extension ScreenProviding {
+public extension ScreenProviding {
     func screenFrame(at location: CGPoint) -> CGRect? {
         screens.first { NSMouseInRect(location, $0, false) }
     }
 }
 
 /// Default implementation that delegates to the real system APIs.
-struct SystemScreenProvider: ScreenProviding {
-    var screens: [CGRect] { NSScreen.screens.map { $0.frame } }
-    var mouseLocation: CGPoint { NSEvent.mouseLocation }
+public struct SystemScreenProvider: ScreenProviding {
+    public init() {}
+    public var screens: [CGRect] { NSScreen.screens.map { $0.frame } }
+    public var mouseLocation: CGPoint { NSEvent.mouseLocation }
 }

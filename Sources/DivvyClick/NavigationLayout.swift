@@ -1,43 +1,44 @@
 import AppKit
 import CoreGraphics
+import DivvyClickCore
 import SwiftUI
 
-struct LayoutTileBinding: Sendable {
-    let tileId: String
-    let label: String
-    let fastRepeatCount: Int
+public struct LayoutTileBinding: Sendable {
+    public let tileId: String
+    public let label: String
+    public let fastRepeatCount: Int
 
-    init(tileId: String, label: String, fastRepeatCount: Int = 1) {
+    public init(tileId: String, label: String, fastRepeatCount: Int = 1) {
         self.tileId = tileId
         self.label = label
         self.fastRepeatCount = fastRepeatCount
     }
 }
 
-struct LayoutKeyCue: Sendable, Identifiable {
-    var id: String { key }
-    let key: String
-    let x: CGFloat
-    let y: CGFloat
+public struct LayoutKeyCue: Sendable, Identifiable {
+    public var id: String { key }
+    public let key: String
+    public let x: CGFloat
+    public let y: CGFloat
 
-    init(key: String, x: CGFloat, y: CGFloat) {
+    public init(key: String, x: CGFloat, y: CGFloat) {
         self.key = key
         self.x = x
         self.y = y
     }
 }
 
-struct LayoutHUDStructure: Sendable {
-    let rows: [[String?]]
-    let spaceBarAction: String?
+public struct LayoutHUDStructure: Sendable {
+    public let rows: [[String?]]
+    public let spaceBarAction: String?
 
-    init(rows: [[String?]], spaceBarAction: String? = "Click") {
+    public init(rows: [[String?]], spaceBarAction: String? = "Click") {
         self.rows = rows
         self.spaceBarAction = spaceBarAction
     }
 }
 
-protocol NavigationLayout: Sendable {
+public protocol NavigationLayout: Sendable {
     var id: String { get }
     var name: String { get }
     var description: String { get }
@@ -52,7 +53,7 @@ protocol NavigationLayout: Sendable {
     func prospectiveTargetPoints(for region: CGRect, screenFrame: CGRect) -> [CGPoint]
 }
 
-extension NavigationLayout {
+public extension NavigationLayout {
     func prospectiveTargetPoints(for region: CGRect, screenFrame: CGRect) -> [CGPoint] {
         let uniqueTileIds = Set(defaultNavBindings.values.map(\.tileId))
         var points: [CGPoint] = []

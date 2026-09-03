@@ -1,14 +1,24 @@
+import DivvyClickCoordination
+import DivvyClickCore
+import DivvyClickEngine
+import DivvyClickLayouts
 import SwiftUI
 
-struct GridOverlayView: View {
-    @ObservedObject var engine: NavigationEngine
-    @ObservedObject var layerState: LayerState
-    @ObservedObject var scrollState: ScrollState
-    var keyMap: KeyMap = .default
+public struct GridOverlayView: View {
+    @ObservedObject public var engine: NavigationEngine
+    @ObservedObject public var layerState: LayerState
+    @ObservedObject public var scrollState: ScrollState
+    public var keyMap: KeyMap = .default
     @State private var showCues = false
 
+    public init(engine: NavigationEngine, layerState: LayerState, scrollState: ScrollState, keyMap: KeyMap = .default) {
+        self.engine = engine
+        self.layerState = layerState
+        self.scrollState = scrollState
+        self.keyMap = keyMap
+    }
 
-    var body: some View {
+    public var body: some View {
         ZStack {
             // 1. Grid Lines and Sniper Eyepiece
             gridLines
@@ -435,11 +445,16 @@ struct GridOverlayView: View {
     }
 }
 
-struct InvertedRectangle: Shape {
-    let innerRect: CGRect
-    let outerRect: CGRect
+public struct InvertedRectangle: Shape {
+    public let innerRect: CGRect
+    public let outerRect: CGRect
 
-    func path(in rect: CGRect) -> Path {
+    public init(innerRect: CGRect, outerRect: CGRect) {
+        self.innerRect = innerRect
+        self.outerRect = outerRect
+    }
+
+    public func path(in rect: CGRect) -> Path {
         var path = Path()
         // Outer boundary (the whole view/screen)
         path.addRect(rect)

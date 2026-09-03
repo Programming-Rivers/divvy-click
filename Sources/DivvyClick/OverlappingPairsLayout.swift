@@ -1,15 +1,16 @@
 import AppKit
 import CoreGraphics
+import DivvyClickCore
 import SwiftUI
 
-struct OverlappingPairsLayout: NavigationLayout {
-    let id: String = "overlapping_pairs"
-    let name: String = "2x2 Overlapping (IJKL)"
-    let description: String = "Overlapping Top/Bottom and Left/Right tile pairs navigated with I, K, J, L"
+public struct OverlappingPairsLayout: NavigationLayout {
+    public let id: String = "overlapping_pairs"
+    public let name: String = "2x2 Overlapping (IJKL)"
+    public let description: String = "Overlapping Top/Bottom and Left/Right tile pairs navigated with I, K, J, L"
 
-    init() {}
+    public init() {}
 
-    var defaultNavBindings: [KeyCode: LayoutTileBinding] {
+    public var defaultNavBindings: [KeyCode: LayoutTileBinding] {
         [
             .i: LayoutTileBinding(tileId: "up", label: "↑"),
             .k: LayoutTileBinding(tileId: "down", label: "↓"),
@@ -18,7 +19,7 @@ struct OverlappingPairsLayout: NavigationLayout {
         ]
     }
 
-    var fastMoveBindings: [KeyCode: LayoutTileBinding] {
+    public var fastMoveBindings: [KeyCode: LayoutTileBinding] {
         [
             .i: LayoutTileBinding(tileId: "up", label: "Fast ↑", fastRepeatCount: 2),
             .k: LayoutTileBinding(tileId: "down", label: "Fast ↓", fastRepeatCount: 2),
@@ -27,7 +28,7 @@ struct OverlappingPairsLayout: NavigationLayout {
         ]
     }
 
-    func subdivide(region: CGRect, tileId: String, screenFrame: CGRect) -> CGRect {
+    public func subdivide(region: CGRect, tileId: String, screenFrame: CGRect) -> CGRect {
         let overlapFactor: CGFloat = CGFloat(AppConstants.overlapFactor)
         var newRegion = region
 
@@ -63,7 +64,7 @@ struct OverlappingPairsLayout: NavigationLayout {
         return newRegion.intersection(screenFrame)
     }
 
-    func drawGridLines(context: GraphicsContext, localRegion: CGRect, neonColor: Color) {
+    public func drawGridLines(context: GraphicsContext, localRegion: CGRect, neonColor: Color) {
         var globalPath = Path()
         let overlapFactor: CGFloat = CGFloat(AppConstants.overlapFactor)
         let halfW = (localRegion.width / 2.0) * overlapFactor
@@ -91,7 +92,7 @@ struct OverlappingPairsLayout: NavigationLayout {
         context.stroke(globalPath, with: .color(neonColor.opacity(0.3)), lineWidth: 1.0)
     }
 
-    func keyCues(localRegion: CGRect) -> [LayoutKeyCue] {
+    public func keyCues(localRegion: CGRect) -> [LayoutKeyCue] {
         guard localRegion.width > 72 && localRegion.height > 72 else { return [] }
         return [
             LayoutKeyCue(key: "I", x: localRegion.midX, y: localRegion.minY + 20),
@@ -101,7 +102,7 @@ struct OverlappingPairsLayout: NavigationLayout {
         ]
     }
 
-    var hudStructure: LayoutHUDStructure {
+    public var hudStructure: LayoutHUDStructure {
         LayoutHUDStructure(rows: [
             [nil, "U", "I", "O", nil],
             ["H", "J", "K", "L", ";"],

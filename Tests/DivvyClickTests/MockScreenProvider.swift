@@ -1,5 +1,5 @@
 import AppKit
-@testable import Sources_DivvyClick_lib
+import DivvyClickCore
 
 /// A mock screen provider for deterministic testing.
 /// Uses a single virtual screen with a configurable frame and mouse location.

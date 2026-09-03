@@ -3,17 +3,24 @@ load("@rules_swift//swift:swift_test.bzl", "swift_test")
 swift_test(
     name = "KeyCodeTests",
     srcs = ["KeyCodeTests.swift"],
-    deps = ["//Sources/DivvyClick:lib"],
+    deps = [
+        "//Sources/DivvyClick:core",
+    ],
 )
 
 swift_test(
     name = "KeyMapTests",
     srcs = [
+        "KeyMapTests.swift",
         "MockCursorEngine.swift",
         "MockScreenProvider.swift",
-        "KeyMapTests.swift",
     ],
-    deps = ["//Sources/DivvyClick:lib"],
+    deps = [
+        "//Sources/DivvyClick:coordination",
+        "//Sources/DivvyClick:core",
+        "//Sources/DivvyClick:engine",
+        "//Sources/DivvyClick:layouts",
+    ],
 )
 
 swift_test(
@@ -23,7 +30,11 @@ swift_test(
         "MockScreenProvider.swift",
         "NavigationCoordinatorTests.swift",
     ],
-    deps = ["//Sources/DivvyClick:lib"],
+    deps = [
+        "//Sources/DivvyClick:coordination",
+        "//Sources/DivvyClick:core",
+        "//Sources/DivvyClick:engine",
+    ],
 )
 
 swift_test(
@@ -32,16 +43,24 @@ swift_test(
         "MockScreenProvider.swift",
         "NavigationEngineTests.swift",
     ],
-    deps = ["//Sources/DivvyClick:lib"],
+    deps = [
+        "//Sources/DivvyClick:core",
+        "//Sources/DivvyClick:engine",
+        "//Sources/DivvyClick:layouts",
+    ],
 )
 
 swift_test(
     name = "HotkeyManagerTests",
     srcs = [
+        "HotkeyManagerTests.swift",
         "MockCursorEngine.swift",
         "MockScreenProvider.swift",
-        "HotkeyManagerTests.swift",
     ],
-    deps = ["//Sources/DivvyClick:lib"],
+    deps = [
+        "//Sources/DivvyClick:coordination",
+        "//Sources/DivvyClick:core",
+        "//Sources/DivvyClick:engine",
+        "//Sources/DivvyClick:ui",
+    ],
 )
-

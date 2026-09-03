@@ -1,34 +1,37 @@
 import AppKit
 import Combine
 import CoreGraphics
+import DivvyClickCoordination
+import DivvyClickCore
+import DivvyClickEngine
 import Foundation
 
 @MainActor
-class HotkeyManager {
+public class HotkeyManager {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var secureInputTimer: Timer?
     private var cancellables = Set<AnyCancellable>()
 
     // Layer keys state tracking
-    private(set) var isAHeld = false
-    private(set) var isSHeld = false
-    private(set) var isDHeld = false
-    private(set) var isFHeld = false
+    public private(set) var isAHeld = false
+    public private(set) var isSHeld = false
+    public private(set) var isDHeld = false
+    public private(set) var isFHeld = false
 
     // Double-tap tracking
-    private(set) var lastCommandTapTime: ContinuousClock.Instant?
-    private(set) var wasCommandPressed = false
+    public private(set) var lastCommandTapTime: ContinuousClock.Instant?
+    public private(set) var wasCommandPressed = false
 
-    let coordinator: NavigationCoordinator
+    public let coordinator: NavigationCoordinator
     private var explicitKeyMap: KeyMap?
-    var keyMap: KeyMap {
+    public var keyMap: KeyMap {
         if let explicit = explicitKeyMap { return explicit }
         return KeyMap(layout: engine.activeLayout)
     }
-    var engine: NavigationEngine { coordinator.engine }
+    public var engine: NavigationEngine { coordinator.engine }
 
-    init(coordinator: NavigationCoordinator, keyMap: KeyMap? = nil) {
+    public init(coordinator: NavigationCoordinator, keyMap: KeyMap? = nil) {
         self.coordinator = coordinator
         self.explicitKeyMap = keyMap
         setupEventTap()
@@ -118,7 +121,7 @@ class HotkeyManager {
     ///   - event: The intercepted `CGEvent`.
     ///   - type: The event type (e.g. `.keyDown`, `.keyUp`, `.flagsChanged`).
     /// - Returns: `Unmanaged.passUnretained(event)` to pass through, or `nil` to swallow/consume the event.
-    func handleEvent(_ event: CGEvent, type: CGEventType) -> Unmanaged<CGEvent>? {
+    public func handleEvent(_ event: CGEvent, type: CGEventType) -> Unmanaged<CGEvent>? {
         MainActor.preconditionIsolated("HotkeyManager event processing must execute on the MainActor.")
 
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
@@ -166,7 +169,7 @@ class HotkeyManager {
         return Unmanaged.passUnretained(event)
     }
 
-    func isSwallowedKey(_ keyCode: KeyCode?) -> Bool {
+    public func isSwallowedKey(_ keyCode: KeyCode?) -> Bool {
         guard let keyCode = keyCode else { return false }
         switch keyCode {
         case .a, .s, .d, .f, .u, .i, .o, .h, .j, .k, .l, .m, .comma, .period, .space, .semicolon, .escape, .slash:
@@ -176,7 +179,7 @@ class HotkeyManager {
         }
     }
 
-    func checkDoubleTapCommand(type: CGEventType, flags: CGEventFlags) -> Bool {
+    public func checkDoubleTapCommand(type: CGEventType, flags: CGEventFlags) -> Bool {
         let isCommand = flags.contains(.maskCommand)
         if type == .flagsChanged {
             if isCommand && !wasCommandPressed {
@@ -200,7 +203,7 @@ class HotkeyManager {
         return false
     }
 
-    func handleKeyUp(_ keyCode: KeyCode?) {
+    public func handleKeyUp(_ keyCode: KeyCode?) {
         guard let keyCode = keyCode else { return }
 
         switch keyCode {
@@ -215,7 +218,7 @@ class HotkeyManager {
     }
 
     @discardableResult
-    func handleKeyDown(_ keyCode: KeyCode?, flags: CGEventFlags) -> Bool {
+    public func handleKeyDown(_ keyCode: KeyCode?, flags: CGEventFlags) -> Bool {
         guard let keyCode = keyCode else { return false }
 
         // Track Layers

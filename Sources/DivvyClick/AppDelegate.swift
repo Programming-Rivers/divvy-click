@@ -1,6 +1,9 @@
 import AppKit
-import SwiftUI
 import Combine
+import DivvyClickCoordination
+import DivvyClickEngine
+import DivvyClickUI
+import SwiftUI
 
 @MainActor
 public class AppDelegate: NSObject, NSApplicationDelegate {

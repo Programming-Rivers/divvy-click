@@ -1,11 +1,14 @@
 import AppKit
 import CoreGraphics
+import DivvyClickCore
 import Foundation
 
-struct CursorEngine: CursorProviding {
+public struct CursorEngine: CursorProviding {
+    public init() {}
+
     /// Jumps the cursor to the center of a target region
     @discardableResult
-    func jump(to rect: CGRect) -> Bool {
+    public func jump(to rect: CGRect) -> Bool {
         let center = CGPoint(x: rect.midX, y: rect.midY)
         let cgLocation = convertToCG(center)
         CGWarpMouseCursorPosition(cgLocation)
@@ -13,28 +16,28 @@ struct CursorEngine: CursorProviding {
     }
 
     /// Simulates a mouse click (down then up)
-    func click(button: CGMouseButton = .left, count: Int = 1, flags: CGEventFlags = [], at location: CGPoint? = nil) {
+    public func click(button: CGMouseButton = .left, count: Int = 1, flags: CGEventFlags = [], at location: CGPoint? = nil) {
         mouseDown(button: button, count: count, flags: flags, at: location)
         mouseUp(button: button, count: count, flags: flags, at: location)
     }
 
     /// Presses the mouse button down
-    func mouseDown(button: CGMouseButton = .left, count: Int = 1, flags: CGEventFlags = [], at location: CGPoint? = nil) {
+    public func mouseDown(button: CGMouseButton = .left, count: Int = 1, flags: CGEventFlags = [], at location: CGPoint? = nil) {
         postMouseEvent(type: mouseDownType(for: button), button: button, count: count, flags: flags, at: location)
     }
 
     /// Releases the mouse button
-    func mouseUp(button: CGMouseButton = .left, count: Int = 1, flags: CGEventFlags = [], at location: CGPoint? = nil) {
+    public func mouseUp(button: CGMouseButton = .left, count: Int = 1, flags: CGEventFlags = [], at location: CGPoint? = nil) {
         postMouseEvent(type: mouseUpType(for: button), button: button, count: count, flags: flags, at: location)
     }
 
     /// Sends a mouse dragged event (useful for some apps during a drag)
-    func mouseDrag(button: CGMouseButton = .left, flags: CGEventFlags = [], at location: CGPoint? = nil) {
+    public func mouseDrag(button: CGMouseButton = .left, flags: CGEventFlags = [], at location: CGPoint? = nil) {
         postMouseEvent(type: mouseDragType(for: button), button: button, flags: flags, at: location)
     }
 
     /// Simulates a scroll wheel event.
-    func scroll(deltaX: Int32 = 0, deltaY: Int32 = 0, flags: CGEventFlags = []) {
+    public func scroll(deltaX: Int32 = 0, deltaY: Int32 = 0, flags: CGEventFlags = []) {
         let source = CGEventSource(stateID: .hidSystemState)
         // wheelCount = 2 when both vertical and horizontal are potentially used
         let event = CGEvent(scrollWheelEvent2Source: source, units: .pixel, wheelCount: 2, wheel1: deltaY, wheel2: deltaX, wheel3: 0)

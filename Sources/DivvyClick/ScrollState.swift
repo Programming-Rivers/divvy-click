@@ -1,7 +1,8 @@
 import Foundation
 
 @MainActor
-class ScrollState: ObservableObject {
-    @Published var autoScrollDirection: NavigationEngine.ScrollDirection? = nil
-    @Published var autoScrollSpeed: Int32 = 0
+public class ScrollState: ObservableObject {
+    public init() {}
+    @Published public var autoScrollDirection: NavigationEngine.ScrollDirection? = nil
+    @Published public var autoScrollSpeed: Int32 = 0
 }

@@ -1,6 +1,8 @@
-import XCTest
 import CoreGraphics
-@testable import Sources_DivvyClick_lib
+import DivvyClickCoordination
+import DivvyClickCore
+import DivvyClickEngine
+import XCTest
 
 @MainActor
 final class NavigationCoordinatorTests: XCTestCase {

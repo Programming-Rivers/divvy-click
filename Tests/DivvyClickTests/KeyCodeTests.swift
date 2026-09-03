@@ -1,5 +1,5 @@
+import DivvyClickCore
 import XCTest
-@testable import Sources_DivvyClick_lib
 
 final class KeyCodeTests: XCTestCase {
 

@@ -1,6 +1,6 @@
 import CoreGraphics
+import DivvyClickCore
 import Foundation
-@testable import Sources_DivvyClick_lib
 
 struct CursorCall: Equatable {
     enum Kind: Equatable {

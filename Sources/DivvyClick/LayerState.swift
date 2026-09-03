@@ -1,7 +1,8 @@
 import Foundation
 
 @MainActor
-class LayerState: ObservableObject {
-    @Published var activeLayer: NavigationEngine.ActiveLayer? = nil
-    @Published var showHUD: Bool = false
+public class LayerState: ObservableObject {
+    public init() {}
+    @Published public var activeLayer: NavigationEngine.ActiveLayer? = nil
+    @Published public var showHUD: Bool = false
 }

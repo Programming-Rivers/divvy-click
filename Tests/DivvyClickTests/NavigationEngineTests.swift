@@ -1,5 +1,7 @@
+import DivvyClickCore
+import DivvyClickEngine
+import DivvyClickLayouts
 import XCTest
-@testable import Sources_DivvyClick_lib
 
 @MainActor
 final class NavigationEngineTests: XCTestCase {
