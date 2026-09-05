@@ -48,6 +48,7 @@ public class NavigationCoordinator {
                 if !active { 
                     self?.engine.scrollState.autoScrollDirection = nil 
                     self?.actionTask?.cancel()
+                    self?.stopAllNudges()
                     
                     if let self = self, self.engine.isMouseDown, let region = self.engine.currentRegion {
                         let targetPoint = CGPoint(x: region.midX, y: region.midY)
@@ -58,8 +59,11 @@ public class NavigationCoordinator {
             .store(in: &cancellables)
             
         engine.layerState.$activeLayer
-            .sink { [weak self] _ in
+            .sink { [weak self] layer in
                 self?.engine.scrollState.autoScrollDirection = nil
+                if layer != .nudge {
+                    self?.stopAllNudges()
+                }
             }
             .store(in: &cancellables)
 
@@ -164,7 +168,7 @@ public class NavigationCoordinator {
             case .left:  self.cursorEngine.scroll(deltaX: -delta, flags: flags)
             case .right: self.cursorEngine.scroll(deltaX: delta, flags: flags)
             }
-        case .autoScroll(let direction):
+            case .autoScroll(let direction):
             if direction == nil {
                 engine.scrollState.autoScrollDirection = nil
                 engine.scrollState.autoScrollSpeed = 0
@@ -176,7 +180,95 @@ public class NavigationCoordinator {
                 engine.scrollState.autoScrollDirection = direction
                 engine.scrollState.autoScrollSpeed = 1
             }
+        case .nudge(let direction):
+            startNudge(direction: direction)
         }
+    }
+
+    // MARK: - Nudge & Glide Support
+    private var activeNudgeDirections: Set<NavigationEngine.Direction> = []
+    private var glideCancellable: AnyCancellable?
+    private var nudgeStartTime: ContinuousClock.Instant?
+
+    public func startNudge(direction: NavigationEngine.Direction) {
+        guard engine.isActive else { return }
+
+        if activeNudgeDirections.contains(direction) {
+            return
+        }
+
+        let wasEmpty = activeNudgeDirections.isEmpty
+        activeNudgeDirections.insert(direction)
+
+        if wasEmpty {
+            nudgeStartTime = ContinuousClock.now
+            engine.startNudgeGesture()
+
+            let vec = direction.vector
+            engine.nudge(dx: vec.dx * CGFloat(AppConstants.nudgeBaseStep),
+                         dy: vec.dy * CGFloat(AppConstants.nudgeBaseStep))
+
+            glideCancellable = Timer.publish(every: AppConstants.nudgeTickInterval, on: .main, in: .common)
+                .autoconnect()
+                .sink { [weak self] _ in
+                    self?.performGlideTick()
+                }
+        }
+    }
+
+    public func stopNudge(direction: NavigationEngine.Direction) {
+        activeNudgeDirections.remove(direction)
+        if activeNudgeDirections.isEmpty {
+            stopGlideTimer()
+            engine.endNudgeGesture()
+        }
+    }
+
+    public func stopAllNudges() {
+        activeNudgeDirections.removeAll()
+        stopGlideTimer()
+        engine.endNudgeGesture()
+    }
+
+    private func stopGlideTimer() {
+        glideCancellable = nil
+        nudgeStartTime = nil
+    }
+
+    private func performGlideTick() {
+        guard engine.isActive,
+              !activeNudgeDirections.isEmpty,
+              let startTime = nudgeStartTime else {
+            stopAllNudges()
+            return
+        }
+
+        let elapsed = startTime.duration(to: ContinuousClock.now)
+        let elapsedSeconds = Double(elapsed.components.seconds) + Double(elapsed.components.attoseconds) * 1e-18
+
+        guard elapsedSeconds >= AppConstants.nudgeHoldThreshold else {
+            return
+        }
+
+        let holdSec = AppConstants.nudgeHoldThreshold
+        let rampSec = AppConstants.nudgeRampDuration
+        let progress = min(1.0, max(0.0, (elapsedSeconds - holdSec) / rampSec))
+        let velocity = CGFloat(AppConstants.nudgeMinVelocity + (AppConstants.nudgeMaxVelocity - AppConstants.nudgeMinVelocity) * (progress * progress))
+
+        var totalDx: CGFloat = 0
+        var totalDy: CGFloat = 0
+        for dir in activeNudgeDirections {
+            totalDx += dir.vector.dx
+            totalDy += dir.vector.dy
+        }
+
+        let len = hypot(totalDx, totalDy)
+        if len > 0 {
+            totalDx /= len
+            totalDy /= len
+        }
+
+        engine.nudge(dx: totalDx * velocity, dy: totalDy * velocity)
     }
 
     private func autoMoveIfDragging(to region: CGRect) {

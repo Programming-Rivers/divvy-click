@@ -100,20 +100,29 @@ final class KeyMapTests: XCTestCase {
         }
     }
 
-    // MARK: - Fast Move Layer
+    // MARK: - Nudge / Fast Move Layer
 
     func testFastMoveLayerLabels() {
         let expected: [(KeyCode, String)] = [
             (.h, "Undo"),
-            (.i, "Fast ↑"), (.k, "Fast ↓"),
-            (.j, "Fast ←"), (.l, "Fast →")
+            (.i, "Nudge ↑"), (.k, "Nudge ↓"),
+            (.j, "Nudge ←"), (.l, "Nudge →"),
+            (.upArrow, "Nudge ↑"), (.downArrow, "Nudge ↓"),
+            (.leftArrow, "Nudge ←"), (.rightArrow, "Nudge →"),
+            (.u, "Nudge ↖"), (.o, "Nudge ↗"),
+            (.m, "Nudge ↙"), (.period, "Nudge ↘")
         ]
 
         for (key, expectedLabel) in expected {
             XCTAssertEqual(
+                KeyMap.default.label(for: .nudge, key: key),
+                expectedLabel,
+                "Nudge layer label for \(key.string) should be \(expectedLabel)"
+            )
+            XCTAssertEqual(
                 KeyMap.default.label(for: .fastMove, key: key),
                 expectedLabel,
-                "Fast move layer label for \(key.string) should be \(expectedLabel)"
+                "Fast move compatibility layer label for \(key.string) should be \(expectedLabel)"
             )
         }
     }

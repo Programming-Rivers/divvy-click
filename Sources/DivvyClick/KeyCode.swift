@@ -9,6 +9,7 @@ public enum KeyCode: Int64, CaseIterable, Sendable {
     case a = 0, s = 1, d = 2, f = 3
     case space = 49
     case slash = 44
+    case leftArrow = 123, rightArrow = 124, downArrow = 125, upArrow = 126
 
     public var string: String {
         switch self {
@@ -32,6 +33,10 @@ public enum KeyCode: Int64, CaseIterable, Sendable {
         case .f: return "F"
         case .space: return "Space"
         case .slash: return "/"
+        case .leftArrow: return "←"
+        case .rightArrow: return "→"
+        case .downArrow: return "↓"
+        case .upArrow: return "↑"
         }
     }
 

@@ -239,4 +239,54 @@ final class HotkeyManagerTests: XCTestCase {
         XCTAssertNil(result, "Event should be swallowed by custom key binding")
         XCTAssertTrue(customActionInvoked, "Custom key binding action should be executed")
     }
+
+    // MARK: - Arrow Keys & Nudge Layer Tests
+
+    func testArrowKeysAreSwallowedWhenActive() {
+        let (hotkeyManager, _, engine, _) = makeHotkeyManager()
+        engine.start()
+
+        let arrowKeys: [KeyCode] = [.upArrow, .downArrow, .leftArrow, .rightArrow]
+        for key in arrowKeys {
+            XCTAssertTrue(hotkeyManager.isSwallowedKey(key), "Arrow key \(key) should be swallowed")
+
+            let downEvent = createKeyEvent(type: .keyDown, keyCode: key)
+            let result = hotkeyManager.handleEvent(downEvent, type: .keyDown)
+            XCTAssertNil(result, "KeyDown for \(key) should be swallowed when engine is active")
+        }
+    }
+
+    func testNudgeLayerKeyUpAndReleaseHandling() {
+        let (hotkeyManager, coordinator, engine, _) = makeHotkeyManager()
+        engine.start()
+        guard let r0 = engine.currentRegion else {
+            XCTFail("Region missing")
+            return
+        }
+
+        // Hold 'S' (Nudge Layer)
+        let sKeyDown = createKeyEvent(type: .keyDown, keyCode: .s)
+        _ = hotkeyManager.handleEvent(sKeyDown, type: .keyDown)
+        XCTAssertEqual(engine.layerState.activeLayer, .nudge)
+
+        // Press 'I' (Nudge Up)
+        let iKeyDown = createKeyEvent(type: .keyDown, keyCode: .i)
+        _ = hotkeyManager.handleEvent(iKeyDown, type: .keyDown)
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, r0.midY + CGFloat(AppConstants.nudgeBaseStep), accuracy: 0.001)
+
+        // Release 'I'
+        let iKeyUp = createKeyEvent(type: .keyUp, keyCode: .i)
+        _ = hotkeyManager.handleEvent(iKeyUp, type: .keyUp)
+
+        // Another tap after keyUp should create a second discrete tap and undo point
+        _ = hotkeyManager.handleEvent(iKeyDown, type: .keyDown)
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, r0.midY + 2.0 * CGFloat(AppConstants.nudgeBaseStep), accuracy: 0.001)
+
+        // Release 'S' (should stop all nudges)
+        let sKeyUp = createKeyEvent(type: .keyUp, keyCode: .s)
+        _ = hotkeyManager.handleEvent(sKeyUp, type: .keyUp)
+        XCTAssertNil(engine.layerState.activeLayer)
+
+        coordinator.stopAllNudges()
+    }
 }

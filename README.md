@@ -49,9 +49,14 @@ Divvy-click uses a sophisticated layering system. **Hold a layer key** (Home row
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`D`** | **Action** | - | - | - | Double | Middle | **Left Click** | Drag | Drop | - |
 | **`F`** | **Scroll** | **Scroll Up** | **Auto Up** | - | Left | **STOP** | Right | **Scroll Down** | **Auto Down**| - |
-| **`S`** | **Fast Move** | - | ↑ (2x) | - | ← (2x) | ↓ (2x) | → (2x) | - | - | - |
+| **`S`** | **Nudge & Glide** | ↖ | ↑ | ↗ | ← | ↓ | → | ↙ | - | ↘ |
 | **`A`** | **Management**| - | - | - | Redo | Reset | Displays | - | - | - |
 
+- **Nudge & Accelerated Glide (`S`)**: 
+  - **Single tap**: Micro-steps cursor and active tile by exactly 1 pixel (supports `U, I, O, J, K, L, M, .` and physical arrow keys `↑, ↓, ←, →`).
+  - **Key hold (> 180ms)**: Smooth 60 FPS continuous glide accelerating up to 10 px/tick (~500 px/s).
+  - **Instant stop**: Releasing direction keys halts immediately with zero drift.
+  - **Coalesced Undo (`H`)**: Undoing after a continuous glide reverts back to the pre-nudge position in a single step.
 - **Auto-Scroll (Incremental)**: Pressing **I** (Auto Up) or **,** (Auto Down) repeatedly increases the scrolling speed (1x to 10x). Press **K** to stop.
 - **Physical Screen Mapping**: Displays are automatically mapped to the 3x3 grid (**UIO/JKL/M,.**) based on their physical arrangement in macOS settings.
 - **HUD Integration**: A glassmorphic Heads-Up Display appears automatically if you are holding a layer key, guiding you through the available shortcuts.

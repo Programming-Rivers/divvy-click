@@ -24,18 +24,26 @@ public struct Grid3x3Layout: NavigationLayout {
         ]
     }
 
-    public var fastMoveBindings: [KeyCode: LayoutTileBinding] {
+    public var nudgeBindings: [KeyCode: LayoutTileBinding] {
         [
-            .u: LayoutTileBinding(tileId: "topLeft", label: "Fast ↖", fastRepeatCount: 2),
-            .i: LayoutTileBinding(tileId: "up", label: "Fast ↑", fastRepeatCount: 2),
-            .o: LayoutTileBinding(tileId: "topRight", label: "Fast ↗", fastRepeatCount: 2),
-            .j: LayoutTileBinding(tileId: "left", label: "Fast ←", fastRepeatCount: 2),
-            .k: LayoutTileBinding(tileId: "center", label: "Fast ○", fastRepeatCount: 2),
-            .l: LayoutTileBinding(tileId: "right", label: "Fast →", fastRepeatCount: 2),
-            .m: LayoutTileBinding(tileId: "bottomLeft", label: "Fast ↙", fastRepeatCount: 2),
-            .comma: LayoutTileBinding(tileId: "down", label: "Fast ↓", fastRepeatCount: 2),
-            .period: LayoutTileBinding(tileId: "bottomRight", label: "Fast ↘", fastRepeatCount: 2)
+            .u: LayoutTileBinding(tileId: "topLeft", label: "Nudge ↖"),
+            .i: LayoutTileBinding(tileId: "up", label: "Nudge ↑"),
+            .o: LayoutTileBinding(tileId: "topRight", label: "Nudge ↗"),
+            .j: LayoutTileBinding(tileId: "left", label: "Nudge ←"),
+            .k: LayoutTileBinding(tileId: "center", label: "Nudge ○"),
+            .l: LayoutTileBinding(tileId: "right", label: "Nudge →"),
+            .m: LayoutTileBinding(tileId: "bottomLeft", label: "Nudge ↙"),
+            .comma: LayoutTileBinding(tileId: "down", label: "Nudge ↓"),
+            .period: LayoutTileBinding(tileId: "bottomRight", label: "Nudge ↘"),
+            .upArrow: LayoutTileBinding(tileId: "up", label: "Nudge ↑"),
+            .downArrow: LayoutTileBinding(tileId: "down", label: "Nudge ↓"),
+            .leftArrow: LayoutTileBinding(tileId: "left", label: "Nudge ←"),
+            .rightArrow: LayoutTileBinding(tileId: "right", label: "Nudge →")
         ]
+    }
+
+    public var fastMoveBindings: [KeyCode: LayoutTileBinding] {
+        nudgeBindings
     }
 
     public func subdivide(region: CGRect, tileId: String, screenFrame: CGRect) -> CGRect {

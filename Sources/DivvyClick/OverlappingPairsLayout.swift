@@ -19,13 +19,25 @@ public struct OverlappingPairsLayout: NavigationLayout {
         ]
     }
 
-    public var fastMoveBindings: [KeyCode: LayoutTileBinding] {
+    public var nudgeBindings: [KeyCode: LayoutTileBinding] {
         [
-            .i: LayoutTileBinding(tileId: "up", label: "Fast ↑", fastRepeatCount: 2),
-            .k: LayoutTileBinding(tileId: "down", label: "Fast ↓", fastRepeatCount: 2),
-            .j: LayoutTileBinding(tileId: "left", label: "Fast ←", fastRepeatCount: 2),
-            .l: LayoutTileBinding(tileId: "right", label: "Fast →", fastRepeatCount: 2)
+            .i: LayoutTileBinding(tileId: "up", label: "Nudge ↑"),
+            .k: LayoutTileBinding(tileId: "down", label: "Nudge ↓"),
+            .j: LayoutTileBinding(tileId: "left", label: "Nudge ←"),
+            .l: LayoutTileBinding(tileId: "right", label: "Nudge →"),
+            .u: LayoutTileBinding(tileId: "topLeft", label: "Nudge ↖"),
+            .o: LayoutTileBinding(tileId: "topRight", label: "Nudge ↗"),
+            .m: LayoutTileBinding(tileId: "bottomLeft", label: "Nudge ↙"),
+            .period: LayoutTileBinding(tileId: "bottomRight", label: "Nudge ↘"),
+            .upArrow: LayoutTileBinding(tileId: "up", label: "Nudge ↑"),
+            .downArrow: LayoutTileBinding(tileId: "down", label: "Nudge ↓"),
+            .leftArrow: LayoutTileBinding(tileId: "left", label: "Nudge ←"),
+            .rightArrow: LayoutTileBinding(tileId: "right", label: "Nudge →")
         ]
+    }
+
+    public var fastMoveBindings: [KeyCode: LayoutTileBinding] {
+        nudgeBindings
     }
 
     public func subdivide(region: CGRect, tileId: String, screenFrame: CGRect) -> CGRect {

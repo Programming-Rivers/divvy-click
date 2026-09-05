@@ -44,6 +44,7 @@ public protocol NavigationLayout: Sendable {
     var description: String { get }
 
     var defaultNavBindings: [KeyCode: LayoutTileBinding] { get }
+    var nudgeBindings: [KeyCode: LayoutTileBinding] { get }
     var fastMoveBindings: [KeyCode: LayoutTileBinding] { get }
 
     func subdivide(region: CGRect, tileId: String, screenFrame: CGRect) -> CGRect
@@ -54,6 +55,16 @@ public protocol NavigationLayout: Sendable {
 }
 
 public extension NavigationLayout {
+    var nudgeBindings: [KeyCode: LayoutTileBinding] {
+        defaultNavBindings.mapValues {
+            LayoutTileBinding(tileId: $0.tileId, label: "Nudge \($0.label)")
+        }
+    }
+
+    var fastMoveBindings: [KeyCode: LayoutTileBinding] {
+        nudgeBindings
+    }
+
     func prospectiveTargetPoints(for region: CGRect, screenFrame: CGRect) -> [CGPoint] {
         let uniqueTileIds = Set(defaultNavBindings.values.map(\.tileId))
         var points: [CGPoint] = []

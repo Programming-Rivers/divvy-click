@@ -14,6 +14,14 @@ public struct AppConstants: Sendable {
     public static let autoScrollBaseDelta: Int32 = 20
     public static let scrollStepDelta: Int32 = 100
     
+    // Nudge & Glide
+    public static let nudgeBaseStep: Double = 1.0
+    public static let nudgeHoldThreshold: Double = 0.18
+    public static let nudgeRampDuration: Double = 0.40
+    public static let nudgeMinVelocity: Double = 1.0
+    public static let nudgeMaxVelocity: Double = 10.0
+    public static let nudgeTickInterval: Double = 1.0 / 60.0
+    
     // UI - Overlay & HUD
     public static let cueIdleDelay: UInt64 = 1_000_000_000 // 1 second in nanoseconds
     public static let hudCornerPadding: Double = 40.0

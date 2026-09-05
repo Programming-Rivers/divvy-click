@@ -172,7 +172,8 @@ public class HotkeyManager {
     public func isSwallowedKey(_ keyCode: KeyCode?) -> Bool {
         guard let keyCode = keyCode else { return false }
         switch keyCode {
-        case .a, .s, .d, .f, .u, .i, .o, .h, .j, .k, .l, .m, .comma, .period, .space, .semicolon, .escape, .slash:
+        case .a, .s, .d, .f, .u, .i, .o, .h, .j, .k, .l, .m, .comma, .period, .space, .semicolon, .escape, .slash,
+             .upArrow, .downArrow, .leftArrow, .rightArrow:
             return true
         default:
             return false
@@ -208,10 +209,19 @@ public class HotkeyManager {
 
         switch keyCode {
         case .a: isAHeld = false
-        case .s: isSHeld = false
+        case .s: 
+            isSHeld = false
+            coordinator.stopAllNudges()
         case .d: isDHeld = false
         case .f: isFHeld = false
         default: break
+        }
+
+        if isSHeld {
+            if let tileBinding = engine.activeLayout.nudgeBindings[keyCode],
+               let dir = NavigationEngine.Direction.from(tileId: tileBinding.tileId) {
+                coordinator.stopNudge(direction: dir)
+            }
         }
 
         updateActiveLayer()
@@ -287,13 +297,14 @@ public class HotkeyManager {
         isSHeld = false
         isDHeld = false
         isFHeld = false
+        coordinator.stopAllNudges()
         updateActiveLayer()
     }
 
     private func updateActiveLayer() {
         if isDHeld { engine.layerState.activeLayer = .action }
         else if isFHeld { engine.layerState.activeLayer = .scroll }
-        else if isSHeld { engine.layerState.activeLayer = .fastMove }
+        else if isSHeld { engine.layerState.activeLayer = .nudge }
         else if isAHeld { engine.layerState.activeLayer = .management }
         else { engine.layerState.activeLayer = nil }
     }

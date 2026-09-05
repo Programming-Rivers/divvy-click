@@ -53,6 +53,7 @@ public class NavigationEngine: ObservableObject {
         layerState.showHUD = false
         layerState.activeLayer = nil
         isMouseDown = false
+        isNudging = false
     }
 
 
@@ -62,6 +63,7 @@ public class NavigationEngine: ObservableObject {
         currentTarget = nil
         history = []
         redoStack = []
+        isNudging = false
     }
 
 
@@ -224,6 +226,53 @@ public class NavigationEngine: ObservableObject {
     }
 
     @Published public var isMouseDown: Bool = false
+    private var isNudging: Bool = false
+
+    public func startNudgeGesture() {
+        guard isActive, let current = currentTarget else { return }
+        if !isNudging {
+            history.append(current)
+            pruneHistory()
+            redoStack.removeAll()
+            isNudging = true
+        }
+    }
+
+    public func endNudgeGesture() {
+        isNudging = false
+    }
+
+    /// Nudges the active region by the given pixel delta in display coordinates.
+    /// In AppKit coordinates, positive dy moves UP and positive dx moves RIGHT.
+    /// The target center is clamped to remain within `activeScreenFrame`.
+    public func nudge(dx: CGFloat, dy: CGFloat) {
+        guard isActive, let current = currentTarget, let region = current.region else { return }
+
+        startNudgeGesture()
+
+        let halfW = region.width / 2.0
+        let halfH = region.height / 2.0
+
+        let targetMidX = region.midX + dx
+        let targetMidY = region.midY + dy
+
+        let clampedMidX = min(max(targetMidX, activeScreenFrame.minX), activeScreenFrame.maxX)
+        let clampedMidY = min(max(targetMidY, activeScreenFrame.minY), activeScreenFrame.maxY)
+
+        let newRegion = CGRect(
+            x: clampedMidX - halfW,
+            y: clampedMidY - halfH,
+            width: region.width,
+            height: region.height
+        )
+
+        currentTarget = .region(newRegion)
+    }
+
+    public func nudge(direction: Direction, distance: CGFloat = CGFloat(AppConstants.nudgeBaseStep)) {
+        let vec = direction.vector
+        nudge(dx: vec.dx * distance, dy: vec.dy * distance)
+    }
 
     public enum Direction: Sendable {
         case up, down, left, right
@@ -243,6 +292,35 @@ public class NavigationEngine: ObservableObject {
             case .center: return "center"
             }
         }
+
+        public var vector: (dx: CGFloat, dy: CGFloat) {
+            switch self {
+            case .up: return (0, 1)
+            case .down: return (0, -1)
+            case .left: return (-1, 0)
+            case .right: return (1, 0)
+            case .topLeft: return (-0.70710678, 0.70710678)
+            case .topRight: return (0.70710678, 0.70710678)
+            case .bottomLeft: return (-0.70710678, -0.70710678)
+            case .bottomRight: return (0.70710678, -0.70710678)
+            case .center: return (0, 0)
+            }
+        }
+
+        public static func from(tileId: String) -> Direction? {
+            switch tileId {
+            case "up": return .up
+            case "down": return .down
+            case "left": return .left
+            case "right": return .right
+            case "topLeft": return .topLeft
+            case "topRight": return .topRight
+            case "bottomLeft": return .bottomLeft
+            case "bottomRight": return .bottomRight
+            case "center": return .center
+            default: return nil
+            }
+        }
     }
 
 
@@ -251,6 +329,7 @@ public class NavigationEngine: ObservableObject {
         case click, doubleClick, rightClick, middleClick, move, mouseDown, mouseUp
         case scroll(ScrollDirection)
         case autoScroll(ScrollDirection?)
+        case nudge(Direction)
     }
 
     public enum ScrollDirection: Sendable {
@@ -258,6 +337,8 @@ public class NavigationEngine: ObservableObject {
     }
 
     public enum ActiveLayer: Sendable {
-        case action, scroll, fastMove, management, defaultNav
+        case action, scroll, nudge, management, defaultNav
+
+        public static let fastMove: ActiveLayer = .nudge
     }
 }

@@ -432,4 +432,95 @@ final class NavigationCoordinatorTests: XCTestCase {
 
         XCTAssertTrue(cursorEngine.calls.isEmpty)
     }
+
+    // MARK: - 7. Nudge & Glide Tests
+
+    func testStartNudgePerformsInitialStepAndSyncsCursor() {
+        let (coordinator, engine, cursorEngine) = makeCoordinator()
+        engine.start()
+        guard let initialRegion = engine.currentRegion else {
+            XCTFail("Initial region missing")
+            return
+        }
+        cursorEngine.calls.removeAll()
+
+        coordinator.startNudge(direction: .up)
+
+        // Verifies region shifted up by nudgeBaseStep (1px)
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, initialRegion.midY + CGFloat(AppConstants.nudgeBaseStep), accuracy: 0.001)
+
+        // Verifies cursor engine received a jump to the new region
+        XCTAssertEqual(cursorEngine.calls.count, 1)
+        if let call = cursorEngine.calls.first, case .jump(let rect) = call.kind {
+            XCTAssertEqual(rect.midY, initialRegion.midY + CGFloat(AppConstants.nudgeBaseStep), accuracy: 0.001)
+        } else {
+            XCTFail("Expected jump call to new region")
+        }
+
+        coordinator.stopAllNudges()
+    }
+
+    func testRepeatedStartNudgeIgnoresDuplicateCalls() {
+        let (coordinator, engine, cursorEngine) = makeCoordinator()
+        engine.start()
+        cursorEngine.calls.removeAll()
+
+        coordinator.startNudge(direction: .right)
+        XCTAssertEqual(cursorEngine.calls.count, 1)
+
+        // Second call with same direction (simulating OS key-repeat events)
+        coordinator.startNudge(direction: .right)
+        XCTAssertEqual(cursorEngine.calls.count, 1, "Duplicate startNudge calls for same active direction must be ignored")
+
+        coordinator.stopAllNudges()
+    }
+
+    func testStopNudgeEndsGestureWhenEmpty() {
+        let (coordinator, engine, _) = makeCoordinator()
+        engine.start()
+        guard let r0 = engine.currentRegion else {
+            XCTFail("Initial region missing")
+            return
+        }
+
+        coordinator.startNudge(direction: .down)
+        coordinator.stopNudge(direction: .down)
+
+        // Gesture should have ended; a subsequent tap should be a separate undo step
+        coordinator.startNudge(direction: .down)
+        coordinator.stopNudge(direction: .down)
+
+        // We moved 2 steps total
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, r0.midY - 2.0 * CGFloat(AppConstants.nudgeBaseStep), accuracy: 0.001)
+
+        // First undo should undo the second tap
+        XCTAssertTrue(engine.undo())
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, r0.midY - CGFloat(AppConstants.nudgeBaseStep), accuracy: 0.001)
+
+        // Second undo should restore to R0
+        XCTAssertTrue(engine.undo())
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, r0.midY, accuracy: 0.001)
+    }
+
+    func testLayerChangeAwayFromNudgeStopsGlide() {
+        let (coordinator, engine, _) = makeCoordinator()
+        engine.start()
+        engine.layerState.activeLayer = .nudge
+
+        coordinator.startNudge(direction: .up)
+
+        // Switch layer away from .nudge
+        engine.layerState.activeLayer = .action
+
+        // Nudge gesture should have ended
+        guard let currentY = engine.currentRegion?.midY else {
+            XCTFail("Region missing")
+            return
+        }
+
+        drainMainQueue(for: 0.25)
+
+        // Position should not continue gliding after layer change
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, currentY, accuracy: 0.001)
+    }
 }

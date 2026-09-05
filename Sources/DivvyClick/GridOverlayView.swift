@@ -387,7 +387,7 @@ public struct GridOverlayView: View {
         switch layer {
         case .action: return "ACTION LAYER (D)"
         case .scroll: return "SCROLL LAYER (F)"
-        case .fastMove: return "FAST MOVE LAYER (S)"
+        case .nudge: return "NUDGE LAYER (S)"
         case .management: return "MANAGEMENT LAYER (A)"
         case .defaultNav: return "NAVIGATION"
         }

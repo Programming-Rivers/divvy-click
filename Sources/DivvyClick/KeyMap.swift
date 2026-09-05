@@ -65,20 +65,19 @@ public struct KeyMap: Sendable {
             .management: defaultManagementMappings
         ]
 
-        // Fast Move Layer (S)
-        var fastMoveMap: [KeyCode: KeyBinding] = [
+        // Nudge Layer (S)
+        var nudgeMap: [KeyCode: KeyBinding] = [
             .h: KeyBinding(label: "Undo") { coordinator, _ in coordinator.engine.undo() }
         ]
-        for (key, tileBinding) in layout.fastMoveBindings {
+        for (key, tileBinding) in layout.nudgeBindings {
             let tileId = tileBinding.tileId
-            let count = tileBinding.fastRepeatCount
-            fastMoveMap[key] = KeyBinding(label: tileBinding.label) { coordinator, _ in
-                for _ in 0..<count {
-                    coordinator.engine.navigate(tileId: tileId)
+            if let direction = NavigationEngine.Direction.from(tileId: tileId) {
+                nudgeMap[key] = KeyBinding(label: tileBinding.label) { coordinator, _ in
+                    coordinator.startNudge(direction: direction)
                 }
             }
         }
-        map[.fastMove] = fastMoveMap
+        map[.nudge] = nudgeMap
 
         // Default Navigation Layer
         var defaultNavMap: [KeyCode: KeyBinding] = [

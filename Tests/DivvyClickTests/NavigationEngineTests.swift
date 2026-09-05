@@ -409,4 +409,118 @@ final class NavigationEngineTests: XCTestCase {
             XCTAssertGreaterThan(hypot(pt.x - currentCenter.x, pt.y - currentCenter.y), 1.0)
         }
     }
+
+    // MARK: - Nudge Tests
+
+    func testNudgeCardinalDirections() {
+        let engine = makeEngine()
+        engine.start()
+        guard let initialRegion = engine.currentRegion else {
+            XCTFail("Initial region should not be nil")
+            return
+        }
+
+        // Nudge Up (+Y in AppKit)
+        engine.nudge(direction: .up, distance: 2.0)
+        engine.endNudgeGesture()
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, initialRegion.midY + 2.0, accuracy: 0.001)
+        XCTAssertEqual(engine.currentRegion?.midX ?? 0, initialRegion.midX, accuracy: 0.001)
+
+        // Nudge Down (-Y in AppKit)
+        engine.nudge(direction: .down, distance: 2.0)
+        engine.endNudgeGesture()
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, initialRegion.midY, accuracy: 0.001)
+
+        // Nudge Right (+X in AppKit)
+        engine.nudge(direction: .right, distance: 3.0)
+        engine.endNudgeGesture()
+        XCTAssertEqual(engine.currentRegion?.midX ?? 0, initialRegion.midX + 3.0, accuracy: 0.001)
+
+        // Nudge Left (-X in AppKit)
+        engine.nudge(direction: .left, distance: 3.0)
+        engine.endNudgeGesture()
+        XCTAssertEqual(engine.currentRegion?.midX ?? 0, initialRegion.midX, accuracy: 0.001)
+    }
+
+    func testNudgeScreenBoundsClamping() {
+        let engine = makeEngine()
+        engine.start()
+
+        // Attempt to nudge far beyond screen top-right
+        engine.nudge(dx: 5000, dy: 5000)
+        engine.endNudgeGesture()
+
+        if let region = engine.currentRegion {
+            XCTAssertLessThanOrEqual(region.midX, engine.activeScreenFrame.maxX)
+            XCTAssertLessThanOrEqual(region.midY, engine.activeScreenFrame.maxY)
+        } else {
+            XCTFail("Region should not be nil")
+        }
+
+        // Attempt to nudge far beyond screen bottom-left
+        engine.nudge(dx: -10000, dy: -10000)
+        engine.endNudgeGesture()
+
+        if let region = engine.currentRegion {
+            XCTAssertGreaterThanOrEqual(region.midX, engine.activeScreenFrame.minX)
+            XCTAssertGreaterThanOrEqual(region.midY, engine.activeScreenFrame.minY)
+        } else {
+            XCTFail("Region should not be nil")
+        }
+    }
+
+    func testNudgeUndoCoalescingDuringContinuousGlide() {
+        let engine = makeEngine()
+        engine.start()
+        guard let r0 = engine.currentRegion else {
+            XCTFail("Initial region missing")
+            return
+        }
+
+        // Simulate continuous glide: multiple nudges within a single gesture
+        engine.startNudgeGesture()
+        for _ in 1...20 {
+            engine.nudge(dx: 1.0, dy: 1.0)
+        }
+        engine.endNudgeGesture()
+
+        // Current region should have moved by (20, 20)
+        XCTAssertEqual(engine.currentRegion?.midX ?? 0, r0.midX + 20.0, accuracy: 0.001)
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, r0.midY + 20.0, accuracy: 0.001)
+
+        // A single undo should restore back to R0 in one step
+        XCTAssertTrue(engine.undo())
+        XCTAssertEqual(engine.currentRegion?.midX ?? 0, r0.midX, accuracy: 0.001)
+        XCTAssertEqual(engine.currentRegion?.midY ?? 0, r0.midY, accuracy: 0.001)
+    }
+
+    func testDiscreteNudgeTapsHaveDiscreteUndoSteps() {
+        let engine = makeEngine()
+        engine.start()
+        guard let r0 = engine.currentRegion else {
+            XCTFail("Initial region missing")
+            return
+        }
+
+        // Tap 1
+        engine.nudge(dx: 1.0, dy: 0)
+        engine.endNudgeGesture()
+        let r1 = engine.currentRegion!
+
+        // Tap 2
+        engine.nudge(dx: 1.0, dy: 0)
+        engine.endNudgeGesture()
+        let r2 = engine.currentRegion!
+
+        XCTAssertEqual(r1.midX, r0.midX + 1.0, accuracy: 0.001)
+        XCTAssertEqual(r2.midX, r0.midX + 2.0, accuracy: 0.001)
+
+        // Undo 1 reverts to R1
+        XCTAssertTrue(engine.undo())
+        XCTAssertEqual(engine.currentRegion?.midX, r1.midX)
+
+        // Undo 2 reverts to R0
+        XCTAssertTrue(engine.undo())
+        XCTAssertEqual(engine.currentRegion?.midX, r0.midX)
+    }
 }
