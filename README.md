@@ -71,20 +71,37 @@ Divvy-click is built using **Bazel**.
    ```
 2. **Build & Run**:
    ```bash
-   bazel run //Sources/DivvyClick
+   bazel run //:DivvyClick
    ```
 
 > [!IMPORTANT]
 > Divvy-click requires **Accessibility** and **Input Monitoring** permissions in System Settings to capture hotkeys and move the cursor.
 
-# Building a Universal Binary
+### Running Tests
 
 ```bash
-bazel build //Sources/DivvyClick --config=universal
+bazel test //...
 ```
 
-The resulting binary will be located at
-* `bazel-bin/DivvyClick_archive-root/DivvyClick.app`.
+### Building a Universal Binary
+
+```bash
+bazel build //:DivvyClick --config=universal
+```
+
+The resulting binary bundle will be located at:
+* `bazel-bin/DivvyClick.zip`
+* `bazel-bin/DivvyClick_archive-root/DivvyClick.app`
+
+### Packaging a DMG
+
+Generate a distributable macOS disk image (`DivvyClick.dmg`):
+
+```bash
+bazel run //:package_dmg
+```
+
+The packaged disk image will be created at `bazel-bin/DivvyClick.dmg`.
 
 ## ⌨️ Configuration
 
