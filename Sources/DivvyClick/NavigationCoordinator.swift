@@ -60,7 +60,6 @@ public class NavigationCoordinator {
             
         engine.layerState.$activeLayer
             .sink { [weak self] layer in
-                self?.engine.scrollState.autoScrollDirection = nil
                 if layer != .nudge {
                     self?.stopAllNudges()
                 }

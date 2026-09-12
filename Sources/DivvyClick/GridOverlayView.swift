@@ -41,6 +41,27 @@ public struct GridOverlayView: View {
                 layerHUD(for: .defaultNav)
             }
 
+            // 5. Persistent Auto-Scroll Status Banner
+            if layerState.activeLayer == nil, let dir = scrollState.autoScrollDirection {
+                VStack {
+                    HStack(spacing: 8) {
+                        Image(systemName: dir == .up ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
+                        Text("AUTO-SCROLLING (\(dir == .up ? "UP" : "DOWN") - SPEED: \(scrollState.autoScrollSpeed))")
+                            .font(.system(size: 14, weight: .black, design: .monospaced))
+                    }
+                    .foregroundColor(.orange)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .background(Capsule().fill(.orange.opacity(0.15)))
+                    .overlay(Capsule().stroke(.orange.opacity(0.3), lineWidth: 1))
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .shadow(color: .black.opacity(0.3), radius: 10, y: 5)
+                    .padding(.top, 40)
+                    .id("persistent-autoscroll-status")
+                    Spacer()
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
         .ignoresSafeArea()
         .task(id: "\(String(describing: engine.currentTarget))-\(layerState.activeLayer == nil)-\(engine.isActive)-\(engine.isSelectingDisplay)-\(engine.activeLayout.id)") {

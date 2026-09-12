@@ -8,7 +8,7 @@ public struct AppConstants: Sendable {
     // Timing and Delays
     public static let clickDelay: Double = 0.05 // 50ms
     public static let doubleTapThreshold: Double = 0.3 // 300ms
-    public static let autoScrollInterval: Double = 0.05
+    public static let autoScrollInterval: Double = 0.2
     
     // Grid & Movement
     public static let autoScrollBaseDelta: Int32 = 20

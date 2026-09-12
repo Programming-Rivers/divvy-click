@@ -405,16 +405,29 @@ final class NavigationCoordinatorTests: XCTestCase {
         }
     }
 
-    func testLayerChangeClearsAutoScroll() {
+    func testAutoScrollPersistsAcrossLayerChange() {
         let (coordinator, engine, _) = makeCoordinator()
         engine.start()
 
         coordinator.execute(.autoScroll(.up))
         XCTAssertEqual(engine.scrollState.autoScrollDirection, .up)
 
+        // Entering .scroll layer should not cancel auto-scroll
         engine.layerState.activeLayer = .scroll
+        XCTAssertEqual(engine.scrollState.autoScrollDirection, .up)
 
+        // Leaving .scroll layer should not cancel auto-scroll
+        engine.layerState.activeLayer = nil
+        XCTAssertEqual(engine.scrollState.autoScrollDirection, .up)
+
+        // Switching to another layer (e.g. .action) should not cancel auto-scroll
+        engine.layerState.activeLayer = .action
+        XCTAssertEqual(engine.scrollState.autoScrollDirection, .up)
+
+        // Auto-scroll stops when stop action is explicitly invoked
+        coordinator.execute(.autoScroll(nil))
         XCTAssertNil(engine.scrollState.autoScrollDirection)
+        XCTAssertEqual(engine.scrollState.autoScrollSpeed, 0)
     }
 
     // MARK: - 6. Edge Cases

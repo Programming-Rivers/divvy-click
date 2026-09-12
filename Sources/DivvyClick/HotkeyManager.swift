@@ -302,10 +302,15 @@ public class HotkeyManager {
     }
 
     private func updateActiveLayer() {
-        if isDHeld { engine.layerState.activeLayer = .action }
-        else if isFHeld { engine.layerState.activeLayer = .scroll }
-        else if isSHeld { engine.layerState.activeLayer = .nudge }
-        else if isAHeld { engine.layerState.activeLayer = .management }
-        else { engine.layerState.activeLayer = nil }
+        let newLayer: NavigationEngine.ActiveLayer?
+        if isDHeld { newLayer = .action }
+        else if isFHeld { newLayer = .scroll }
+        else if isSHeld { newLayer = .nudge }
+        else if isAHeld { newLayer = .management }
+        else { newLayer = nil }
+
+        if engine.layerState.activeLayer != newLayer {
+            engine.layerState.activeLayer = newLayer
+        }
     }
 }

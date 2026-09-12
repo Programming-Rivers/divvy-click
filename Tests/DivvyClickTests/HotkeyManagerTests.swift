@@ -289,4 +289,59 @@ final class HotkeyManagerTests: XCTestCase {
 
         coordinator.stopAllNudges()
     }
+
+    func testAutoScrollLifecycleThroughKeyEvents() {
+        let (hotkeyManager, _, engine, _) = makeHotkeyManager()
+        engine.start()
+
+        // 1. Hold 'F' (Scroll Layer)
+        let fKeyDown = createKeyEvent(type: .keyDown, keyCode: .f)
+        _ = hotkeyManager.handleEvent(fKeyDown, type: .keyDown)
+        XCTAssertEqual(engine.layerState.activeLayer, .scroll)
+
+        // 2. Press 'I' (Auto Up)
+        let iKeyDown = createKeyEvent(type: .keyDown, keyCode: .i)
+        _ = hotkeyManager.handleEvent(iKeyDown, type: .keyDown)
+        XCTAssertEqual(engine.scrollState.autoScrollDirection, .up)
+        XCTAssertEqual(engine.scrollState.autoScrollSpeed, 1)
+
+        // 3. Release 'I' -> Auto-scroll MUST persist and not cancel after one notch
+        let iKeyUp = createKeyEvent(type: .keyUp, keyCode: .i)
+        _ = hotkeyManager.handleEvent(iKeyUp, type: .keyUp)
+        XCTAssertEqual(engine.scrollState.autoScrollDirection, .up)
+        XCTAssertEqual(engine.scrollState.autoScrollSpeed, 1)
+
+        // 4. Release 'F' -> Leaving the scroll layer MUST persist auto-scroll
+        let fKeyUp = createKeyEvent(type: .keyUp, keyCode: .f)
+        _ = hotkeyManager.handleEvent(fKeyUp, type: .keyUp)
+        XCTAssertNil(engine.layerState.activeLayer)
+        XCTAssertEqual(engine.scrollState.autoScrollDirection, .up)
+
+        // 5. Re-enter Scroll Layer with 'F' and press 'K' (Stop)
+        _ = hotkeyManager.handleEvent(fKeyDown, type: .keyDown)
+        XCTAssertEqual(engine.layerState.activeLayer, .scroll)
+        XCTAssertEqual(engine.scrollState.autoScrollDirection, .up)
+
+        let kKeyDown = createKeyEvent(type: .keyDown, keyCode: .k)
+        _ = hotkeyManager.handleEvent(kKeyDown, type: .keyDown)
+        XCTAssertNil(engine.scrollState.autoScrollDirection)
+        XCTAssertEqual(engine.scrollState.autoScrollSpeed, 0)
+
+        // 6. Test Auto Down via ',' and stop via 'K'
+        let commaKeyDown = createKeyEvent(type: .keyDown, keyCode: .comma)
+        _ = hotkeyManager.handleEvent(commaKeyDown, type: .keyDown)
+        XCTAssertEqual(engine.scrollState.autoScrollDirection, .down)
+        XCTAssertEqual(engine.scrollState.autoScrollSpeed, 1)
+
+        let commaKeyUp = createKeyEvent(type: .keyUp, keyCode: .comma)
+        _ = hotkeyManager.handleEvent(commaKeyUp, type: .keyUp)
+        _ = hotkeyManager.handleEvent(fKeyUp, type: .keyUp)
+        XCTAssertNil(engine.layerState.activeLayer)
+        XCTAssertEqual(engine.scrollState.autoScrollDirection, .down)
+
+        _ = hotkeyManager.handleEvent(fKeyDown, type: .keyDown)
+        _ = hotkeyManager.handleEvent(kKeyDown, type: .keyDown)
+        XCTAssertNil(engine.scrollState.autoScrollDirection)
+        XCTAssertEqual(engine.scrollState.autoScrollSpeed, 0)
+    }
 }
