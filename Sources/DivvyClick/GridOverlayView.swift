@@ -79,7 +79,7 @@ public struct GridOverlayView: View {
                 let neonColor = engine.isMouseDown ? Color.red : Color(red: 0.0, green: 1.0, blue: 1.0) // Cyan
 
                 // 2a. Draw layout-specific boundary lines
-                engine.activeLayout.drawGridLines(context: context, localRegion: localRegion, neonColor: neonColor)
+                engine.activeLayout.drawGridLines(context: context, localRegion: localRegion, neonColor: neonColor, screenFrame: engine.activeScreenFrame)
 
                 // 2b. Draw fainter crosshairs for prospective tile endpoints
                 let prospectivePoints = engine.activeLayout.prospectiveTargetPoints(for: region, screenFrame: engine.activeScreenFrame)
@@ -144,7 +144,7 @@ public struct GridOverlayView: View {
     private var gridKeyCues: some View {
         if engine.isActive, let region = engine.currentRegion {
             let localRegion = localRect(for: region, in: engine.activeScreenFrame)
-            let cueItems = engine.activeLayout.keyCues(localRegion: localRegion)
+            let cueItems = engine.activeLayout.keyCues(localRegion: localRegion, screenFrame: engine.activeScreenFrame)
             
             if !cueItems.isEmpty {
                 ZStack {

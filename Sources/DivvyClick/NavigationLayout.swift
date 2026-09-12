@@ -49,12 +49,26 @@ public protocol NavigationLayout: Sendable {
 
     func subdivide(region: CGRect, tileId: String, screenFrame: CGRect) -> CGRect
     func drawGridLines(context: GraphicsContext, localRegion: CGRect, neonColor: Color)
+    func drawGridLines(context: GraphicsContext, localRegion: CGRect, neonColor: Color, screenFrame: CGRect)
     func keyCues(localRegion: CGRect) -> [LayoutKeyCue]
+    func keyCues(localRegion: CGRect, screenFrame: CGRect) -> [LayoutKeyCue]
     var hudStructure: LayoutHUDStructure { get }
     func prospectiveTargetPoints(for region: CGRect, screenFrame: CGRect) -> [CGPoint]
 }
 
 public extension NavigationLayout {
+    func drawGridLines(context: GraphicsContext, localRegion: CGRect, neonColor: Color) {}
+
+    func drawGridLines(context: GraphicsContext, localRegion: CGRect, neonColor: Color, screenFrame: CGRect) {
+        drawGridLines(context: context, localRegion: localRegion, neonColor: neonColor)
+    }
+
+    func keyCues(localRegion: CGRect) -> [LayoutKeyCue] { [] }
+
+    func keyCues(localRegion: CGRect, screenFrame: CGRect) -> [LayoutKeyCue] {
+        keyCues(localRegion: localRegion)
+    }
+
     var nudgeBindings: [KeyCode: LayoutTileBinding] {
         defaultNavBindings.mapValues {
             LayoutTileBinding(tileId: $0.tileId, label: "Nudge \($0.label)")

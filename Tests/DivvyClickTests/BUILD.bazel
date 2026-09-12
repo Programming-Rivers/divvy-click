@@ -64,3 +64,18 @@ swift_test(
         "//Sources/DivvyClick:ui",
     ],
 )
+
+swift_test(
+    name = "BinaryBifurcationLayoutTests",
+    srcs = [
+        "BinaryBifurcationLayoutTests.swift",
+        "MockScreenProvider.swift",
+    ],
+    deps = [
+        "//Sources/DivvyClick:coordination",
+        "//Sources/DivvyClick:core",
+        "//Sources/DivvyClick:engine",
+        "//Sources/DivvyClick:layouts",
+    ],
+)
+

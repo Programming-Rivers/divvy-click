@@ -18,6 +18,7 @@ swift_library(
 swift_library(
     name = "layouts",
     srcs = [
+        "BinaryBifurcationLayout.swift",
         "Grid3x3Layout.swift",
         "LayoutRegistry.swift",
         "NavigationLayout.swift",

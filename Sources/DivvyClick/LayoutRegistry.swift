@@ -13,8 +13,9 @@ public class LayoutRegistry: ObservableObject {
     public init() {
         let defaultLayout = OverlappingPairsLayout()
         let gridLayout = Grid3x3Layout()
+        let bifurcationLayout = BinaryBifurcationLayout()
 
-        let layouts: [any NavigationLayout] = [defaultLayout, gridLayout]
+        let layouts: [any NavigationLayout] = [defaultLayout, gridLayout, bifurcationLayout]
         self.registeredLayouts = layouts
 
         let savedId = UserDefaults.standard.string(forKey: userDefaultsKey)
