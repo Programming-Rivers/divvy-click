@@ -57,7 +57,7 @@ final class KeyMapTests: XCTestCase {
     func testActionLayerLabels() {
         let expected: [(KeyCode, String)] = [
             (.h, "Undo"),
-            (.j, "Double"), (.k, "Middle"), (.l, "Left Click"),
+            (.j, "Double"), (.k, "Middle"), (.l, "Right Click"),
             (.m, "Start Drag"), (.comma, "Drop")
         ]
 
