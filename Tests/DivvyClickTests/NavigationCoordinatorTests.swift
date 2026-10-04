@@ -359,8 +359,8 @@ final class NavigationCoordinatorTests: XCTestCase {
 
         coordinator.execute(.autoScroll(.up))
 
-        // Drain run loop for 100ms so timer fires ticks
-        drainMainQueue(for: 0.1)
+        // Drain run loop so timer fires ticks
+        drainMainQueue(for: AppConstants.autoScrollInterval * 1.5)
 
         // Verify that scroll ticks were recorded
         let scrollCalls = cursorEngine.calls.filter {
