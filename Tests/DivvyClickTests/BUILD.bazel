@@ -78,4 +78,3 @@ swift_test(
         "//Sources/DivvyClick:layouts",
     ],
 )
-
