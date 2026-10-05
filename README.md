@@ -98,7 +98,7 @@ The resulting binary bundle will be located at:
 Generate a distributable macOS disk image (`DivvyClick.dmg`):
 
 ```bash
-bazel run //:package_dmg
+bazel run //:package_dmg --config=universal
 ```
 
 The packaged disk image will be created at `bazel-bin/DivvyClick.dmg`.
